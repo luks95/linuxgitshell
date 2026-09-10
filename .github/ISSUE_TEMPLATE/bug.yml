@@ -1,0 +1,40 @@
+name: Bug report
+description: Report a reproducible LinuxGitShell defect
+title: "Bug: "
+labels: [bug]
+body:
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Observed behavior
+      description: Describe what happened and remove private repository data.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include LinuxGitShell revision, distribution, Qt/KF6, Dolphin, and Git versions.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed credentials, private paths, remote URLs, and repository contents.
+          required: true
+        - label: This report does not describe a security vulnerability.
+          required: true

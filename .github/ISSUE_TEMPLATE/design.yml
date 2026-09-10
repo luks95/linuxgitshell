@@ -1,0 +1,24 @@
+name: Design proposal
+description: Propose an architectural or compatibility decision
+title: "Design: "
+labels: [feature]
+body:
+  - type: textarea
+    id: context
+    attributes:
+      label: Context and constraints
+    validations:
+      required: true
+  - type: textarea
+    id: design
+    attributes:
+      label: Proposed design
+      description: Explain boundaries between core, daemon, IPC, UI, and integrations.
+    validations:
+      required: true
+  - type: textarea
+    id: consequences
+    attributes:
+      label: Consequences and alternatives
+    validations:
+      required: true

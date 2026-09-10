@@ -1,0 +1,37 @@
+# SPDX-FileCopyrightText: 2026 LinuxGitShell contributors
+# SPDX-License-Identifier: MIT
+# Spanish translations for LinuxGitShell.
+msgid ""
+msgstr ""
+"Project-Id-Version: LinuxGitShell 0.0.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-09 00:00-0300\n"
+"PO-Revision-Date: 2026-09-09 00:00-0300\n"
+"Last-Translator: LinuxGitShell contributors\n"
+"Language-Team: Spanish\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Native Git desktop integration for Linux"
+msgstr "Integración de escritorio nativa de Git para Linux"
+
+msgid "Repository path to open after repository discovery is implemented."
+msgstr "Ruta del repositorio que se abrirá cuando se implemente su detección."
+
+msgid "Bootstrap ready"
+msgstr "Bootstrap listo"
+
+msgid "The Qt/KDE application shell is working. Git repository discovery will be added in Phase 1."
+msgstr "La base de la aplicación Qt/KDE funciona. La detección de repositorios Git se añadirá en la fase 1."
+
+msgid "No repository path was provided."
+msgstr "No se proporcionó una ruta de repositorio."
+
+msgid "Requested path: %1"
+msgstr "Ruta solicitada: %1"
+
+msgid "LinuxGitShell %1 · Qt %2 · KDE Frameworks %3"
+msgstr "LinuxGitShell %1 · Qt %2 · KDE Frameworks %3"

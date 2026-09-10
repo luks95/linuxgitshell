@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install build dependencies
+        run: pacman --noconfirm -Syu cmake ninja qt6-base kcoreaddons ki18n gettext git
+      - name: Prepare test locale
+        run: |
+          sed -i 's/^#es_PY.UTF-8 UTF-8/es_PY.UTF-8 UTF-8/' /etc/locale.gen
+          locale-gen
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+      - name: Build
+        run: cmake --build build -j2
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+      - name: Preserve test logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs
+          path: build/Testing/Temporary/
+
+  quality:
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install quality dependencies
+        run: pacman --noconfirm -Syu cmake ninja qt6-base kcoreaddons ki18n gettext clang git
+      - name: Prepare test locale
+        run: |
+          sed -i 's/^#es_PY.UTF-8 UTF-8/es_PY.UTF-8 UTF-8/' /etc/locale.gen
+          locale-gen
+      - name: Configure with clang-tidy
+        run: >-
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=Debug
+          -DCMAKE_CXX_COMPILER=clang++
+          -DCMAKE_CXX_CLANG_TIDY=clang-tidy
+      - name: Build with static analysis
+        run: cmake --build build -j2
+      - name: Check formatting
+        run: cmake --build build --target format-check
+      - name: Check for common secret patterns
+        run: cmake --build build --target check-secrets

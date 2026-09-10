@@ -1,0 +1,11 @@
+Checks: >
+  -*,
+  bugprone-*,
+  performance-*,
+  portability-*,
+  readability-container-size-empty,
+  readability-duplicate-include,
+  readability-redundant-*
+WarningsAsErrors: ''
+HeaderFilterRegex: '^(gui|libs|tests)/'
+FormatStyle: file
