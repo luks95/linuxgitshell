@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 0 — Open source foundation and technical bootstrap.
+Phase 1 — Git Core.
 
 ## Working
 
@@ -19,20 +19,26 @@ Phase 0 — Open source foundation and technical bootstrap.
 
 ## In progress
 
-- Publish the project to an open forge and add the real private security/contact channel.
-- Run and enforce the new CI workflow from a clean hosted checkout.
+- Asynchronous `GitProcessRunner` with typed completion states, safe cancellation escalation,
+  opt-in timeout, original output capture, and credential-safe argument sanitization.
+- Deterministic process-runner tests for failure modes, environment handling, and unusual paths.
+- Validate the process-runner implementation with the native Linux Qt/KF6 toolchain and hosted CI.
+- Add application-layer translations for common typed process errors.
 
 ## Known issues
 
 - `extra-cmake-modules` is available but not installed; the bootstrap avoids requiring it.
 - A real KDE/Wayland launch could not be verified from the restricted execution environment; the
   application remained running under Qt's offscreen platform until the smoke-test timeout.
-- Repository discovery and all Git operations are intentionally deferred to Phase 1.
+- The current Windows execution environment has no CMake/Qt toolchain, so the new runner tests have
+  not yet been compiled or executed locally.
+- Repository discovery, status parsing, and user-facing Git operations are not implemented yet.
 - Dolphin integration, overlays, daemon, and D-Bus are not implemented.
-- The repository is initialized on `main` with a signed-off initial foundation commit; no remote exists yet.
+- The repository is initialized on `main` with a signed-off foundation commit and an `origin` remote;
+  publication settings and branch protection have not been verified.
 
 ## Next steps
 
-1. Publish the repository, configure private reporting, and protect `main`.
+1. Verify the published repository, configure private reporting, and protect `main`.
 2. Confirm the workflow passes on the public forge and perform the KDE/Wayland smoke test interactively.
-3. Begin Phase 1 with the asynchronous Git process runner.
+3. Begin repository discovery after the process-runner build and tests pass.

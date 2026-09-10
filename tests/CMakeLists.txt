@@ -14,6 +14,24 @@ linuxgitshell_set_compiler_warnings(ProjectInfoTest)
 
 add_test(NAME gitcore.project_info COMMAND ProjectInfoTest)
 
+add_executable(GitProcessTestHelper GitProcessTestHelper.cpp)
+target_link_libraries(GitProcessTestHelper PRIVATE Qt6::Core)
+linuxgitshell_set_compiler_warnings(GitProcessTestHelper)
+
+add_executable(GitProcessRunnerTest GitProcessRunnerTest.cpp)
+
+target_link_libraries(
+    GitProcessRunnerTest
+    PRIVATE
+        LinuxGitShell::GitCore
+        Qt6::Test
+)
+
+add_dependencies(GitProcessRunnerTest GitProcessTestHelper)
+linuxgitshell_set_compiler_warnings(GitProcessRunnerTest)
+
+add_test(NAME gitcore.process_runner COMMAND GitProcessRunnerTest)
+
 add_executable(TranslationTest TranslationTest.cpp)
 
 target_compile_definitions(

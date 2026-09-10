@@ -142,14 +142,14 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 
 ## 1.1 Runner de procesos
 
-- [ ] Implementar `GitProcessRunner` sobre `QProcess`.
-- [ ] Modelar programa, argumentos, directorio de trabajo, entorno, stdout, stderr y exit code.
-- [ ] Añadir ejecución asíncrona y cancelación segura.
-- [ ] Añadir timeout solo donde sea apropiado y distinguirlo de cancelación.
-- [ ] Sanitizar logs para ocultar credenciales y URLs sensibles.
-- [ ] Conservar la salida Git original para diagnóstico.
+- [x] Implementar `GitProcessRunner` sobre `QProcess`.
+- [x] Modelar programa, argumentos, directorio de trabajo, entorno, stdout, stderr y exit code.
+- [x] Añadir ejecución asíncrona y cancelación segura.
+- [x] Añadir timeout solo donde sea apropiado y distinguirlo de cancelación.
+- [x] Sanitizar logs para ocultar credenciales y URLs sensibles.
+- [x] Conservar la salida Git original para diagnóstico.
 - [ ] Crear errores tipados y traducción de errores frecuentes a mensajes útiles.
-- [ ] Probar paths con espacios, Unicode y nombres que comienzan con guion.
+- [x] Probar paths con espacios, Unicode y nombres que comienzan con guion.
 
 ## 1.2 Descubrimiento y modelo de repositorio
 

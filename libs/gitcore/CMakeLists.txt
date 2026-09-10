@@ -3,6 +3,10 @@
 
 add_library(
     linuxgitshell_gitcore STATIC
+    include/linuxgitshell/gitcore/GitCommandSanitizer.h
+    include/linuxgitshell/gitcore/GitProcessRunner.h
+    src/GitCommandSanitizer.cpp
+    src/GitProcessRunner.cpp
     src/Logging.cpp
     src/ProjectInfo.cpp
 )

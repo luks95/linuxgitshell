@@ -36,7 +36,7 @@ Alternatives considered:
 
 The completion reason describes how the operation ended. A normally exited Git process with a nonzero exit code is still `Completed`; callers interpret Git's exit code in the context of the command.
 
-`GitProcessStartResult` reports whether a request was `Accepted`, rejected because the runner is `Busy`, or rejected because its program is empty. This keeps pre-start validation distinct from the terminal result of an accepted execution.
+`GitProcessStartResult` reports whether a request was `Accepted`, rejected because the runner is `Busy`, rejected because its program is empty, or rejected because a supplied timeout is not positive. This keeps pre-start validation distinct from the terminal result of an accepted execution.
 
 ## Runner lifecycle
 

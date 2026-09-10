@@ -11,6 +11,9 @@ once the public release process begins.
 - MIT license and initial open source governance, contribution, conduct, security, and support policies.
 - Spanish translation catalog and documented translation workflow.
 - CI definitions for build, tests, formatting, static analysis, and basic secret detection.
+- Asynchronous Git process runner with cancellation, timeout, typed results, raw output capture, and
+  credential-safe diagnostic argument sanitization.
+- Deterministic process-runner coverage for failure modes, environment handling, and unusual paths.
 
 ## [0.0.1] - 2026-09-09
 
