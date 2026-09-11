@@ -13,7 +13,7 @@ Este roadmap deriva de la [especificación maestra](LinuxGitShell-Codex.md). La 
 - [ ] Comunidad, licencia y procesos de contribución formalizados; falta publicar los canales responsables.
 - [ ] Primera versión publicada.
 
-**Fase actual:** Fase 0 — Fundación open source y bootstrap técnico.
+**Fase actual:** Fase 1 — Git Core (`v0.1.0`).
 
 ## Cómo utilizar este documento
 
@@ -148,54 +148,54 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 - [x] Añadir timeout solo donde sea apropiado y distinguirlo de cancelación.
 - [x] Sanitizar logs para ocultar credenciales y URLs sensibles.
 - [x] Conservar la salida Git original para diagnóstico.
-- [ ] Crear errores tipados y traducción de errores frecuentes a mensajes útiles.
+- [x] Crear errores tipados y traducción de errores frecuentes a mensajes útiles.
 - [x] Probar paths con espacios, Unicode y nombres que comienzan con guion.
 
 ## 1.2 Descubrimiento y modelo de repositorio
 
-- [ ] Detectar la raíz con `git rev-parse` desde cualquier subdirectorio.
-- [ ] Soportar repositorio normal, bare, submódulo y linked worktree.
-- [ ] Soportar `.git` como archivo y como directorio.
-- [ ] Detectar worktree, git dir y superproyecto sin asumir rutas.
-- [ ] Modelar branch actual, detached HEAD, upstream, ahead/behind y remotos.
-- [ ] Modelar operaciones en progreso: merge, rebase, cherry-pick, revert y bisect.
+- [x] Detectar la raíz con `git rev-parse` desde cualquier subdirectorio.
+- [x] Soportar repositorio normal, bare, submódulo y linked worktree.
+- [x] Soportar `.git` como archivo y como directorio.
+- [x] Detectar worktree, git dir y superproyecto sin asumir rutas.
+- [x] Modelar branch actual, detached HEAD, upstream, ahead/behind y remotos.
+- [x] Modelar operaciones en progreso: merge, rebase, cherry-pick, revert y bisect.
 - [ ] Manejar symlinks, mount points, paths largos y case sensitivity.
 
 ## 1.3 Status y configuración
 
-- [ ] Ejecutar `git status --porcelain=v2 -z`.
-- [ ] Implementar parser independiente de la UI.
-- [ ] Conservar por separado el estado del index y del working tree.
-- [ ] Soportar clean, modified, added, deleted, renamed, copied, untracked, ignored y conflict.
-- [ ] Conservar rutas original/destino en renames.
-- [ ] Implementar lectura básica de Git config mostrando valor y origen.
-- [ ] Evitar sobrescribir configuraciones no modificadas por el usuario.
+- [x] Ejecutar `git status --porcelain=v2 -z`.
+- [x] Implementar parser independiente de la UI.
+- [x] Conservar por separado el estado del index y del working tree.
+- [x] Soportar clean, modified, added, deleted, renamed, copied, untracked, ignored y conflict.
+- [x] Conservar rutas original/destino en renames.
+- [x] Implementar lectura básica de Git config mostrando valor y origen.
+- [x] Evitar sobrescribir configuraciones no modificadas por el usuario.
 
 ## 1.4 Tests del core
 
-- [ ] Crear repositorios temporales aislados por test.
-- [ ] Cubrir repositorio clean.
-- [ ] Cubrir cambios modified, staged, unstaged y combinados.
-- [ ] Cubrir untracked e ignored.
-- [ ] Cubrir added, deleted, renamed y paths Unicode.
-- [ ] Cubrir conflictos reales y stages de index.
-- [ ] Cubrir detached HEAD, bare, submodule y worktree cuando corresponda.
-- [ ] Comprobar que los tests no leen ni alteran repositorios personales.
+- [x] Crear repositorios temporales aislados por test.
+- [x] Cubrir repositorio clean.
+- [x] Cubrir cambios modified, staged, unstaged y combinados.
+- [x] Cubrir untracked e ignored.
+- [x] Cubrir added, deleted, renamed y paths Unicode.
+- [x] Cubrir conflictos reales y stages de index.
+- [x] Cubrir detached HEAD, bare, submodule y worktree cuando corresponda.
+- [x] Comprobar que los tests no leen ni alteran repositorios personales.
 
 ## 1.5 Aplicación mínima funcional
 
-- [ ] Aceptar una ruta de repositorio por línea de comandos.
-- [ ] Mostrar raíz, branch y resumen de status.
-- [ ] Mostrar fallos de Git de forma gráfica y permitir inspeccionar la salida original.
-- [ ] Ejecutar status sin bloquear la interfaz.
-- [ ] Añadir smoke test manual documentado.
+- [x] Aceptar una ruta de repositorio por línea de comandos.
+- [x] Mostrar raíz, branch y resumen de status.
+- [x] Mostrar fallos de Git de forma gráfica y permitir inspeccionar la salida original.
+- [x] Ejecutar status sin bloquear la interfaz.
+- [x] Añadir smoke test manual documentado.
 
 ## Criterio de salida de la Fase 1
 
-- [ ] La aplicación muestra correctamente clean, modified, staged y untracked.
-- [ ] El parser está cubierto por unit e integration tests.
+- [x] La aplicación muestra correctamente clean, modified, staged y untracked.
+- [x] El parser está cubierto por unit e integration tests.
 - [ ] Todos los jobs obligatorios de CI pasan.
-- [ ] `STATUS.md` y `CHANGELOG.md` reflejan el estado real.
+- [x] `STATUS.md` y `CHANGELOG.md` reflejan el estado real.
 - [ ] Se etiqueta y publica `v0.1.0` con notas y checksums.
 
 ---

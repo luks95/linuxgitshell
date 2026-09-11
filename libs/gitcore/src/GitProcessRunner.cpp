@@ -6,8 +6,7 @@
 namespace LinuxGitShell
 {
 
-GitProcessRunner::GitProcessRunner(QObject* parent)
-    : QObject(parent)
+GitProcessRunner::GitProcessRunner(QObject* parent) : QObject(parent)
 {
     timeoutTimer.setSingleShot(true);
     killTimer.setSingleShot(true);
@@ -22,12 +21,14 @@ GitProcessRunner::GitProcessRunner(QObject* parent)
             &GitProcessRunner::processFinished);
     connect(&timeoutTimer, &QTimer::timeout, this,
             [this]() { requestStop(GitProcessCompletionReason::TimedOut); });
-    connect(&killTimer, &QTimer::timeout, this, [this]() {
-        if (active && process.state() != QProcess::NotRunning)
-        {
-            process.kill();
-        }
-    });
+    connect(&killTimer, &QTimer::timeout, this,
+            [this]()
+            {
+                if (active && process.state() != QProcess::NotRunning)
+                {
+                    process.kill();
+                }
+            });
 }
 
 GitProcessRunner::~GitProcessRunner()
@@ -77,15 +78,9 @@ GitProcessStartResult GitProcessRunner::start(const GitProcessRequest& request)
     return GitProcessStartResult::Accepted;
 }
 
-void GitProcessRunner::cancel()
-{
-    requestStop(GitProcessCompletionReason::Cancelled);
-}
+void GitProcessRunner::cancel() { requestStop(GitProcessCompletionReason::Cancelled); }
 
-bool GitProcessRunner::isRunning() const
-{
-    return active;
-}
+bool GitProcessRunner::isRunning() const { return active; }
 
 void GitProcessRunner::readStandardOutput()
 {
@@ -125,7 +120,7 @@ void GitProcessRunner::processFinished(int exitCode, QProcess::ExitStatus exitSt
 {
     const GitProcessCompletionReason reason = requestedCompletionReason.value_or(
         exitStatus == QProcess::CrashExit ? GitProcessCompletionReason::Crashed
-                                         : GitProcessCompletionReason::Completed);
+                                          : GitProcessCompletionReason::Completed);
     complete(reason, exitCode, exitStatus);
 }
 

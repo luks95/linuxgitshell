@@ -14,6 +14,24 @@ once the public release process begins.
 - Asynchronous Git process runner with cancellation, timeout, typed results, raw output capture, and
   credential-safe diagnostic argument sanitization.
 - Deterministic process-runner coverage for failure modes, environment handling, and unusual paths.
+- Asynchronous repository discovery for normal repositories, bare repositories, linked worktrees,
+  and submodules, including typed failures and preserved Git diagnostics.
+- Repository metadata for the current branch, detached HEAD, upstream divergence, remote names, and
+  merge, rebase, cherry-pick, revert, or bisect operations in progress.
+- Isolated integration tests for discovery from nested files, symbolic links, `.git` files, and
+  paths containing spaces, Unicode, and leading hyphens, plus upstream divergence and a real merge
+  conflict.
+- UI-independent parser and typed model for NUL-delimited porcelain v2 status, including separate
+  index/working-tree states, renames and copies, conflicts, submodules, ignored files, and branch
+  headers.
+- Asynchronous, non-locking status reader with opt-in ignored files, rename detection, typed errors,
+  preserved Git output, and integration coverage against isolated temporary repositories.
+- Read-only asynchronous Git config reader preserving scope, origin, repeated keys, and multiline
+  values, with sanitized diagnostics and isolated system/global/local/worktree integration tests.
+- Functional read-only application view for repository metadata, status counts, configuration
+  origins and values, reloads, and inspectable localized Git failure diagnostics.
+- Offscreen application integration tests for clean and changed temporary repositories and
+  non-repository failures, plus a KDE/Wayland manual smoke-test checklist.
 
 ## [0.0.1] - 2026-09-09
 

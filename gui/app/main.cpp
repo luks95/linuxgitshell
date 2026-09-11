@@ -33,16 +33,14 @@ int main(int argc, char* argv[])
     parser.setApplicationDescription(i18n("Native Git desktop integration for Linux"));
     parser.addHelpOption();
     parser.addVersionOption();
-    parser.addPositionalArgument(
-        QStringLiteral("repository"),
-        i18n("Repository path to open after repository discovery is implemented."),
-        QStringLiteral("[repository]"));
+    parser.addPositionalArgument(QStringLiteral("repository"), i18n("Repository path to inspect."),
+                                 QStringLiteral("[repository]"));
     parser.process(application);
 
     const QStringList positionalArguments = parser.positionalArguments();
     const QString requestedPath = positionalArguments.value(0);
 
-    qCInfo(LinuxGitShell::gitCoreLog) << "Starting application shell";
+    qCInfo(LinuxGitShell::gitCoreLog) << "Starting LinuxGitShell";
 
     LinuxGitShell::MainWindow window(requestedPath);
     window.show();

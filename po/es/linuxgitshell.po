@@ -18,14 +18,8 @@ msgstr ""
 msgid "Native Git desktop integration for Linux"
 msgstr "Integración de escritorio nativa de Git para Linux"
 
-msgid "Repository path to open after repository discovery is implemented."
-msgstr "Ruta del repositorio que se abrirá cuando se implemente su detección."
-
-msgid "Bootstrap ready"
-msgstr "Bootstrap listo"
-
-msgid "The Qt/KDE application shell is working. Git repository discovery will be added in Phase 1."
-msgstr "La base de la aplicación Qt/KDE funciona. La detección de repositorios Git se añadirá en la fase 1."
+msgid "Repository path to inspect."
+msgstr "Ruta del repositorio que se inspeccionará."
 
 msgid "No repository path was provided."
 msgstr "No se proporcionó una ruta de repositorio."
@@ -35,3 +29,195 @@ msgstr "Ruta solicitada: %1"
 
 msgid "LinuxGitShell %1 · Qt %2 · KDE Frameworks %3"
 msgstr "LinuxGitShell %1 · Qt %2 · KDE Frameworks %3"
+
+msgid "Waiting for a repository path."
+msgstr "Esperando una ruta de repositorio."
+
+msgid "Reload"
+msgstr "Recargar"
+
+msgid "Repository"
+msgstr "Repositorio"
+
+msgid "Root:"
+msgstr "Raíz:"
+
+msgid "Branch:"
+msgstr "Rama:"
+
+msgid "Type:"
+msgstr "Tipo:"
+
+msgid "Status"
+msgstr "Estado"
+
+msgid "Configuration"
+msgstr "Configuración"
+
+msgid "Scope"
+msgstr "Ámbito"
+
+msgid "Origin"
+msgstr "Origen"
+
+msgid "Key"
+msgstr "Clave"
+
+msgid "Value"
+msgstr "Valor"
+
+msgid "Git diagnostic output"
+msgstr "Salida de diagnóstico de Git"
+
+msgid "Provide a repository path on the command line to inspect it."
+msgstr "Proporcione una ruta de repositorio en la línea de comandos para inspeccionarla."
+
+msgid "Loading repository…"
+msgstr "Cargando repositorio…"
+
+msgid "Repository discovery is already running."
+msgstr "La detección del repositorio ya está en ejecución."
+
+msgid "Invalid repository path."
+msgstr "La ruta del repositorio no es válida."
+
+msgid "Not a Git repository."
+msgstr "No es un repositorio Git."
+
+msgid "Git is not available."
+msgstr "Git no está disponible."
+
+msgid "Permission denied while reading the repository."
+msgstr "Permiso denegado al leer el repositorio."
+
+msgid "Git returned invalid repository information."
+msgstr "Git devolvió información de repositorio no válida."
+
+msgid "Repository discovery was cancelled."
+msgstr "Se canceló la detección del repositorio."
+
+msgid "Repository discovery timed out."
+msgstr "Se agotó el tiempo para detectar el repositorio."
+
+msgid "Git failed while discovering the repository."
+msgstr "Git falló al detectar el repositorio."
+
+msgid "Unknown repository error."
+msgstr "Error de repositorio desconocido."
+
+msgid "Reading status and configuration…"
+msgstr "Leyendo estado y configuración…"
+
+msgid "Bare repository · working tree status is unavailable."
+msgstr "Repositorio bare · el estado del árbol de trabajo no está disponible."
+
+msgid "Could not start status inspection."
+msgstr "No se pudo iniciar la inspección del estado."
+
+msgid "Could not start configuration inspection."
+msgstr "No se pudo iniciar la inspección de la configuración."
+
+msgid "Status is unavailable because the path is not a Git repository."
+msgstr "El estado no está disponible porque la ruta no es un repositorio Git."
+
+msgid "Status is unavailable for a repository without a working tree."
+msgstr "El estado no está disponible para un repositorio sin árbol de trabajo."
+
+msgid "Git is not available for status inspection."
+msgstr "Git no está disponible para inspeccionar el estado."
+
+msgid "Permission denied while reading status."
+msgstr "Permiso denegado al leer el estado."
+
+msgid "Status inspection was cancelled."
+msgstr "Se canceló la inspección del estado."
+
+msgid "Status inspection timed out."
+msgstr "Se agotó el tiempo para inspeccionar el estado."
+
+msgid "Git failed while reading status."
+msgstr "Git falló al leer el estado."
+
+msgid "Git returned an unsupported status response."
+msgstr "Git devolvió una respuesta de estado no compatible."
+
+msgid "Unknown status error."
+msgstr "Error de estado desconocido."
+
+msgid "Git is not available for configuration inspection."
+msgstr "Git no está disponible para inspeccionar la configuración."
+
+msgid "Permission denied while reading configuration."
+msgstr "Permiso denegado al leer la configuración."
+
+msgid "Configuration inspection was cancelled."
+msgstr "Se canceló la inspección de la configuración."
+
+msgid "Configuration inspection timed out."
+msgstr "Se agotó el tiempo para inspeccionar la configuración."
+
+msgid "Git failed while reading configuration."
+msgstr "Git falló al leer la configuración."
+
+msgid "Git returned an unsupported configuration response."
+msgstr "Git devolvió una respuesta de configuración no compatible."
+
+msgid "Unknown configuration error."
+msgstr "Error de configuración desconocido."
+
+msgid "Normal repository"
+msgstr "Repositorio normal"
+
+msgid "Bare repository"
+msgstr "Repositorio bare"
+
+msgid "Linked worktree"
+msgstr "Árbol de trabajo enlazado"
+
+msgid "Submodule"
+msgstr "Submódulo"
+
+msgid "Status inspection"
+msgstr "Inspección del estado"
+
+msgid "Configuration inspection"
+msgstr "Inspección de la configuración"
+
+msgid "Detached HEAD"
+msgstr "HEAD separado"
+
+msgid "No branch"
+msgstr "Sin rama"
+
+msgid " · upstream %1"
+msgstr " · rama remota %1"
+
+msgid " · ahead %1, behind %2"
+msgstr " · %1 por delante, %2 por detrás"
+
+msgid "Working tree clean"
+msgstr "Árbol de trabajo limpio"
+
+msgid "Staged: %1 · Modified: %2 · Untracked: %3 · Conflicts: %4"
+msgstr "Preparados: %1 · Modificados: %2 · Sin seguimiento: %3 · Conflictos: %4"
+
+msgid "Configuration entries: %1"
+msgstr "Entradas de configuración: %1"
+
+msgid "Process error: %1"
+msgstr "Error del proceso: %1"
+
+msgid "Standard error:\n%1"
+msgstr "Error estándar:\n%1"
+
+msgid "Standard output:\n%1"
+msgstr "Salida estándar:\n%1"
+
+msgid "Repository loaded with errors"
+msgstr "Repositorio cargado con errores"
+
+msgid "Repository loaded"
+msgstr "Repositorio cargado"
+
+msgid "Repository discovery"
+msgstr "Detección del repositorio"

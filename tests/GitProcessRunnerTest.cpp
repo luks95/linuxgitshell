@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2026 LinuxGitShell contributors
 // SPDX-License-Identifier: MIT
 
-#include "linuxgitshell/gitcore/GitCommandSanitizer.h"
 #include "linuxgitshell/gitcore/GitProcessRunner.h"
+#include "linuxgitshell/gitcore/GitCommandSanitizer.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -211,7 +211,7 @@ void GitProcessRunnerTest::rejectsInvalidAndConcurrentRequestsAndCanBeReused()
     QTRY_VERIFY_WITH_TIMEOUT(!stdoutSpy.isEmpty(), 5000);
     runner.cancel();
     QTRY_COMPARE_WITH_TIMEOUT(finishedSpy.count(), 1, 5000);
-    takeResult(finishedSpy);
+    (void)takeResult(finishedSpy);
 
     request.arguments = {QStringLiteral("--exit"), QStringLiteral("0")};
     request.timeout.reset();
@@ -228,8 +228,10 @@ void GitProcessRunnerTest::sanitizesCredentialBearingArguments()
     const QStringList original = {
         credentialUrl,
         QStringLiteral("https://example.com/repository?access_token=abc&keep=yes"),
-        QStringLiteral("--password=hunter2"), QStringLiteral("--token"),
-        QStringLiteral("token-value"), QStringLiteral("plain")};
+        QStringLiteral("--password=hunter2"),
+        QStringLiteral("--token"),
+        QStringLiteral("token-value"),
+        QStringLiteral("plain")};
 
     const QStringList sanitized = LinuxGitShell::sanitizeGitArguments(original);
 

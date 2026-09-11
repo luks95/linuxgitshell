@@ -19,7 +19,7 @@ void TranslationTest::loadsSpanishCatalog()
     KLocalizedString::addDomainLocaleDir(domain, QStringLiteral(TRANSLATION_LOCALE_DIR));
     KLocalizedString::setApplicationDomain(domain);
 
-    QCOMPARE(i18n("Bootstrap ready"), QStringLiteral("Bootstrap listo"));
+    QCOMPARE(i18n("Repository loaded"), QStringLiteral("Repositorio cargado"));
 }
 
 QTEST_GUILESS_MAIN(TranslationTest)
