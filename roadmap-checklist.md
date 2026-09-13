@@ -70,7 +70,7 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 - [x] Definir política de encabezados SPDX para código y recursos.
 - [x] Crear `CONTRIBUTING.md` con build, tests, estilo, traducciones, issues y pull requests.
 - [ ] Crear `CODE_OF_CONDUCT.md` y un procedimiento de aplicación con contacto responsable.
-- [ ] Crear `SECURITY.md` con versiones soportadas y canal privado para reportes sensibles.
+- [x] Crear `SECURITY.md` con versiones soportadas y canal privado para reportes sensibles.
 - [x] Crear `GOVERNANCE.md` con roles, toma de decisiones y proceso para nuevos maintainers.
 - [x] Crear `CHANGELOG.md` basado en cambios orientados al usuario.
 - [x] Crear `STATUS.md` usando el formato definido en la especificación.
@@ -81,14 +81,14 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 
 ## 0.2 Infraestructura de colaboración
 
-- [ ] Publicar el repositorio en una forja abierta y configurar descripción, tópicos y enlace de documentación.
+- [x] Publicar el repositorio en una forja abierta y configurar descripción, tópicos y enlace de documentación.
 - [ ] Proteger la rama principal: pull request, CI obligatorio y prohibición de force-push.
 - [x] Crear plantillas para bug, solicitud de función y propuesta de diseño.
 - [x] Crear plantilla de pull request con checklist de tests, documentación, traducciones y seguridad.
 - [x] Definir etiquetas mínimas: `bug`, `feature`, `docs`, `good first issue`, `help wanted`, `security`, `performance`, `accessibility`, `packaging` y `blocked`.
 - [x] Definir milestones alineados con las versiones de este roadmap.
-- [ ] Activar discusiones o un canal comunitario y documentar qué tipo de conversación pertenece allí.
-- [ ] Configurar revisión de dependencias y alertas de seguridad disponibles en la forja.
+- [x] Activar discusiones o un canal comunitario y documentar qué tipo de conversación pertenece allí.
+- [x] Configurar revisión de dependencias y alertas de seguridad disponibles en la forja.
 - [x] Definir política de triage, tiempos orientativos y cierre de issues inactivos sin automatismos agresivos.
 - [ ] Identificar y documentar owners de core, Dolphin, UI, packaging, traducciones y releases cuando exista comunidad suficiente.
 
@@ -132,7 +132,7 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 - [x] `cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug` finaliza correctamente.
 - [x] `cmake --build build -j` finaliza correctamente.
 - [x] `ctest --test-dir build --output-on-failure` ejecuta al menos un test y pasa.
-- [ ] La aplicación mínima inicia en KDE Plasma 6.
+- [x] La aplicación mínima inicia en KDE Plasma 6.
 - [x] CI reproduce configure, build y tests.
 - [x] Existen licencia, README, guía de contribución, seguridad y estado del proyecto.
 

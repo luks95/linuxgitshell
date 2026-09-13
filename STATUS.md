@@ -44,27 +44,25 @@ Phase 1 — Git Core.
 - `v0.1.0` candidate version, draft release notes, a maintainer checklist, and tag-triggered source
   archive/checksum automation.
 - Public GitHub repository with the documented description and `main` synchronized with the local
-  baseline at `bf8e78d` as of 2026-09-13.
+  candidate at `4419b3c` as of 2026-09-13.
+- Native Plasma 6 Wayland verification for candidate `4419b3c`, including repository state,
+  credential redaction, reload, failure handling, missing-path guidance, and the installed Spanish
+  catalog.
+- GitHub topics, documentation link, Discussions, private vulnerability reporting, dependency and
+  secret alerts, push protection, and web commit sign-off configured for the public repository.
 
 ## In progress
 
-- Perform the documented application smoke test in a KDE Plasma 6 Wayland session.
 - Run the `v0.1.0` release checklist against the exact candidate commit.
 
 ## Known issues
 
 - `extra-cmake-modules` is available but not installed; the bootstrap avoids requiring it.
-- A real KDE/Wayland launch could not be verified from the restricted execution environment; the
-  application remained running under Qt's offscreen platform until the smoke-test timeout.
 - Mutating user-facing Git operations are not implemented yet.
 - Dolphin integration, overlays, daemon, and D-Bus are not implemented.
-- The public GitHub repository has no topics or documentation homepage, Discussions is disabled,
-  web commit sign-off is optional, and `main` is not protected as of 2026-09-13.
+- The public repository's `main` branch is not protected yet.
 
 ## Next steps
 
-1. Add repository topics and a documentation link, configure private security reporting and a
-   community channel, require web commit sign-off, and protect `main` with required CI.
-2. Perform the documented application smoke test in a KDE Plasma 6 Wayland session.
-3. Obtain passing hosted CI for the `v0.1.0` candidate, complete the release checklist, and publish
-   the signed tag, source archive, checksum, and release notes.
+1. Obtain passing hosted CI for the final `v0.1.0` commit and protect `main` with required CI.
+2. Publish the annotated tag, source archive, checksum, and release notes.

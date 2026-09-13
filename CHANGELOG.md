@@ -6,6 +6,8 @@ once the public release process begins.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-09-13
+
 ### Added
 
 - MIT license and initial open source governance, contribution, conduct, security, and support policies.

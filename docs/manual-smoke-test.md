@@ -32,3 +32,19 @@ below.
 - Repeat once with `LANGUAGE=es` and confirm the visible application text is translated into Spanish.
 
 Close the application normally. Remove only the disposable repositories created for this checklist.
+
+## Latest verification
+
+The `v0.1.0` candidate at commit `4419b3c` was verified on 2026-09-13 in a native KDE Plasma 6
+Wayland session on Manjaro with Qt 6.11.2 and KDE Frameworks 6.29.0.
+
+- The application opened and remained responsive on the Wayland backend.
+- A sanitized disposable repository displayed branch `main`, normal repository type, and the
+  expected staged/modified/untracked/conflict counts of `1/1/1/0`.
+- Local configuration loaded successfully and `http.extraheader` displayed as `REDACTED`.
+- Reload, clean repository, invalid repository, and missing-path behavior passed the native Wayland
+  application test.
+- The installed Spanish catalog rendered the no-path view in Spanish.
+
+Temporary repositories, logs, staged installation files, and screenshots were removed after the
+verification.

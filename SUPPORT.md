@@ -8,8 +8,8 @@ For public, non-sensitive project communication:
 - Use the bug template for reproducible defects.
 - Use the feature template for product suggestions.
 - Use the design template for architectural changes.
-- A community support channel has not been enabled yet; use the issue templates only for their
-  documented purposes.
+- Use [GitHub Discussions](https://github.com/luks95/linuxgitshell/discussions) for usage questions
+  and community conversation.
 - Follow `SECURITY.md` for vulnerabilities; never report them publicly.
 
 Include the exact LinuxGitShell revision, distribution, Qt/KF6, Dolphin, and Git versions. Remove
