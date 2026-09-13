@@ -4,6 +4,15 @@ on:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing immutable release tag to package
+        required: true
+        type: string
+
+env:
+  RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
 
 permissions:
   contents: read
@@ -13,22 +22,23 @@ jobs:
     runs-on: ubuntu-latest
     container: archlinux:base-devel
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          ref: ${{ env.RELEASE_TAG }}
       - name: Install build dependencies
         run: >-
           pacman --noconfirm -Syu cmake ninja qt6-base kcoreaddons ki18n gettext clang git
+          glibc-locales
       - name: Configure release build
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
       - name: Validate tag metadata
-        env:
-          RELEASE_TAG: ${{ github.ref_name }}
         run: |
           set -eu
           project_version="$(sed -n 's/^CMAKE_PROJECT_VERSION:STATIC=//p' build/CMakeCache.txt)"
           test "$RELEASE_TAG" = "v$project_version"
           test -f "docs/releases/$RELEASE_TAG.md"
+          test "$(git rev-list -n 1 "$RELEASE_TAG")" = "$(git rev-parse HEAD)"
       - name: Build with static analysis
         run: >-
           cmake -S . -B build-tidy -G Ninja
@@ -47,8 +57,6 @@ jobs:
           test -x stage/usr/bin/linuxgitshell
           test -f stage/usr/share/locale/es/LC_MESSAGES/linuxgitshell.mo
       - name: Verify application version
-        env:
-          RELEASE_TAG: ${{ github.ref_name }}
         run: |
           set -eu
           version="$(QT_QPA_PLATFORM=offscreen ./build/linuxgitshell --version)"
@@ -58,8 +66,6 @@ jobs:
           cmake --build build --target format-check
           cmake --build build --target check-secrets
       - name: Create source archive and checksum
-        env:
-          RELEASE_TAG: ${{ github.ref_name }}
         run: |
           set -eu
           version="${RELEASE_TAG#v}"
@@ -69,8 +75,6 @@ jobs:
           cd dist
           sha256sum "LinuxGitShell-$version.tar.gz" > SHA256SUMS
       - name: Verify source archive offline
-        env:
-          RELEASE_TAG: ${{ github.ref_name }}
         run: |
           set -eu
           version="${RELEASE_TAG#v}"
@@ -82,9 +86,9 @@ jobs:
           cmake --build archive-build -j2
           ctest --test-dir archive-build --output-on-failure
       - name: Upload release artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: LinuxGitShell-${{ github.ref_name }}-source
+          name: LinuxGitShell-${{ env.RELEASE_TAG }}-source
           path: |
             dist/LinuxGitShell-*.tar.gz
             dist/SHA256SUMS

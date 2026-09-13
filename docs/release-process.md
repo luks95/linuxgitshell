@@ -48,6 +48,10 @@ tag with `git tag --annotate`; never use a lightweight release tag. Pushing the 
 `Release artifacts` workflow. It rejects a tag that does not match the compiled application version
 or lacks its release-notes file.
 
+If infrastructure fails after the tag has been created, do not move or replace the tag. Fix the
+workflow on `main`, then run `Release artifacts` manually with `release_tag` set to the existing tag.
+The workflow checks out and packages that immutable tag rather than the branch containing the fix.
+
 Download the workflow artifact and verify it locally:
 
 ```bash
