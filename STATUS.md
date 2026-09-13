@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 1 — Git Core.
+Phase 2 — Dolphin context menu.
 
 ## Working
 
@@ -41,10 +41,14 @@ Phase 1 — Git Core.
   asynchronous status summary, and read-only configuration entries with their origins.
 - Reload support, localized typed failures, inspectable Git diagnostics, and an offscreen application
   integration test covering clean, changed, and invalid repositories.
-- `v0.1.0` candidate version, draft release notes, a maintainer checklist, and tag-triggered source
-  archive/checksum automation.
-- Public GitHub repository with the documented description and `main` synchronized with the local
-  release candidate through `0f9bd36` as of 2026-09-13.
+- Public [`v0.1.0`](https://github.com/luks95/linuxgitshell/releases/tag/v0.1.0) release from the
+  immutable annotated tag at `212a64b`, with versioned notes, source archive, and SHA-256 checksum.
+- Release artifact automation validated the exact tag, static-analysis and Release builds, all eight
+  tests, staged installation, application version, repository checks, and an offline rebuild from
+  the generated archive. The downloaded workflow and public release artifacts also passed checksum
+  verification locally.
+- Public GitHub repository with the documented description and a protected `main` synchronized with
+  the local checkout.
 - Native Plasma 6 Wayland verification for candidate `4419b3c`, including repository state,
   credential redaction, reload, failure handling, missing-path guidance, and the installed Spanish
   catalog.
@@ -54,7 +58,8 @@ Phase 1 — Git Core.
 
 ## In progress
 
-- Publish the `v0.1.0` tag and release artifacts.
+- Plan the thin Dolphin context-menu adapter for Phase 2 without moving Git execution or application
+  windows into Dolphin's process.
 
 ## Known issues
 
@@ -64,6 +69,7 @@ Phase 1 — Git Core.
 
 ## Next steps
 
-1. Create the annotated `v0.1.0` tag and verify the tag-triggered artifact workflow.
-2. Publish the GitHub release with its source archive, SHA-256 checksum, and release notes.
-3. Record the published release and begin Phase 2 planning.
+1. Research and document the current KF6/Dolphin plugin API and installed development dependencies.
+2. Define the adapter-to-core/application boundary and the first read-only context actions.
+3. Add the minimal plugin target, automated coverage where practical, and a Dolphin manual-test
+   checklist without introducing synchronous Git work in Dolphin.

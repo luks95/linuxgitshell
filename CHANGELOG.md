@@ -36,7 +36,7 @@ once the public release process begins.
   origins and values, reloads, and inspectable localized Git failure diagnostics.
 - Offscreen application integration tests for clean and changed temporary repositories and
   non-repository failures, plus a KDE/Wayland manual smoke-test checklist.
-- Reproducible `v0.1.0` release instructions, draft notes, tag/version validation, and automated
+- Reproducible `v0.1.0` release instructions, release notes, tag/version validation, and automated
   generation of a tagged source archive with SHA-256 checksums.
 
 ## [0.0.1] - 2026-09-09
@@ -45,3 +45,6 @@ once the public release process begins.
 
 - Initial C++20, Qt 6, and KDE Frameworks 6 application shell.
 - Reusable `gitcore` bootstrap library, logging category, and CTest test runner.
+
+[Unreleased]: https://github.com/luks95/linuxgitshell/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/luks95/linuxgitshell/releases/tag/v0.1.0
