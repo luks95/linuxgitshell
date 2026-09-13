@@ -82,7 +82,7 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 ## 0.2 Infraestructura de colaboración
 
 - [x] Publicar el repositorio en una forja abierta y configurar descripción, tópicos y enlace de documentación.
-- [ ] Proteger la rama principal: pull request, CI obligatorio y prohibición de force-push.
+- [x] Proteger la rama principal: pull request, CI obligatorio y prohibición de force-push.
 - [x] Crear plantillas para bug, solicitud de función y propuesta de diseño.
 - [x] Crear plantilla de pull request con checklist de tests, documentación, traducciones y seguridad.
 - [x] Definir etiquetas mínimas: `bug`, `feature`, `docs`, `good first issue`, `help wanted`, `security`, `performance`, `accessibility`, `packaging` y `blocked`.
