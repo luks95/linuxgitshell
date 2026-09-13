@@ -16,8 +16,8 @@ Phase 1 — Git Core.
 - MIT license, DCO contribution workflow, governance, conduct, security, and support documents.
 - GitHub-compatible issue/PR templates and CI workflow for build, tests, formatting, static analysis,
   and common secret patterns.
-- Hosted CI passing configure, build, all eight tests, static analysis, formatting, and secret checks
-  for the final candidate `2522135` on the Arch Linux container.
+- Hosted CI passing configure, build, all eight tests, static analysis, formatting, secret checks,
+  and pull-request dependency review for the final release changes on the Arch Linux container.
 - Asynchronous `GitProcessRunner` validated with the native Linux Qt/KF6 toolchain and deterministic
   tests for cancellation, timeouts, process failures, environment handling, and unusual paths.
 - Repository discovery from directories or files, with typed results for normal repositories, bare
@@ -44,7 +44,7 @@ Phase 1 — Git Core.
 - `v0.1.0` candidate version, draft release notes, a maintainer checklist, and tag-triggered source
   archive/checksum automation.
 - Public GitHub repository with the documented description and `main` synchronized with the local
-  candidate through `2522135` as of 2026-09-13.
+  release candidate through `0f9bd36` as of 2026-09-13.
 - Native Plasma 6 Wayland verification for candidate `4419b3c`, including repository state,
   credential redaction, reload, failure handling, missing-path guidance, and the installed Spanish
   catalog.
@@ -54,7 +54,6 @@ Phase 1 — Git Core.
 
 ## In progress
 
-- Merge the final release-record pull request after its required checks pass.
 - Publish the `v0.1.0` tag and release artifacts.
 
 ## Known issues
@@ -65,5 +64,6 @@ Phase 1 — Git Core.
 
 ## Next steps
 
-1. Merge the final release-record pull request after `build`, `quality`, and `dependency-review` pass.
-2. Publish the annotated tag, source archive, checksum, and release notes.
+1. Create the annotated `v0.1.0` tag and verify the tag-triggered artifact workflow.
+2. Publish the GitHub release with its source archive, SHA-256 checksum, and release notes.
+3. Record the published release and begin Phase 2 planning.
