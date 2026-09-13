@@ -28,6 +28,8 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ env.RELEASE_TAG }}
+      - name: Trust the container workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Install build dependencies
         run: >-
           pacman --noconfirm -S --needed cmake ninja qt6-base kcoreaddons ki18n gettext clang
