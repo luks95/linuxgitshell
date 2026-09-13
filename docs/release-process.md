@@ -20,19 +20,24 @@ but it does not create tags or publish a GitHub release automatically.
 Start from a clean checkout of the release commit and use a fresh out-of-source directory:
 
 ```bash
-cmake -S . -B build-release -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B build-release -G Ninja -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX=/usr
 cmake --build build-release -j2
 ctest --test-dir build-release --output-on-failure
-DESTDIR="$PWD/build-release/stage" cmake --install build-release --prefix /usr
+DESTDIR="$PWD/build-release/stage" cmake --install build-release
 cmake --build build-release --target format-check
 cmake --build build-release --target check-secrets
 QT_QPA_PLATFORM=offscreen ./build-release/linuxgitshell --version
 ```
 
-Confirm that the staged installation contains `usr/bin/linuxgitshell` and the Spanish catalog under
-`usr/share/locale/es/LC_MESSAGES`. The printed version must be `linuxgitshell X.Y.Z`. Also complete
-`docs/manual-smoke-test.md` in KDE Plasma 6 Wayland and record the tested commit and environment.
-Do not release if a required check fails or the worktree is dirty.
+Confirm that the staged installation contains `usr/bin/linuxgitshell`, the Spanish catalog under
+`usr/share/locale/es/LC_MESSAGES`, and, for releases containing the Dolphin integration,
+`usr/lib/qt6/plugins/kf6/kfileitemaction/linuxgitshell_fileitemaction.so`. The install prefix must be
+set during configuration because ECM calculates the plugin directory at that point. The printed
+version must be `linuxgitshell X.Y.Z`. Complete `docs/manual-smoke-test.md` in KDE Plasma 6 Wayland
+and, for releases containing the Dolphin integration, the manual checklist in
+`docs/dolphin-context-menu.md`. Record the tested commit and environment. Do not release if a
+required check fails or the worktree is dirty.
 
 ## Tag and build artifacts
 

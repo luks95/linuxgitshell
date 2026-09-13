@@ -10,10 +10,15 @@ Este roadmap deriva de la [especificación maestra](LinuxGitShell-Codex.md). La 
 - [x] Plataforma inicial definida: Manjaro/Arch Linux, KDE Plasma 6 y Dolphin.
 - [x] Stack inicial definido: C++20, Qt 6, KDE Frameworks 6, CMake, Git CLI y D-Bus.
 - [x] Bootstrap compilable del proyecto.
-- [ ] Comunidad, licencia y procesos de contribución formalizados; falta publicar los canales responsables.
+- [x] Comunidad, licencia y procesos de contribución formalizados con canales públicos y privados.
 - [x] Primera versión publicada: [`v0.1.0`](https://github.com/luks95/linuxgitshell/releases/tag/v0.1.0).
 
 **Fase actual:** Fase 2 — Menú contextual de Dolphin (`v0.2.0`, parte 1).
+
+**Último incremento:** plugin mínimo fusionado en
+[#9](https://github.com/luks95/linuxgitshell/pull/9); diseño del contexto no bloqueante en
+[`docs/repository-context-cache.md`](docs/repository-context-cache.md), seguido por
+[#10](https://github.com/luks95/linuxgitshell/issues/10).
 
 ## Cómo utilizar este documento
 
@@ -69,7 +74,7 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 - [x] Revisar compatibilidad de licencia de Qt, KDE Frameworks y cada dependencia incorporada.
 - [x] Definir política de encabezados SPDX para código y recursos.
 - [x] Crear `CONTRIBUTING.md` con build, tests, estilo, traducciones, issues y pull requests.
-- [ ] Crear `CODE_OF_CONDUCT.md` y un procedimiento de aplicación con contacto responsable.
+- [x] Crear `CODE_OF_CONDUCT.md` y un procedimiento de aplicación con contacto responsable.
 - [x] Crear `SECURITY.md` con versiones soportadas y canal privado para reportes sensibles.
 - [x] Crear `GOVERNANCE.md` con roles, toma de decisiones y proceso para nuevos maintainers.
 - [x] Crear `CHANGELOG.md` basado en cambios orientados al usuario.
@@ -215,10 +220,13 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 - [ ] Abrir Settings y demás ventanas como aplicaciones externas con contexto de repositorio.
 - [x] Evitar cualquier status síncrono pesado en el proceso de Dolphin.
 - [x] Añadir logging diagnóstico para carga del plugin sin registrar rutas sensibles por defecto.
+- [x] Diseñar un cache de contexto asíncrono que soporte `.git` como archivo/directorio y repos bare,
+  con fallback frío, límites, invalidación y presupuesto de latencia ([#10](https://github.com/luks95/linuxgitshell/issues/10)).
 
 ## Verificación
 
-- [ ] Documentar instalación de desarrollo y del sistema.
+- [x] Documentar instalación de desarrollo y layout de sistema mediante `DESTDIR`; el paquete del
+  sistema sigue diferido a la fase de packaging.
 - [x] Documentar desinstalación limpia y recarga/reinicio de Dolphin.
 - [ ] Verificar menú sobre raíz, subcarpeta, archivo, multiselección y fuera de repo.
 - [ ] Verificar que un error o cierre de LinuxGitShell no derriba Dolphin.
@@ -871,6 +879,6 @@ El orden de estas tareas se decidirá con uso real, métricas e interés comunit
 
 ## Próxima tarea recomendada
 
-Instalar el plugin de desarrollo en una sesión aislada, completar el checklist manual con Dolphin y
-definir el resolvedor asíncrono de contexto que permitirá ofrecer acciones según el repositorio sin
-ejecutar Git ni bloquear el proceso de Dolphin.
+Completar el checklist interactivo del plugin en Dolphin/Wayland e implementar el cliente de
+snapshots y servicio de contexto definidos en `docs/repository-context-cache.md`, sin ejecutar Git,
+recorrer el filesystem ni esperar IPC dentro del proceso de Dolphin.

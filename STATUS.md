@@ -64,19 +64,27 @@ Phase 2 — Dolphin context menu.
   exact transfer of a path containing spaces, Unicode, and a newline to an isolated launch helper.
 - Development install/removal guidance, a staged `/usr` layout check, and a Dolphin manual-test
   checklist for the first context-menu increment.
+- Phase 2 plugin merged by [PR #9](https://github.com/luks95/linuxgitshell/pull/9), closing issue #8;
+  the final `main` CI run passed its build, 11 tests, Clang/`clang-tidy`, formatting, and secret checks.
+- Repository-local development installation verified with the expected binary, plugin, and Spanish
+  catalog, followed by an isolated offscreen Dolphin startup with temporary D-Bus/XDG state.
 
 ## In progress
 
-- Verify the development install in a real Dolphin session and design the asynchronous repository
-  context boundary needed for repository-aware actions.
+- Complete interactive Dolphin verification and implement the proposed asynchronous repository
+  context cache tracked by [issue #10](https://github.com/luks95/linuxgitshell/issues/10).
 
 ## Known issues
 
 - Mutating user-facing Git operations are not implemented yet.
 - Repository-aware Dolphin actions, overlays, daemon, and D-Bus are not implemented.
+- The plugin has automated factory/loading coverage and an isolated Dolphin startup, but its manual
+  right-click checklist has not yet been completed in a native interactive session.
 
 ## Next steps
 
 1. Run the documented checklist with the development plugin loaded by Dolphin on Plasma Wayland.
-2. Define an asynchronous context resolver that keeps repository discovery and Git outside Dolphin.
-3. Add repository-aware actions incrementally, including multi-selection and bare-repository rules.
+2. Implement the bounded warm/cold snapshot design in `docs/repository-context-cache.md` without
+   filesystem discovery or synchronous IPC in Dolphin.
+3. Use the resulting context to add repository-aware actions incrementally, including
+   multi-selection and bare-repository rules.

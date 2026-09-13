@@ -1,7 +1,9 @@
-# Manual application smoke test
+# Manual Application Smoke Test
 
 Use this checklist on a supported KDE Plasma 6 Wayland session after the automated tests pass.
 The test repositories must be disposable; never use a contributor's personal repository.
+This file covers the standalone inspector. The Dolphin plugin has a separate checklist in
+[`dolphin-context-menu.md`](dolphin-context-menu.md).
 
 ## Preparation
 
@@ -48,3 +50,7 @@ Wayland session on Manjaro with Qt 6.11.2 and KDE Frameworks 6.29.0.
 
 Temporary repositories, logs, staged installation files, and screenshots were removed after the
 verification.
+
+This record applies to the immutable `v0.1.0` candidate. On 2026-09-13, Phase 2 `main` additionally
+passed 11 automated tests, a clean development-prefix install, and an isolated offscreen Dolphin
+startup. Interactive context-menu verification remains pending and is not implied by this record.

@@ -3,6 +3,11 @@
 The daemon API is not implemented yet. When introduced, its well-known bus name and top-level
 interfaces will carry a major version, initially `org.linuxgitshell.Daemon1`.
 
+The proposed repository-context cache in
+[`repository-context-cache.md`](repository-context-cache.md) is the first planned consumer boundary.
+The Dolphin plugin must use asynchronous requests and a local snapshot; it may not turn a D-Bus
+timeout into a synchronous pause while constructing a context menu.
+
 - Compatible methods, signals, properties, and optional fields may be added within a major version.
 - Existing meanings, required fields, types, and error semantics must not change incompatibly.
 - Clients must ignore unknown optional data and handle unavailable methods, timeout, restart, and

@@ -7,11 +7,15 @@ After changing visible strings, regenerate or merge the catalog with standard Ge
 the translations manually, then build and test:
 
 ```bash
-xgettext --from-code=UTF-8 --keyword=i18n --language=C++ \
-  --package-name=LinuxGitShell -o po/linuxgitshell.pot gui/app/*.cpp
+xgettext --from-code=UTF-8 --language=C++ --package-name=LinuxGitShell \
+  --keyword=i18n --keyword=i18nd:2 \
+  -o po/linuxgitshell.pot gui/app/*.cpp integrations/dolphin/contextmenu/*.cpp
 msgmerge --update po/es/linuxgitshell.po po/linuxgitshell.pot
 cmake --build build -j
+ctest --test-dir build --output-on-failure
 ```
 
 Do not build sentences by concatenating translated fragments. Add translator context when meaning is
 ambiguous and check layouts with longer strings.
+Plugin strings use the explicit `linuxgitshell` domain because Dolphin owns the host process. The
+translation test must cover new plugin strings as well as application strings.

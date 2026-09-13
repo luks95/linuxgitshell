@@ -1,6 +1,8 @@
 # Governance
 
-LinuxGitShell currently uses a maintainer-led model suitable for its bootstrap phase.
+LinuxGitShell currently uses a maintainer-led model suitable for its early development phases. The
+public repository is maintained through the [`luks95/linuxgitshell`](https://github.com/luks95/linuxgitshell)
+project; additional maintainers and area owners will be documented here when appointed.
 
 ## Roles
 
@@ -27,5 +29,6 @@ understanding of the project's safety and architecture rules. Existing uninvolve
 the appointment by consensus. A maintainer may step down at any time or be removed for prolonged
 inactivity, policy violations, or loss of trust through the same documented process.
 
-The project will publish the initial maintainer list and recovery procedure when it moves to a public
-forge.
+The current repository owner, `@luks95`, is the initial maintainer. Repository recovery relies on
+protected `main`, immutable release tags and artifacts, mandatory CI, and the documented release
+process. Additional maintainers should receive the minimum forge permissions needed for their role.

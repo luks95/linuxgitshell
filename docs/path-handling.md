@@ -21,3 +21,8 @@ The integration tests also cover directory and file symlinks and a worktree whos
 to a separate Git directory. They use temporary repositories and require no privileged mounts.
 Performance and watcher behavior on external and network mounts remain separate later-phase work;
 see the overlays and daemon phases in the roadmap.
+
+For Dolphin, a `.git` directory, a `.git` indirection file, or a bare-repository layout may be a
+useful cache invalidation signal, but the synchronous plugin callback must not walk parents or parse
+metadata to establish repository identity. The proposed asynchronous boundary and its cold-cache
+fallback are documented in [`repository-context-cache.md`](repository-context-cache.md).

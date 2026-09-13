@@ -8,11 +8,35 @@ context-menu plugin on the development branch: a single local item can open the 
 LinuxGitShell application. Repository-aware actions and mutating Git workflows are not available
 yet.
 
-See [LinuxGitShell-Codex.md](LinuxGitShell-Codex.md) for the product specification and [roadmap-checklist.md](roadmap-checklist.md) for the implementation plan.
+## Current status
+
+| Capability | State |
+| --- | --- |
+| Git process runner, repository discovery, status, and config inspection | Released in `v0.1.0` |
+| Read-only Qt/KF6 repository inspector | Released in `v0.1.0` |
+| Minimal Dolphin action for one local selection | Available on `main`, unreleased |
+| Repository-aware menus and context cache | Designed; implementation tracked by [#10](https://github.com/luks95/linuxgitshell/issues/10) |
+| Overlays, daemon/D-Bus, and mutating Git workflows | Not implemented |
+
+See [`STATUS.md`](STATUS.md) for verification evidence and the exact next steps.
+
+## Documentation map
+
+- Development: [environment](docs/development-environment.md),
+  [Dolphin plugin](docs/dolphin-context-menu.md),
+  [repository-context cache](docs/repository-context-cache.md),
+  [path handling](docs/path-handling.md), and [translations](docs/translations.md).
+- Verification and delivery: [application smoke test](docs/manual-smoke-test.md),
+  [release process](docs/release-process.md), and [release notes](docs/releases/v0.1.0.md).
+- Architecture and policy: [master specification](LinuxGitShell-Codex.md),
+  [roadmap](roadmap-checklist.md), [D-Bus compatibility](docs/dbus-api-policy.md),
+  [licensing](docs/licensing.md), and [project management](docs/project-management.md).
+- Community: [contributing](CONTRIBUTING.md), [support](SUPPORT.md), [security](SECURITY.md),
+  [governance](GOVERNANCE.md), and [code of conduct](CODE_OF_CONDUCT.md).
 
 ## Current requirements
 
-The bootstrap has been validated with:
+The current development branch has been validated with:
 
 - C++20 compiler (GCC 16.2.1)
 - CMake 4.4.3
@@ -44,6 +68,9 @@ cmake --build build -j
 ctest --test-dir build --output-on-failure
 ```
 
+The current suite registers 11 tests, including plugin metadata/factory loading, selection policy,
+unusual-path process transfer, and Spanish translations.
+
 Check formatting before submitting C++ changes:
 
 ```bash
@@ -63,6 +90,8 @@ tree summary, configuration values and origins, and diagnostic Git output when i
 Use [docs/manual-smoke-test.md](docs/manual-smoke-test.md) for the KDE/Wayland verification checklist.
 Repository discovery behavior for symlinks, mount boundaries, long paths, and case sensitivity is
 documented in [docs/path-handling.md](docs/path-handling.md).
+The proposed non-blocking path-to-repository cache is documented in
+[docs/repository-context-cache.md](docs/repository-context-cache.md).
 
 Maintainers preparing a tagged version should follow
 [docs/release-process.md](docs/release-process.md). Notes for the first development release are in
@@ -74,10 +103,11 @@ Use a disposable user prefix while developing. Configure the prefix up front so 
 matching plugin directory:
 
 ```bash
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug \
+cmake -S . -B build-dolphin -G Ninja -DCMAKE_BUILD_TYPE=Debug \
   -DCMAKE_INSTALL_PREFIX="$PWD/install"
-cmake --build build -j
-cmake --install build
+cmake --build build-dolphin -j
+ctest --test-dir build-dolphin --output-on-failure
+cmake --install build-dolphin
 ./install/bin/linuxgitshell
 ```
 
@@ -85,6 +115,10 @@ The Dolphin plugin needs the development environment described in
 [docs/dolphin-context-menu.md](docs/dolphin-context-menu.md). Remove the local installation by
 deleting only the repository's `install/` directory. A system-wide installation is not required for
 the development loop.
+
+For release-layout verification, configure a separate build with `-DCMAKE_INSTALL_PREFIX=/usr` and
+install it below a `DESTDIR`; do not copy development files into `/usr` manually. Distribution
+packaging is not available yet.
 
 ## Contributing and license
 

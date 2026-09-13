@@ -7,6 +7,7 @@ series but do not yet promise production support or a long-term maintenance wind
 
 | Version | Private security reports |
 | --- | --- |
+| `main` / unreleased `0.2.0` work | Accepted on a best-effort basis |
 | `0.1.x` | Accepted |
 | Older versions | Not supported |
 

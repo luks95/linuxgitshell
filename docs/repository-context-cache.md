@@ -1,0 +1,105 @@
+# Repository Context Cache Design
+
+Status: proposed for Phase 2; tracked by
+[`#10`](https://github.com/luks95/linuxgitshell/issues/10). This document defines the boundary for
+the next implementation increment. It does not describe functionality already available on `main`.
+
+## Problem and constraints
+
+Dolphin calls `KAbstractFileItemActionPlugin::actions()` synchronously while constructing a context
+menu. A Git command, recursive scan, network access, slow filesystem lookup, or blocking D-Bus call
+in that method can freeze Dolphin. Repository-aware actions therefore need a local snapshot that is
+already available when the menu opens.
+
+The repository identity cannot be inferred by assuming that `.git` is always a directory:
+
+- normal repositories normally have a `.git` directory;
+- linked worktrees and submodules normally have a `.git` file pointing elsewhere;
+- bare repositories have no normal working tree or nested `.git` marker;
+- symlinks, separate Git directories, mount points, and deleted or moved paths complicate identity.
+
+The existing asynchronous `RepositoryDiscovery` and Git's `rev-parse` output remain the source of
+truth. The Dolphin plugin must not parse `.git` files or execute Git itself.
+
+## Proposed boundary
+
+An external session service owns repository discovery and the authoritative cache. The implementation
+may begin as a focused context service, but its models and protocol must be reusable by the Phase 4
+daemon and versioned D-Bus API.
+
+The plugin owns only a bounded in-process snapshot client:
+
+1. `actions()` validates selection count and local URLs using data already supplied by KIO.
+2. It performs an in-memory lookup without filesystem or IPC access.
+3. A warm entry produces only actions valid for that snapshot.
+4. A cold or stale entry produces the safe generic `Open with LinuxGitShell` action and schedules an
+   asynchronous lookup after `actions()` returns.
+5. The service runs `RepositoryDiscovery` outside Dolphin and replies asynchronously.
+6. The client stores the snapshot; a later menu opening can use repository-aware actions.
+
+No synchronous D-Bus fallback is allowed, even with a short timeout. Service absence, restart, or a
+cold cache must degrade to the generic action without blocking or crashing Dolphin.
+
+## Snapshot model
+
+A repository-context snapshot should contain only the fields required to decide menu availability:
+
+- normalized requested-path key and repository membership;
+- repository root and type: normal, bare, linked worktree, or submodule;
+- whether the selected path is the repository root;
+- operations in progress;
+- whether a remote and upstream exist;
+- generation and monotonic freshness timestamps;
+- a typed unavailable, outside-repository, or discovery-error state.
+
+The original selected path remains the argument passed to an external application. Normalized and
+canonical paths are cache keys, not replacements for the user's selection.
+
+For multiple selections, repository-specific actions appear only when every item has a warm snapshot
+and all snapshots identify the same compatible repository. Otherwise the plugin returns only a safe
+fallback or no action according to the selection policy and starts asynchronous refreshes.
+
+## Bounds and invalidation
+
+Initial implementation targets, subject to measurement, are:
+
+- at most 512 repository records and 4,096 path aliases per user session;
+- least-recently-used eviction after the bounds are reached;
+- five-minute freshness for positive path-to-repository mappings;
+- 30-second freshness for outside-repository and transient-error entries;
+- immediate invalidation after a LinuxGitShell operation changes known repository identity;
+- invalidation after watched Git metadata or relevant parent paths move, disappear, or change;
+- full client snapshot invalidation when the service generation changes after restart.
+
+`.git` directory or file changes are useful invalidation signals, but never the only repository
+identity source. Bare repositories and indirection through `.git` files must always be resolved by
+the external Git-backed service.
+
+## Privacy and diagnostics
+
+Cache and service logs report counts, durations, generations, result types, and error categories.
+They do not log selected paths, repository contents, remotes, Git output, or environment variables by
+default. Opt-in diagnostics must reuse the existing sanitization rules.
+
+## Performance target
+
+The synchronous `actions()` path should have a local p95 below 2 ms for both warm and cold snapshots
+on the supported workstation. It must perform no application-directed filesystem or IPC wait. CI
+will test behavior deterministically; native measurements will record p50, p95, and maximum latency
+before repository-aware actions are enabled by default.
+
+## Verification plan
+
+Automated coverage must include:
+
+- normal repositories with a `.git` directory;
+- linked worktrees and submodules with a `.git` file;
+- bare and outside-repository paths;
+- files, directories, symlinks, spaces, Unicode, and newlines;
+- warm, cold, expired, evicted, invalidated, and service-restart snapshots;
+- mixed and same-repository multiple selections;
+- unavailable or slow service behavior without blocking the plugin;
+- a test proving `actions()` performs no Git or filesystem discovery.
+
+Native Dolphin verification must cover the same visible policies and confirm responsiveness on local,
+large, external, and deliberately slow locations before the Phase 2 exit criteria are marked complete.

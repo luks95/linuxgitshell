@@ -1,6 +1,8 @@
 # Development Environment
 
-This snapshot records the environment used for the initial bootstrap on 2026-09-09. It is evidence of a working development setup, not the final support matrix.
+This snapshot records the environment first inspected on 2026-09-09 and updated for the Phase 2
+Dolphin work on 2026-09-13. It is evidence of a working development setup, not the final support
+matrix.
 
 ## Platform
 
@@ -12,11 +14,11 @@ This snapshot records the environment used for the initial bootstrap on 2026-09-
 | Dolphin | 26.08.0-5 |
 | Qt (`qt6-base`) | 6.11.2-3 |
 | KDE Frameworks | 6.29.0 |
-| LinuxGitShell | 0.0.1 bootstrap |
+| LinuxGitShell | `v0.1.0` released; Phase 2 development on `main` |
 
 ## Toolchain and packages
 
-| Package/tool | Detected version | Bootstrap role |
+| Package/tool | Detected version | Current role |
 | --- | --- | --- |
 | GCC | 16.2.1 | C++20 compiler |
 | CMake | 4.4.3 | Configure and generate |
@@ -50,5 +52,6 @@ pacman -Q extra-cmake-modules kcoreaddons ki18n kconfig kio kxmlgui
 pacman -Q gettext cmake git gcc ninja clang
 ```
 
-No system packages were installed or modified during bootstrap. Phase 2 added only the verified
-`extra-cmake-modules` build dependency.
+No system packages were installed or modified during the initial bootstrap. Phase 2 added only the
+verified `extra-cmake-modules` build dependency. The current suite builds and passes 11 CTest tests,
+including two Dolphin plugin tests, on this environment and in the hosted Arch Linux CI container.

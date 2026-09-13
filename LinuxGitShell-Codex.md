@@ -2,6 +2,14 @@
 
 > **Objetivo:** desarrollar para la comunidad Linux una integración gráfica de Git inspirada en la experiencia de TortoiseGit, comenzando por **KDE Plasma 6 + Dolphin** en **Manjaro/Arch Linux**, con la mayor cantidad posible de operaciones Git accesibles mediante interfaz gráfica, menú contextual, iconos de estado, historial visual, diff, resolución de conflictos, ramas, rebase, stash, reflog, submódulos, worktrees y configuración completa.
 
+> **Estado al 2026-09-13:** Fases 0 y 1 completadas; `v0.1.0` publicada. La Fase 2 está en curso y
+> ya incluye el primer plugin KF6 de Dolphin para abrir una selección local en la aplicación externa.
+> El contexto de repositorio no bloqueante está diseñado en
+> [`docs/repository-context-cache.md`](docs/repository-context-cache.md) y su implementación se sigue
+> en [#10](https://github.com/luks95/linuxgitshell/issues/10). `STATUS.md` y
+> `roadmap-checklist.md` son las fuentes de verdad para el progreso, mientras este documento conserva
+> el alcance completo del producto.
+
 ---
 
 ## 1. Instrucción principal para Codex
@@ -64,10 +72,10 @@ linuxgitshell-daemon
 linuxgitshell-settings
 ```
 
-Nombre D-Bus sugerido:
+Nombre D-Bus versionado sugerido:
 
 ```text
-org.linuxgitshell.Daemon
+org.linuxgitshell.Daemon1
 ```
 
 Mantener el nombre desacoplado internamente para poder cambiar el branding más adelante.
@@ -153,9 +161,11 @@ No meter toda la lógica Git, ventanas, cache, watchers y operaciones dentro del
 
 ---
 
-# 5. Estructura inicial del repositorio
+# 5. Estructura del repositorio
 
-Crear o evolucionar hacia una estructura similar a:
+La implementación actual ya contiene `libs/gitcore/`, `gui/app/`,
+`integrations/dolphin/contextmenu/`, `tests/`, `cmake/` y `po/`. Evolucionar hacia una estructura
+similar a la siguiente solo al añadir implementaciones reales; no crear directorios vacíos:
 
 ```text
 linux-git-shell/
@@ -2166,7 +2176,7 @@ No mezclar esto con el backend Git básico.
 
 # 61. Fases de implementación
 
-## Fase 0 — Bootstrap
+## Fase 0 — Bootstrap (completada)
 
 Objetivo:
 
@@ -2187,7 +2197,7 @@ unit test runner works
 
 ---
 
-## Fase 1 — Git Core
+## Fase 1 — Git Core (completada en `v0.1.0`)
 
 Implementar:
 
@@ -2208,7 +2218,11 @@ Criterios:
 
 ---
 
-## Fase 2 — Dolphin Context Menu MVP
+## Fase 2 — Dolphin Context Menu MVP (en curso)
+
+Primer incremento completado: plugin KF6 pequeño, una acción traducible para una selección local,
+lanzamiento externo sin shell, instalación de desarrollo y 11 tests totales. Pendiente: resolver el
+contexto por snapshots/cache sin bloquear Dolphin y habilitar las acciones específicas siguientes.
 
 Implementar:
 
@@ -2978,15 +2992,21 @@ how to submit PRs
 
 # 93. GitHub CI
 
-Cuando el bootstrap sea estable, agregar CI al menos para:
+El repositorio público ya ejecuta CI obligatorio para:
 
 ```text
 configure
 build
 unit tests
+plugin loading tests
+clang-tidy
+formatting
+secret patterns
+dependency review
 ```
 
-No intentar probar Dolphin GUI completo en CI desde el primer día.
+La GUI completa de Dolphin permanece en el checklist manual; CI prueba el módulo real mediante
+`KPluginFactory` y el límite seguro de procesos sin depender de una sesión gráfica interactiva.
 
 Separar tests core de integration GUI.
 
@@ -3042,7 +3062,11 @@ Nautilus/Nemo/Thunar
 
 ---
 
-# 95. Primera tarea concreta para Codex
+# 95. Primera tarea histórica para Codex (completada)
+
+Esta sección conserva el encargo con el que comenzó el repositorio. Sus resultados fueron publicados
+en `v0.1.0`; no representa la próxima tarea actual. Consultar `STATUS.md` y la sección final de
+`roadmap-checklist.md` para continuar.
 
 Al comenzar desde un repositorio vacío o casi vacío, realizar **solo esta primera tarea**:
 
@@ -3079,7 +3103,8 @@ Preparar el bootstrap técnico de LinuxGitShell para Manjaro KDE Plasma 6.
 13. Crear `STATUS.md`.
 14. Compilar.
 15. Ejecutar tests.
-16. No avanzar todavía a overlays ni plugin de Dolphin hasta que esta base esté estable.
+16. No avanzar todavía a overlays ni plugin de Dolphin hasta que esta base esté estable. Esta
+    condición ya se cumplió antes de iniciar la Fase 2.
 
 ## Resultado esperado
 

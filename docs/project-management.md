@@ -2,14 +2,14 @@
 
 ## Labels
 
-The public forge should begin with these labels:
+The public GitHub repository currently provides these project labels:
 
 | Label | Purpose |
 | --- | --- |
 | `bug` | Reproducible incorrect behavior |
-| `feature` | User-facing capability or enhancement |
+| `feature` / `enhancement` | User-facing capability or enhancement |
 | `design` | Architecture or compatibility proposal |
-| `docs` | Documentation-only work |
+| `docs` / `documentation` | Documentation-only work |
 | `good first issue` | Small task with clear guidance and acceptance criteria |
 | `help wanted` | Maintainer-approved task open to community help |
 | `security` | Non-sensitive tracking after private triage |
@@ -20,8 +20,9 @@ The public forge should begin with these labels:
 
 ## Milestones
 
-Create forge milestones for `v0.1.0` through `v1.0.0` using the version-to-phase mapping in
-`roadmap-checklist.md`. Versions are planning targets, not promised dates.
+Milestones `v0.1.0` through `v1.0.0` exist using the version-to-phase mapping in
+`roadmap-checklist.md`. The `v0.1.0` milestone is closed; `v0.2.0` is active. Versions are planning
+targets, not promised dates.
 
 ## Triage
 
@@ -35,6 +36,6 @@ closed only after its current relevance is reviewed and a contributor is told ho
 
 ## Repository configuration
 
-After publication, require pull requests and passing CI on the default branch, prohibit force-push,
-enable dependency/security alerts, publish the support channel, and link the roadmap milestones. Keep
-the maintainer and area-owner list in `GOVERNANCE.md` current.
+The repository is public with protected `main`, required pull-request CI, force-push protection,
+dependency and secret alerts, private vulnerability reporting, Discussions, and roadmap milestones.
+Keep these controls enabled and keep the maintainer and area-owner list in `GOVERNANCE.md` current.
