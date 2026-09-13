@@ -11,9 +11,9 @@ Este roadmap deriva de la [especificación maestra](LinuxGitShell-Codex.md). La 
 - [x] Stack inicial definido: C++20, Qt 6, KDE Frameworks 6, CMake, Git CLI y D-Bus.
 - [x] Bootstrap compilable del proyecto.
 - [ ] Comunidad, licencia y procesos de contribución formalizados; falta publicar los canales responsables.
-- [ ] Primera versión publicada.
+- [x] Primera versión publicada: [`v0.1.0`](https://github.com/luks95/linuxgitshell/releases/tag/v0.1.0).
 
-**Fase actual:** Fase 1 — Git Core (`v0.1.0`).
+**Fase actual:** Fase 2 — Menú contextual de Dolphin (`v0.2.0`, parte 1).
 
 ## Cómo utilizar este documento
 
@@ -196,7 +196,8 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 - [x] El parser está cubierto por unit e integration tests.
 - [x] Todos los jobs obligatorios de CI pasan.
 - [x] `STATUS.md` y `CHANGELOG.md` reflejan el estado real.
-- [ ] Se etiqueta y publica `v0.1.0` con notas y checksums.
+- [x] Se etiqueta y publica [`v0.1.0`](https://github.com/luks95/linuxgitshell/releases/tag/v0.1.0)
+  con notas y checksums verificados.
 
 ---
 
