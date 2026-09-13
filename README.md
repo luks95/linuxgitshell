@@ -1,6 +1,10 @@
 # LinuxGitShell
 
-LinuxGitShell aims to provide a native, graphical Git experience for Linux, starting with KDE Plasma 6 and Dolphin on Manjaro/Arch Linux. The project is currently building its Git Core; the application can inspect a repository asynchronously and show its root, branch, status summary, and read-only configuration. Dolphin integration and mutating Git workflows are not available yet.
+LinuxGitShell aims to provide a native, graphical Git experience for Linux, starting with KDE
+Plasma 6 and Dolphin on Manjaro/Arch Linux. The public
+[`v0.1.0`](https://github.com/luks95/linuxgitshell/releases/tag/v0.1.0) release provides the tested
+Git Core and a read-only repository inspector. Phase 2 is preparing the Dolphin context-menu
+integration; Dolphin actions and mutating Git workflows are not available yet.
 
 See [LinuxGitShell-Codex.md](LinuxGitShell-Codex.md) for the product specification and [roadmap-checklist.md](roadmap-checklist.md) for the implementation plan.
 
@@ -22,7 +26,11 @@ On Manjaro/Arch, verify installed packages before changing the system:
 pacman -Q qt6-base kcoreaddons ki18n gettext cmake gcc ninja
 ```
 
-`extra-cmake-modules` 6.29.0 is available in the repositories but is not installed in the validated environment. The current bootstrap does not require it; later KDE integration is expected to use it.
+`extra-cmake-modules` 6.29.0 is available in the repositories but is not installed in the validated
+environment. The released application does not require it; the Phase 2 Dolphin plugin will require
+it for standard KDE build and installation paths. See
+[docs/dolphin-context-menu.md](docs/dolphin-context-menu.md) for the verified API and dependency
+plan.
 
 The complete environment snapshot is recorded in [docs/development-environment.md](docs/development-environment.md).
 
@@ -55,8 +63,8 @@ Repository discovery behavior for symlinks, mount boundaries, long paths, and ca
 documented in [docs/path-handling.md](docs/path-handling.md).
 
 Maintainers preparing a tagged version should follow
-[docs/release-process.md](docs/release-process.md). Draft notes for the first development release are
-in [docs/releases/v0.1.0.md](docs/releases/v0.1.0.md).
+[docs/release-process.md](docs/release-process.md). Notes for the first development release are in
+[docs/releases/v0.1.0.md](docs/releases/v0.1.0.md).
 
 ## Local installation and removal
 

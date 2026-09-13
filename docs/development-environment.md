@@ -32,7 +32,11 @@ This snapshot records the environment used for the initial bootstrap on 2026-09-
 | `kio` | 6.29.0-2 | Planned KDE/Dolphin integration |
 | `kxmlgui` | 6.29.0-1 | Planned KDE UI integration |
 
-`extra-cmake-modules` is not installed. `pacman` reports version 6.29.0-1 in the configured repositories. Direct KF6 CMake package files are sufficient for the current bootstrap; ECM will be reassessed before Dolphin integration and translation catalog generation.
+`extra-cmake-modules` is not installed. `pacman` reports version 6.29.0-1 in the configured
+repositories. Direct KF6 CMake package files are sufficient for the released application, but the
+Phase 2 Dolphin plugin requires ECM's `KDEInstallDirs6` and `KDECMakeSettings` modules for the
+standard `kf6/kfileitemaction` build and installation layout. The API assessment is recorded in
+[dolphin-context-menu.md](dolphin-context-menu.md).
 
 The repository CI definition uses an up-to-date Arch Linux container. Unlike this Manjaro workstation,
 that container installs declared dependencies into a clean image and uses a fixed job configuration;
