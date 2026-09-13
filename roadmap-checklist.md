@@ -205,7 +205,7 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 
 ## Implementación
 
-- [ ] Investigar y documentar la API KF6 vigente para plugins de Dolphin.
+- [x] Investigar y documentar la API KF6 vigente para plugins de Dolphin.
 - [ ] Crear un plugin pequeño que delegue acciones al core o a procesos externos de LinuxGitShell.
 - [ ] Detectar selección de archivo/carpeta, raíz y pertenencia a repositorio.
 - [ ] Limitar acciones cuando la selección atraviesa repositorios diferentes.
@@ -871,4 +871,6 @@ El orden de estas tareas se decidirá con uso real, métricas e interés comunit
 
 ## Próxima tarea recomendada
 
-Ejecutar únicamente la **Fase 0.3 y 0.4**: inspeccionar el entorno real, crear el bootstrap CMake/Qt/KF6, una aplicación mínima, el primer test y `STATUS.md`. No iniciar todavía plugins de Dolphin, overlays ni daemon.
+Instalar la dependencia verificada `extra-cmake-modules` 6.29.0-1 y crear el plugin mínimo de Fase 2:
+una acción traducible para una única selección local que abra `linuxgitshell` como proceso externo,
+sin ejecutar Git ni bloquear el proceso de Dolphin.

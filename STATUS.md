@@ -55,10 +55,12 @@ Phase 2 — Dolphin context menu.
 - GitHub topics, documentation link, Discussions, private vulnerability reporting, dependency and
   secret alerts, push protection, web commit sign-off, and protected-branch rules configured for the
   public repository.
+- KF6 Dolphin context-menu API and dependency plan validated against Dolphin 26.08.0 and KIO 6.29.0,
+  including the synchronous plugin boundary and standard `kf6/kfileitemaction` installation path.
 
 ## In progress
 
-- Plan the thin Dolphin context-menu adapter for Phase 2 without moving Git execution or application
+- Prepare the first thin Dolphin context-menu adapter without moving Git execution or application
   windows into Dolphin's process.
 
 ## Known issues
@@ -69,7 +71,7 @@ Phase 2 — Dolphin context menu.
 
 ## Next steps
 
-1. Research and document the current KF6/Dolphin plugin API and installed development dependencies.
-2. Define the adapter-to-core/application boundary and the first read-only context actions.
-3. Add the minimal plugin target, automated coverage where practical, and a Dolphin manual-test
+1. Install the verified `extra-cmake-modules` 6.29.0-1 build dependency.
+2. Add the minimal external-launch plugin target and unit-test its local single-selection policy.
+3. Verify development installation, loading, and clean removal with a Dolphin manual-test
    checklist without introducing synchronous Git work in Dolphin.
