@@ -16,14 +16,14 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/dependency-review-action@v4
 
   build:
     runs-on: ubuntu-latest
     container: archlinux:base-devel
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install build dependencies
         run: >-
           pacman --noconfirm -Syu cmake ninja qt6-base kcoreaddons ki18n gettext git
@@ -36,7 +36,7 @@ jobs:
         run: ctest --test-dir build --output-on-failure
       - name: Preserve test logs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-logs
           path: build/Testing/Temporary/
@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     container: archlinux:base-devel
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install quality dependencies
         run: >-
           pacman --noconfirm -Syu cmake ninja qt6-base kcoreaddons ki18n gettext clang git
