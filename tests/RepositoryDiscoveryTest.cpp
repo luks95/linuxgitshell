@@ -98,8 +98,12 @@ class RepositoryDiscoveryTest final : public QObject
     void reportsPathOutsideRepository();
     void discoversNormalRepositoryFromNestedFile();
     void discoversRepositoryThroughDirectorySymlink();
+    void discoversRepositoryThroughFileSymlink();
+    void discoversRepositoryFromLongPath();
+    void preservesCaseSensitiveRepositoryIdentity();
     void discoversBareRepository();
     void discoversLinkedWorktree();
+    void discoversWorkTreeWithSeparateGitDirectory();
     void discoversSubmodule();
     void discoversBranchUpstreamDivergenceAndRemotes();
     void discoversDetachedHead();
@@ -208,6 +212,92 @@ void RepositoryDiscoveryTest::discoversRepositoryThroughDirectorySymlink()
     QCOMPARE(repository.repositoryRoot, QDir::cleanPath(repositoryPath));
 }
 
+void RepositoryDiscoveryTest::discoversRepositoryThroughFileSymlink()
+{
+    QTemporaryDir temporaryDirectory;
+    QVERIFY(temporaryDirectory.isValid());
+    const QString repositoryPath = temporaryDirectory.filePath(QStringLiteral("repository"));
+    const QString nestedPath = QDir(repositoryPath).filePath(QStringLiteral("nested"));
+    const QString targetPath = QDir(nestedPath).filePath(QStringLiteral("target.txt"));
+    const QString symlinkPath = temporaryDirectory.filePath(QStringLiteral("target-link.txt"));
+    QVERIFY(QDir().mkpath(nestedPath));
+    const CommandResult init =
+        runGit(repositoryPath, {QStringLiteral("init"), QStringLiteral(".")});
+    QVERIFY2(commandSucceeded(init), init.standardError.constData());
+    QVERIFY(writeTextFile(targetPath, QByteArrayLiteral("content")));
+    QVERIFY(QFile::link(targetPath, symlinkPath));
+    QVERIFY(QFileInfo(symlinkPath).isSymbolicLink());
+
+    LinuxGitShell::RepositoryDiscovery discovery;
+    const auto result = discoverRepository(discovery, symlinkPath);
+    QCOMPARE(result.requestedPath, QDir::cleanPath(symlinkPath));
+    QCOMPARE(result.error, LinuxGitShell::RepositoryDiscoveryError::None);
+    QVERIFY(result.repository.has_value());
+    const auto repository = result.repository.value_or(LinuxGitShell::RepositoryInfo{});
+    QCOMPARE(repository.repositoryRoot, QDir::cleanPath(repositoryPath));
+}
+
+void RepositoryDiscoveryTest::discoversRepositoryFromLongPath()
+{
+    QTemporaryDir temporaryDirectory;
+    QVERIFY(temporaryDirectory.isValid());
+    const QString repositoryPath = temporaryDirectory.filePath(QStringLiteral("repository"));
+    QVERIFY(QDir().mkpath(repositoryPath));
+    const CommandResult init =
+        runGit(repositoryPath, {QStringLiteral("init"), QStringLiteral(".")});
+    QVERIFY2(commandSucceeded(init), init.standardError.constData());
+
+    QString longPath = repositoryPath;
+    int segmentNumber = 0;
+    while (longPath.size() < 1400)
+    {
+        const QString segment = QStringLiteral("segment-%1-%2")
+                                    .arg(segmentNumber++, 3, 10, QLatin1Char('0'))
+                                    .arg(QString(64, QLatin1Char('x')));
+        longPath = QDir(longPath).filePath(segment);
+    }
+    QVERIFY2(QDir().mkpath(longPath), qPrintable(longPath));
+
+    LinuxGitShell::RepositoryDiscovery discovery;
+    const auto result = discoverRepository(discovery, longPath);
+    QCOMPARE(result.error, LinuxGitShell::RepositoryDiscoveryError::None);
+    QVERIFY(result.repository.has_value());
+    const auto repository = result.repository.value_or(LinuxGitShell::RepositoryInfo{});
+    QCOMPARE(repository.repositoryRoot, QDir::cleanPath(repositoryPath));
+}
+
+void RepositoryDiscoveryTest::preservesCaseSensitiveRepositoryIdentity()
+{
+    QTemporaryDir temporaryDirectory;
+    QVERIFY(temporaryDirectory.isValid());
+    const QString upperPath = temporaryDirectory.filePath(QStringLiteral("Repository"));
+    const QString lowerPath = temporaryDirectory.filePath(QStringLiteral("repository"));
+    QVERIFY(QDir().mkpath(upperPath));
+    QVERIFY(QDir().mkpath(lowerPath));
+    if (QFileInfo(upperPath).canonicalFilePath() == QFileInfo(lowerPath).canonicalFilePath())
+    {
+        QSKIP("The test filesystem is case-insensitive");
+    }
+
+    CommandResult command = runGit(upperPath, {QStringLiteral("init"), QStringLiteral(".")});
+    QVERIFY2(commandSucceeded(command), command.standardError.constData());
+    command = runGit(lowerPath, {QStringLiteral("init"), QStringLiteral(".")});
+    QVERIFY2(commandSucceeded(command), command.standardError.constData());
+
+    LinuxGitShell::RepositoryDiscovery upperDiscovery;
+    const auto upperResult = discoverRepository(upperDiscovery, upperPath);
+    QVERIFY(upperResult.repository.has_value());
+    const auto upperRepository = upperResult.repository.value_or(LinuxGitShell::RepositoryInfo{});
+    QCOMPARE(upperRepository.repositoryRoot, QDir::cleanPath(upperPath));
+
+    LinuxGitShell::RepositoryDiscovery lowerDiscovery;
+    const auto lowerResult = discoverRepository(lowerDiscovery, lowerPath);
+    QVERIFY(lowerResult.repository.has_value());
+    const auto lowerRepository = lowerResult.repository.value_or(LinuxGitShell::RepositoryInfo{});
+    QCOMPARE(lowerRepository.repositoryRoot, QDir::cleanPath(lowerPath));
+    QVERIFY(upperRepository.repositoryRoot != lowerRepository.repositoryRoot);
+}
+
 void RepositoryDiscoveryTest::discoversBareRepository()
 {
     QTemporaryDir temporaryDirectory;
@@ -266,6 +356,32 @@ void RepositoryDiscoveryTest::discoversLinkedWorktree()
              QDir::cleanPath(QDir(mainPath).filePath(QStringLiteral(".git"))));
     QVERIFY(repository.gitDirectory != repository.commonGitDirectory);
     QVERIFY(QFileInfo(QDir(linkedPath).filePath(QStringLiteral(".git"))).isFile());
+}
+
+void RepositoryDiscoveryTest::discoversWorkTreeWithSeparateGitDirectory()
+{
+    QTemporaryDir temporaryDirectory;
+    QVERIFY(temporaryDirectory.isValid());
+    const QString workTreePath = temporaryDirectory.filePath(QStringLiteral("work tree"));
+    const QString gitDirectoryPath = temporaryDirectory.filePath(QStringLiteral("metadata.git"));
+    QVERIFY(QDir().mkpath(workTreePath));
+
+    const CommandResult init = runGit(temporaryDirectory.path(),
+                                      {QStringLiteral("init"), QStringLiteral("--separate-git-dir"),
+                                       gitDirectoryPath, workTreePath});
+    QVERIFY2(commandSucceeded(init), init.standardError.constData());
+    QVERIFY(QFileInfo(QDir(workTreePath).filePath(QStringLiteral(".git"))).isFile());
+
+    LinuxGitShell::RepositoryDiscovery discovery;
+    const auto result = discoverRepository(discovery, workTreePath);
+    QCOMPARE(result.error, LinuxGitShell::RepositoryDiscoveryError::None);
+    QVERIFY(result.repository.has_value());
+    const auto repository = result.repository.value_or(LinuxGitShell::RepositoryInfo{});
+    QCOMPARE(repository.type, LinuxGitShell::RepositoryType::Normal);
+    QCOMPARE(repository.repositoryRoot, QDir::cleanPath(workTreePath));
+    QCOMPARE(repository.workTree, QDir::cleanPath(workTreePath));
+    QCOMPARE(repository.gitDirectory, QDir::cleanPath(gitDirectoryPath));
+    QCOMPARE(repository.commonGitDirectory, QDir::cleanPath(gitDirectoryPath));
 }
 
 void RepositoryDiscoveryTest::discoversSubmodule()

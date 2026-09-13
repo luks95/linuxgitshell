@@ -64,8 +64,16 @@ RepositoryDiscoveryStartResult RepositoryDiscovery::discover(const QString& path
     result = {};
     repository = {};
     result.requestedPath = QDir::cleanPath(pathInfo.absoluteFilePath());
-    discoveryDirectory =
-        pathInfo.isDir() ? result.requestedPath : QDir::cleanPath(pathInfo.absolutePath());
+
+    // Keep the requested path for the caller, but resolve links before selecting Git's working
+    // directory. In particular, the parent of a symlink to a file may be outside the repository
+    // even though the target itself is inside it.
+    const QString canonicalPath = pathInfo.canonicalFilePath();
+    const QFileInfo discoveryPathInfo(canonicalPath.isEmpty() ? result.requestedPath
+                                                              : canonicalPath);
+    discoveryDirectory = discoveryPathInfo.isDir()
+                             ? QDir::cleanPath(discoveryPathInfo.absoluteFilePath())
+                             : QDir::cleanPath(discoveryPathInfo.absolutePath());
     stage = Stage::Probe;
 
     const bool started =
