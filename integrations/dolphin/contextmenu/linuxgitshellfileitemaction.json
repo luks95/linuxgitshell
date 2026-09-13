@@ -1,0 +1,14 @@
+{
+    "KPlugin": {
+        "Description": "Open local files and folders with LinuxGitShell",
+        "Description[es]": "Abrir archivos y carpetas locales con LinuxGitShell",
+        "Icon": "git",
+        "License": "MIT",
+        "MimeTypes": [
+            "application/octet-stream",
+            "inode/directory"
+        ],
+        "Name": "LinuxGitShell",
+        "Name[es]": "LinuxGitShell"
+    }
+}

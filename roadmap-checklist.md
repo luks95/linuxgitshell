@@ -206,23 +206,23 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 ## Implementación
 
 - [x] Investigar y documentar la API KF6 vigente para plugins de Dolphin.
-- [ ] Crear un plugin pequeño que delegue acciones al core o a procesos externos de LinuxGitShell.
+- [x] Crear un plugin pequeño que delegue acciones al core o a procesos externos de LinuxGitShell.
 - [ ] Detectar selección de archivo/carpeta, raíz y pertenencia a repositorio.
 - [ ] Limitar acciones cuando la selección atraviesa repositorios diferentes.
 - [ ] Fuera de un repositorio: mostrar `Git Clone...` y `Git Create repository here...`.
 - [ ] Dentro de un repositorio: mostrar `Show Status`, `Commit`, `Pull`, `Push`, `Show Log` y `Settings`.
 - [ ] Adaptar acciones para repositorios bare y operaciones Git en progreso.
 - [ ] Abrir Settings y demás ventanas como aplicaciones externas con contexto de repositorio.
-- [ ] Evitar cualquier status síncrono pesado en el proceso de Dolphin.
-- [ ] Añadir logging diagnóstico para carga del plugin sin registrar rutas sensibles por defecto.
+- [x] Evitar cualquier status síncrono pesado en el proceso de Dolphin.
+- [x] Añadir logging diagnóstico para carga del plugin sin registrar rutas sensibles por defecto.
 
 ## Verificación
 
 - [ ] Documentar instalación de desarrollo y del sistema.
-- [ ] Documentar desinstalación limpia y recarga/reinicio de Dolphin.
+- [x] Documentar desinstalación limpia y recarga/reinicio de Dolphin.
 - [ ] Verificar menú sobre raíz, subcarpeta, archivo, multiselección y fuera de repo.
 - [ ] Verificar que un error o cierre de LinuxGitShell no derriba Dolphin.
-- [ ] Crear checklist de prueba manual para versiones soportadas de Dolphin.
+- [x] Crear checklist de prueba manual para versiones soportadas de Dolphin.
 
 ## Criterio de salida de la Fase 2
 
@@ -871,6 +871,6 @@ El orden de estas tareas se decidirá con uso real, métricas e interés comunit
 
 ## Próxima tarea recomendada
 
-Instalar la dependencia verificada `extra-cmake-modules` 6.29.0-1 y crear el plugin mínimo de Fase 2:
-una acción traducible para una única selección local que abra `linuxgitshell` como proceso externo,
-sin ejecutar Git ni bloquear el proceso de Dolphin.
+Instalar el plugin de desarrollo en una sesión aislada, completar el checklist manual con Dolphin y
+definir el resolvedor asíncrono de contexto que permitirá ofrecer acciones según el repositorio sin
+ejecutar Git ni bloquear el proceso de Dolphin.

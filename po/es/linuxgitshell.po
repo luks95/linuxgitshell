@@ -221,3 +221,9 @@ msgstr "Repositorio cargado"
 
 msgid "Repository discovery"
 msgstr "Detección del repositorio"
+
+msgid "Open with LinuxGitShell"
+msgstr "Abrir con LinuxGitShell"
+
+msgid "Could not start LinuxGitShell."
+msgstr "No se pudo iniciar LinuxGitShell."

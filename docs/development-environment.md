@@ -29,13 +29,13 @@ This snapshot records the environment used for the initial bootstrap on 2026-09-
 | `kcoreaddons` | 6.29.0-1 | Application metadata and version info |
 | `ki18n` | 6.29.0-1 | Translatable UI strings |
 | `kconfig` | 6.29.0-1 | Planned settings backend |
-| `kio` | 6.29.0-2 | Planned KDE/Dolphin integration |
+| `kio` | 6.29.0-2 | Dolphin file-item action API |
 | `kxmlgui` | 6.29.0-1 | Planned KDE UI integration |
+| `extra-cmake-modules` | 6.29.0-1 | KDE build and plugin installation paths |
 
-`extra-cmake-modules` is not installed. `pacman` reports version 6.29.0-1 in the configured
-repositories. Direct KF6 CMake package files are sufficient for the released application, but the
-Phase 2 Dolphin plugin requires ECM's `KDEInstallDirs6` and `KDECMakeSettings` modules for the
-standard `kf6/kfileitemaction` build and installation layout. The API assessment is recorded in
+`extra-cmake-modules` 6.29.0-1 was installed when Phase 2 began. The Dolphin plugin uses ECM's
+`KDEInstallDirs6` and `KDECMakeSettings` modules for the standard `kf6/kfileitemaction` build and
+installation layout. The API assessment is recorded in
 [dolphin-context-menu.md](dolphin-context-menu.md).
 
 The repository CI definition uses an up-to-date Arch Linux container. Unlike this Manjaro workstation,
@@ -46,8 +46,9 @@ successful local checks do not substitute for a hosted CI run.
 
 ```bash
 pacman -Q plasma-desktop plasma-workspace dolphin qt6-base qt6-tools
-pacman -Q kcoreaddons ki18n kconfig kio kxmlgui gettext cmake git gcc ninja clang
-pacman -Ss '^extra-cmake-modules$'
+pacman -Q extra-cmake-modules kcoreaddons ki18n kconfig kio kxmlgui
+pacman -Q gettext cmake git gcc ninja clang
 ```
 
-No system packages were installed or modified during bootstrap.
+No system packages were installed or modified during bootstrap. Phase 2 added only the verified
+`extra-cmake-modules` build dependency.

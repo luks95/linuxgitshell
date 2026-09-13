@@ -141,3 +141,50 @@ set_tests_properties(
     i18n.spanish_catalog
     PROPERTIES ENVIRONMENT "LC_ALL=es_PY.UTF-8;LANGUAGE=es"
 )
+
+add_executable(DolphinContextMenuSelectionTest DolphinContextMenuSelectionTest.cpp)
+
+target_link_libraries(
+    DolphinContextMenuSelectionTest
+    PRIVATE
+        LinuxGitShell::DolphinContext
+        Qt6::Test
+)
+
+linuxgitshell_set_compiler_warnings(DolphinContextMenuSelectionTest)
+
+add_test(NAME dolphin.context_selection COMMAND DolphinContextMenuSelectionTest)
+
+add_executable(DolphinPluginLaunchHelper DolphinPluginLaunchHelper.cpp)
+target_link_libraries(DolphinPluginLaunchHelper PRIVATE Qt6::Core)
+linuxgitshell_set_compiler_warnings(DolphinPluginLaunchHelper)
+
+add_executable(DolphinContextMenuPluginTest DolphinContextMenuPluginTest.cpp)
+
+target_compile_definitions(
+    DolphinContextMenuPluginTest
+    PRIVATE
+        DOLPHIN_CONTEXT_PLUGIN_PATH="$<TARGET_FILE:linuxgitshell_fileitemaction>"
+        DOLPHIN_PLUGIN_LAUNCH_HELPER_PATH="$<TARGET_FILE:DolphinPluginLaunchHelper>"
+)
+
+target_link_libraries(
+    DolphinContextMenuPluginTest
+    PRIVATE
+        Qt6::Test
+        KF6::CoreAddons
+        KF6::KIOWidgets
+)
+
+add_dependencies(
+    DolphinContextMenuPluginTest
+    linuxgitshell_fileitemaction
+    DolphinPluginLaunchHelper
+)
+linuxgitshell_set_compiler_warnings(DolphinContextMenuPluginTest)
+
+add_test(NAME dolphin.context_plugin COMMAND DolphinContextMenuPluginTest)
+set_tests_properties(
+    dolphin.context_plugin
+    PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen;LANGUAGE=C;LC_ALL=C"
+)
