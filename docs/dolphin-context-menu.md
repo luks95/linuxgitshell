@@ -1,5 +1,9 @@
 # Dolphin Context-Menu Integration
 
+Implementation status: the minimal single-local-selection plugin is merged on `main` through
+[PR #9](https://github.com/luks95/linuxgitshell/pull/9). Repository-aware menus remain proposed work
+under [issue #10](https://github.com/luks95/linuxgitshell/issues/10).
+
 This note records the KF6 extension API and the first implementation boundary for Phase 2. It was
 validated on 2026-09-13 against Dolphin 26.08.0, KIO 6.29.0, the installed KF6 headers, and a current
 KDE file-item action plugin.
@@ -85,7 +89,7 @@ by `kcoreaddons_add_plugin`.
 
 ## Process boundary
 
-The first plugin increment must remain deliberately small:
+The first plugin increment is deliberately small:
 
 1. Return no actions for an empty selection, a remote URL, or more than one selected item.
 2. For one local item, return one translated `Open with LinuxGitShell` action immediately.
@@ -99,6 +103,11 @@ This increment proves loading, metadata, selection transfer, localization, and p
 It does not yet claim repository-dependent menus. Dynamic `Show Status`, `Commit`, `Pull`, `Push`,
 `Show Log`, and `Settings` actions require an asynchronous external context resolver or the later
 D-Bus service; they must not be implemented by running Git synchronously inside Dolphin.
+
+Repository detection must also account for `.git` being either a directory or an indirection file,
+and for bare repositories without a conventional worktree marker. The plugin will not inspect these
+forms itself. The external-service, local-snapshot, cold-cache, invalidation, and latency design is
+specified in [`repository-context-cache.md`](repository-context-cache.md).
 
 CTest loads the built module through `KPluginFactory`, checks its metadata and conservative action
 policy, and triggers the action against an isolated helper. The launch test proves that a path with
@@ -129,6 +138,29 @@ kbuildsycoca6
 For a staged system-layout check, configure with `-DCMAKE_INSTALL_PREFIX=/usr` and use `DESTDIR`.
 On the validated Arch/Manjaro environment, the resulting module path is
 `usr/lib/qt6/plugins/kf6/kfileitemaction/linuxgitshell_fileitemaction.so` inside the staging root.
+
+```bash
+cmake -S . -B build-system -G Ninja -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX=/usr
+cmake --build build-system -j2
+ctest --test-dir build-system --output-on-failure
+DESTDIR="$PWD/package-root" cmake --install build-system
+```
+
+Until an Arch/Manjaro package exists, this staged layout is the supported system-installation
+verification. Inspect `build-system/install_manifest.txt` and the staging root; do not manually copy
+development artifacts into `/usr`. A future package must own installation, upgrades, and removal.
+
+## Verification status
+
+As of 2026-09-13:
+
+- the complete local and hosted CI suites pass 11/11 tests;
+- CTest loads the real module through `KPluginFactory` and validates its metadata and actions;
+- an unusual selected path reaches an external helper unchanged as one argument;
+- clean development-prefix and staged `/usr` layouts contain the expected plugin;
+- Dolphin starts offscreen with the development plugin path in isolated D-Bus/XDG state;
+- interactive right-click behavior on native Wayland remains pending.
 
 ## Manual test checklist
 

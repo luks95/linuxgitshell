@@ -14,10 +14,10 @@ private communication made in a project role. Maintainers may edit or remove ina
 issue a private warning, impose a temporary restriction, or permanently exclude someone. Responses
 must be proportional, documented privately, and avoid unnecessary disclosure about affected people.
 
-Reports should be sent privately through the security or private-contact feature of the project's
-public forge, once that location is published. Do not open a public issue containing personal or
-sensitive information. Until a private channel is published, preserve relevant evidence and do not
-submit sensitive details to this unpublished project.
+Reports containing sensitive or private information should use the repository's
+[private security-reporting form](https://github.com/luks95/linuxgitshell/security/advisories/new).
+General moderation concerns may be raised with the maintainer without publishing personal details.
+Do not open a public issue containing private information or evidence that could harm participants.
 
 Maintainers who are involved in a report must recuse themselves. Retaliation against a reporter or
 participant in an investigation is itself a violation.

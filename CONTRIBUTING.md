@@ -1,13 +1,15 @@
 # Contributing to LinuxGitShell
 
-LinuxGitShell is in its bootstrap phase. Small, focused changes that preserve the separation
-between Git services, models, IPC, user interfaces, and Dolphin plugins are welcome.
+LinuxGitShell is in Phase 2: the `v0.1.0` Git foundation is released and the first Dolphin plugin is
+on `main`. Small, focused changes that preserve the separation between Git services, models, IPC,
+user interfaces, and Dolphin plugins are welcome.
 
 ## Development setup
 
 Use an out-of-source debug build:
 
 ```bash
+pacman -Q qt6-base extra-cmake-modules kcoreaddons ki18n kio gettext cmake gcc ninja
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
 cmake --build build -j
 ctest --test-dir build --output-on-failure
@@ -21,6 +23,7 @@ Do not install system packages without first checking their names and installed 
 - Use C++20, four-space indentation, RAII, const correctness, and explicit ownership.
 - Keep parsing and models independent of Qt Widgets.
 - Pass the executable and every Git argument separately to `QProcess`; never use `shell -c`.
+- Keep Git execution, repository discovery, caches, watchers, and windows outside Dolphin's process.
 - Add CTest coverage proportional to the change. Integration tests must use temporary repositories.
 - Run `cmake --build build --target format-check` before submitting C++ changes.
 - Configure with `-DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_CLANG_TIDY=clang-tidy` to run the
@@ -28,6 +31,10 @@ Do not install system packages without first checking their names and installed 
 
 UI text must use `i18n()` or the appropriate KI18n API. Update `po/es/linuxgitshell.po` when visible
 source strings change; see `docs/translations.md`.
+
+For Dolphin work, follow `docs/dolphin-context-menu.md`. Configure a separate development build
+with its install prefix selected up front, load the real plugin in tests, and complete the relevant
+manual checklist for visible behavior.
 
 ## Issues and pull requests
 

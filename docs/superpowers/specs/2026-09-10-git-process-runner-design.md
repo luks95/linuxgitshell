@@ -1,5 +1,9 @@
 # Git Process Runner Design
 
+Historical status: implemented and released in `v0.1.0`. The scope statements below describe this
+specific 2026-09-10 increment, not the current limits of the project. Repository discovery, status,
+configuration inspection, the desktop view, and the first Dolphin plugin were implemented later.
+
 ## Scope
 
 This iteration implements only Phase 1.1 of the roadmap: a reusable, asynchronous process runner for Git commands and its automated tests. Repository discovery, status parsing, configuration reading, and GUI integration remain outside this change.

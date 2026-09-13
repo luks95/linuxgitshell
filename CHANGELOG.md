@@ -1,8 +1,7 @@
 # Changelog
 
 All notable user-visible changes to LinuxGitShell will be documented here. The format follows
-[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and releases will use semantic versioning
-once the public release process begins.
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and releases follow semantic versioning.
 
 ## [Unreleased]
 
@@ -14,6 +13,11 @@ once the public release process begins.
   loading, and shell-free transfer of unusual paths as one process argument.
 - Development installation, clean removal, staged system-layout verification, and a manual Dolphin
   smoke-test checklist.
+
+### Changed
+
+- Project documentation now reflects the public `v0.1.0` release, the merged Phase 2 plugin, the
+  eleven-test suite, current dependencies, and the proposed non-blocking repository-context cache.
 
 ## [0.1.0] - 2026-09-13
 
