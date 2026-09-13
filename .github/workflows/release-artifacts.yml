@@ -22,13 +22,15 @@ jobs:
     runs-on: ubuntu-latest
     container: archlinux:base-devel
     steps:
+      - name: Install Git for checkout
+        run: pacman --noconfirm -Syu git
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           ref: ${{ env.RELEASE_TAG }}
       - name: Install build dependencies
         run: >-
-          pacman --noconfirm -Syu cmake ninja qt6-base kcoreaddons ki18n gettext clang git
+          pacman --noconfirm -S --needed cmake ninja qt6-base kcoreaddons ki18n gettext clang
           glibc-locales
       - name: Configure release build
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
@@ -38,7 +40,11 @@ jobs:
           project_version="$(sed -n 's/^CMAKE_PROJECT_VERSION:STATIC=//p' build/CMakeCache.txt)"
           test "$RELEASE_TAG" = "v$project_version"
           test -f "docs/releases/$RELEASE_TAG.md"
-          test "$(git rev-list -n 1 "$RELEASE_TAG")" = "$(git rev-parse HEAD)"
+          git rev-parse --is-inside-work-tree
+          tag_commit="$(git rev-list -n 1 "$RELEASE_TAG")"
+          head_commit="$(git rev-parse HEAD)"
+          test -n "$tag_commit"
+          test "$tag_commit" = "$head_commit"
       - name: Build with static analysis
         run: >-
           cmake -S . -B build-tidy -G Ninja
@@ -70,8 +76,11 @@ jobs:
           set -eu
           version="${RELEASE_TAG#v}"
           mkdir -p dist
+          # The preceding checks prove that HEAD is exactly the annotated release
+          # tag. Archive HEAD so this remains reliable when checkout exposes the
+          # tag only through the detached worktree.
           git archive --format=tar.gz --prefix="LinuxGitShell-$version/" \
-            --output="dist/LinuxGitShell-$version.tar.gz" "$RELEASE_TAG"
+            --output="dist/LinuxGitShell-$version.tar.gz" HEAD
           cd dist
           sha256sum "LinuxGitShell-$version.tar.gz" > SHA256SUMS
       - name: Verify source archive offline
