@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.25)
 
 project(
     LinuxGitShell
-    VERSION 0.0.1
+    VERSION 0.1.0
     DESCRIPTION "Native Git desktop integration for Linux"
     LANGUAGES CXX
 )

@@ -21,6 +21,8 @@ once the public release process begins.
 - Isolated integration tests for discovery from nested files, symbolic links, `.git` files, and
   paths containing spaces, Unicode, and leading hyphens, plus upstream divergence and a real merge
   conflict.
+- Path-safe repository discovery through file symlinks, deep paths longer than 1,400 characters,
+  case-distinct repository names, and worktrees with Git metadata stored separately.
 - UI-independent parser and typed model for NUL-delimited porcelain v2 status, including separate
   index/working-tree states, renames and copies, conflicts, submodules, ignored files, and branch
   headers.
@@ -32,6 +34,8 @@ once the public release process begins.
   origins and values, reloads, and inspectable localized Git failure diagnostics.
 - Offscreen application integration tests for clean and changed temporary repositories and
   non-repository failures, plus a KDE/Wayland manual smoke-test checklist.
+- Reproducible `v0.1.0` release instructions, draft notes, tag/version validation, and automated
+  generation of a tagged source archive with SHA-256 checksums.
 
 ## [0.0.1] - 2026-09-09
 

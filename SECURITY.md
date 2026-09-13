@@ -8,8 +8,9 @@ This table will be updated before the first public release.
 ## Reporting a vulnerability
 
 Do not disclose a suspected vulnerability in a public issue, discussion, or log. Use the private
-security-reporting feature of the project's public forge after the repository is published. The final
-forge URL and expected response times must be added here before accepting external reports.
+security-reporting feature of the project's public forge once maintainers confirm it is enabled. The
+repository is public at <https://github.com/luks95/linuxgitshell>, but its private reporting channel
+and expected response times must still be configured before accepting external reports.
 
 Until that private channel exists, this repository is not ready to receive sensitive vulnerability
 details. Avoid including credentials, private paths, repository contents, or proof-of-concept data in

@@ -111,6 +111,7 @@ target_link_libraries(
     PRIVATE
         LinuxGitShell::App
         Qt6::Test
+        KF6::I18n
 )
 
 linuxgitshell_set_compiler_warnings(MainWindowTest)

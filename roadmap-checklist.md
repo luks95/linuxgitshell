@@ -159,7 +159,7 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 - [x] Detectar worktree, git dir y superproyecto sin asumir rutas.
 - [x] Modelar branch actual, detached HEAD, upstream, ahead/behind y remotos.
 - [x] Modelar operaciones en progreso: merge, rebase, cherry-pick, revert y bisect.
-- [ ] Manejar symlinks, mount points, paths largos y case sensitivity.
+- [x] Manejar symlinks, mount points, paths largos y case sensitivity.
 
 ## 1.3 Status y configuración
 

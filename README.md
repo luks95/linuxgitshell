@@ -51,6 +51,12 @@ Run the application shell with:
 The optional path is discovered asynchronously. The window displays repository metadata, a working
 tree summary, configuration values and origins, and diagnostic Git output when inspection fails.
 Use [docs/manual-smoke-test.md](docs/manual-smoke-test.md) for the KDE/Wayland verification checklist.
+Repository discovery behavior for symlinks, mount boundaries, long paths, and case sensitivity is
+documented in [docs/path-handling.md](docs/path-handling.md).
+
+Maintainers preparing a tagged version should follow
+[docs/release-process.md](docs/release-process.md). Draft notes for the first development release are
+in [docs/releases/v0.1.0.md](docs/releases/v0.1.0.md).
 
 ## Local installation and removal
 

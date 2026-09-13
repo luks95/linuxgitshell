@@ -3,12 +3,14 @@
 
 #include "MainWindow.h"
 
+#include <KLocalizedString>
 #include <QDir>
 #include <QFile>
 #include <QLabel>
 #include <QPlainTextEdit>
 #include <QProcess>
 #include <QProcessEnvironment>
+#include <QPushButton>
 #include <QSignalSpy>
 #include <QTemporaryDir>
 #include <QTest>
@@ -106,10 +108,13 @@ class MainWindowTest final : public QObject
     void displaysRepositoryStatusAndConfiguration();
     void displaysCleanRepository();
     void displaysRepositoryFailureDiagnostics();
+    void reloadsRepositoryStatus();
+    void displaysInstructionsWithoutRepositoryPath();
 };
 
 void MainWindowTest::initTestCase()
 {
+    KLocalizedString::setApplicationDomain("linuxgitshell");
     qputenv("GIT_CONFIG_NOSYSTEM", QByteArrayLiteral("1"));
     qputenv("GIT_CONFIG_GLOBAL", QByteArrayLiteral("/dev/null"));
     qputenv("GIT_TERMINAL_PROMPT", QByteArrayLiteral("0"));
@@ -142,6 +147,9 @@ void MainWindowTest::displaysRepositoryStatusAndConfiguration()
     QVERIFY2(commandSucceeded(command), command.standardError.constData());
     QVERIFY(writeFile(QDir(repositoryPath).filePath(QStringLiteral("untracked.txt")),
                       QByteArrayLiteral("untracked\n")));
+    command = runGit(repositoryPath, {QStringLiteral("config"), QStringLiteral("http.extraheader"),
+                                      QStringLiteral("Authorization: Bearer test-secret")});
+    QVERIFY2(commandSucceeded(command), command.standardError.constData());
 
     LinuxGitShell::MainWindow window(repositoryPath);
     QVERIFY(waitForLoad(window, true));
@@ -162,6 +170,7 @@ void MainWindowTest::displaysRepositoryStatusAndConfiguration()
     QVERIFY(status->text().contains(QStringLiteral("Conflicts: 0")));
 
     bool foundUserName = false;
+    bool foundRedactedHeader = false;
     for (int index = 0; index < config->topLevelItemCount(); ++index)
     {
         const QTreeWidgetItem* item = config->topLevelItem(index);
@@ -171,8 +180,14 @@ void MainWindowTest::displaysRepositoryStatusAndConfiguration()
             QCOMPARE(item->text(3), QStringLiteral("LinuxGitShell Test"));
             foundUserName = true;
         }
+        if (item->text(2) == QStringLiteral("http.extraheader"))
+        {
+            QCOMPARE(item->text(3), QStringLiteral("REDACTED"));
+            foundRedactedHeader = true;
+        }
     }
     QVERIFY(foundUserName);
+    QVERIFY(foundRedactedHeader);
 }
 
 void MainWindowTest::displaysCleanRepository()
@@ -204,6 +219,52 @@ void MainWindowTest::displaysRepositoryFailureDiagnostics()
     QVERIFY(diagnostics != nullptr);
     QCOMPARE(state->text(), QStringLiteral("Not a Git repository."));
     QVERIFY(!diagnostics->toPlainText().isEmpty());
+}
+
+void MainWindowTest::reloadsRepositoryStatus()
+{
+    QTemporaryDir temporaryDirectory;
+    QVERIFY(temporaryDirectory.isValid());
+    const QString repositoryPath = temporaryDirectory.filePath(QStringLiteral("reload"));
+    QVERIFY(QDir().mkpath(repositoryPath));
+    const CommandResult command = initializeRepository(repositoryPath);
+    QVERIFY2(commandSucceeded(command), command.standardError.constData());
+
+    LinuxGitShell::MainWindow window(repositoryPath);
+    QVERIFY(waitForLoad(window, true));
+    auto* status = requiredChild<QLabel>(window, "statusValue");
+    auto* reload = requiredChild<QPushButton>(window, "reloadButton");
+    QVERIFY(status != nullptr);
+    QVERIFY(reload != nullptr);
+    QCOMPARE(status->text(), QStringLiteral("Working tree clean"));
+    QVERIFY(reload->isEnabled());
+
+    QVERIFY(writeFile(QDir(repositoryPath).filePath(QStringLiteral("new.txt")),
+                      QByteArrayLiteral("new\n")));
+    QSignalSpy loadSpy(&window, &LinuxGitShell::MainWindow::loadFinished);
+    QTest::mouseClick(reload, Qt::LeftButton);
+    if (loadSpy.isEmpty())
+    {
+        QVERIFY(loadSpy.wait(20000));
+    }
+    QVERIFY(loadSpy.takeLast().constFirst().toBool());
+    QVERIFY(status->text().contains(QStringLiteral("Untracked: 1")));
+}
+
+void MainWindowTest::displaysInstructionsWithoutRepositoryPath()
+{
+    LinuxGitShell::MainWindow window(QString{});
+    QVERIFY(waitForLoad(window, false));
+    const auto* state = requiredChild<QLabel>(window, "stateLabel");
+    const auto* path = requiredChild<QLabel>(window, "pathLabel");
+    const auto* reload = requiredChild<QPushButton>(window, "reloadButton");
+    QVERIFY(state != nullptr);
+    QVERIFY(path != nullptr);
+    QVERIFY(reload != nullptr);
+    QCOMPARE(state->text(),
+             QStringLiteral("Provide a repository path on the command line to inspect it."));
+    QCOMPARE(path->text(), QStringLiteral("No repository path was provided."));
+    QVERIFY(!reload->isEnabled());
 }
 
 QTEST_MAIN(MainWindowTest)

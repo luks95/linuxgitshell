@@ -1,0 +1,92 @@
+name: Release artifacts
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: read
+
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install build dependencies
+        run: >-
+          pacman --noconfirm -Syu cmake ninja qt6-base kcoreaddons ki18n gettext clang git
+      - name: Configure release build
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+      - name: Validate tag metadata
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -eu
+          project_version="$(sed -n 's/^CMAKE_PROJECT_VERSION:STATIC=//p' build/CMakeCache.txt)"
+          test "$RELEASE_TAG" = "v$project_version"
+          test -f "docs/releases/$RELEASE_TAG.md"
+      - name: Build with static analysis
+        run: >-
+          cmake -S . -B build-tidy -G Ninja
+          -DCMAKE_BUILD_TYPE=Debug
+          -DCMAKE_CXX_COMPILER=clang++
+          -DCMAKE_CXX_CLANG_TIDY=clang-tidy
+          && cmake --build build-tidy -j2
+      - name: Build release
+        run: cmake --build build -j2
+      - name: Test release
+        run: ctest --test-dir build --output-on-failure
+      - name: Verify staged installation
+        run: |
+          set -eu
+          DESTDIR="$PWD/stage" cmake --install build --prefix /usr
+          test -x stage/usr/bin/linuxgitshell
+          test -f stage/usr/share/locale/es/LC_MESSAGES/linuxgitshell.mo
+      - name: Verify application version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -eu
+          version="$(QT_QPA_PLATFORM=offscreen ./build/linuxgitshell --version)"
+          test "$version" = "linuxgitshell ${RELEASE_TAG#v}"
+      - name: Run repository checks
+        run: |
+          cmake --build build --target format-check
+          cmake --build build --target check-secrets
+      - name: Create source archive and checksum
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -eu
+          version="${RELEASE_TAG#v}"
+          mkdir -p dist
+          git archive --format=tar.gz --prefix="LinuxGitShell-$version/" \
+            --output="dist/LinuxGitShell-$version.tar.gz" "$RELEASE_TAG"
+          cd dist
+          sha256sum "LinuxGitShell-$version.tar.gz" > SHA256SUMS
+      - name: Verify source archive offline
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -eu
+          version="${RELEASE_TAG#v}"
+          mkdir archive-source
+          tar --extract --gzip --file "dist/LinuxGitShell-$version.tar.gz" \
+            --directory archive-source
+          cmake -S "archive-source/LinuxGitShell-$version" -B archive-build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release
+          cmake --build archive-build -j2
+          ctest --test-dir archive-build --output-on-failure
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: LinuxGitShell-${{ github.ref_name }}-source
+          path: |
+            dist/LinuxGitShell-*.tar.gz
+            dist/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 30

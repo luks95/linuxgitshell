@@ -16,7 +16,7 @@ class ProjectInfoTest final : public QObject
 void ProjectInfoTest::exposesBuildInformation()
 {
     QCOMPARE(LinuxGitShell::ProjectInfo::name(), QStringLiteral("LinuxGitShell"));
-    QVERIFY(!LinuxGitShell::ProjectInfo::version().isEmpty());
+    QCOMPARE(LinuxGitShell::ProjectInfo::version(), QStringLiteral("0.1.0"));
     QVERIFY(!LinuxGitShell::ProjectInfo::qtVersion().isEmpty());
     QVERIFY(!LinuxGitShell::ProjectInfo::kfVersion().isEmpty());
 }

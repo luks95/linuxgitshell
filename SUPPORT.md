@@ -1,13 +1,15 @@
 # Support
 
-LinuxGitShell is pre-release software and currently provides no end-user Git functionality.
+LinuxGitShell is pre-release software. Its current application provides read-only repository
+inspection; Dolphin integration and mutating Git workflows are not available.
 
-After the public forge is available:
+For public, non-sensitive project communication:
 
 - Use the bug template for reproducible defects.
 - Use the feature template for product suggestions.
 - Use the design template for architectural changes.
-- Use discussions or the documented community channel for usage questions.
+- A community support channel has not been enabled yet; use the issue templates only for their
+  documented purposes.
 - Follow `SECURITY.md` for vulnerabilities; never report them publicly.
 
 Include the exact LinuxGitShell revision, distribution, Qt/KF6, Dolphin, and Git versions. Remove
