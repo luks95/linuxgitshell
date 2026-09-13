@@ -133,7 +133,7 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 - [x] `cmake --build build -j` finaliza correctamente.
 - [x] `ctest --test-dir build --output-on-failure` ejecuta al menos un test y pasa.
 - [ ] La aplicación mínima inicia en KDE Plasma 6.
-- [ ] CI reproduce configure, build y tests.
+- [x] CI reproduce configure, build y tests.
 - [x] Existen licencia, README, guía de contribución, seguridad y estado del proyecto.
 
 ---
@@ -194,7 +194,7 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 
 - [x] La aplicación muestra correctamente clean, modified, staged y untracked.
 - [x] El parser está cubierto por unit e integration tests.
-- [ ] Todos los jobs obligatorios de CI pasan.
+- [x] Todos los jobs obligatorios de CI pasan.
 - [x] `STATUS.md` y `CHANGELOG.md` reflejan el estado real.
 - [ ] Se etiqueta y publica `v0.1.0` con notas y checksums.
 

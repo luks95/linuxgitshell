@@ -16,6 +16,8 @@ Phase 1 — Git Core.
 - MIT license, DCO contribution workflow, governance, conduct, security, and support documents.
 - GitHub-compatible issue/PR templates and CI workflow for build, tests, formatting, static analysis,
   and common secret patterns.
+- Hosted CI passing configure, build, all eight tests, static analysis, formatting, and secret checks
+  on the Arch Linux container.
 - Asynchronous `GitProcessRunner` validated with the native Linux Qt/KF6 toolchain and deterministic
   tests for cancellation, timeouts, process failures, environment handling, and unusual paths.
 - Repository discovery from directories or files, with typed results for normal repositories, bare
@@ -41,8 +43,8 @@ Phase 1 — Git Core.
 
 ## In progress
 
-- Validate the Git Core implementation with hosted CI.
 - Perform the documented application smoke test in a KDE Plasma 6 Wayland session.
+- Close the remaining Phase 1 path edge cases.
 - Prepare the remaining Phase 1 release checks and publication metadata.
 
 ## Known issues
@@ -58,6 +60,6 @@ Phase 1 — Git Core.
 ## Next steps
 
 1. Verify the published repository, configure private reporting, and protect `main`.
-2. Confirm the workflow passes on the public forge and perform the KDE/Wayland smoke test interactively.
-3. Perform the documented application smoke test in a KDE Plasma 6 Wayland session.
-4. Close the remaining Phase 1 path edge cases and prepare the `v0.1.0` release checks.
+2. Perform the documented application smoke test in a KDE Plasma 6 Wayland session.
+3. Close the remaining Phase 1 path edge cases.
+4. Prepare the `v0.1.0` release checks and publication metadata.
