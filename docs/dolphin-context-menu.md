@@ -77,11 +77,11 @@ provides the public plugin interface.
 | `kcoreaddons` | 6.29.0-1 | installed | Plugin factory and CMake plugin macro |
 | `ki18n` | 6.29.0-1 | installed | Translatable action labels |
 | `qt6-base` | 6.11.2-3 | installed | Qt Core and Widgets |
-| `extra-cmake-modules` | 6.29.0-1 | available, not installed | Standard KDE install paths and CMake settings |
+| `extra-cmake-modules` | 6.29.0-1 | installed | Standard KDE install paths and CMake settings |
 
-`extra-cmake-modules` is the only missing package for the standard plugin target. Its
-`KDEInstallDirs6` and `KDECMakeSettings` modules provide `KDE_INSTALL_PLUGINDIR` and the library
-output directory expected by `kcoreaddons_add_plugin`. Install it only when implementation begins.
+`extra-cmake-modules` was added when implementation began. Its `KDEInstallDirs6` and
+`KDECMakeSettings` modules provide `KDE_INSTALL_PLUGINDIR` and the library output directory expected
+by `kcoreaddons_add_plugin`.
 
 ## Process boundary
 
@@ -100,9 +100,51 @@ It does not yet claim repository-dependent menus. Dynamic `Show Status`, `Commit
 `Show Log`, and `Settings` actions require an asynchronous external context resolver or the later
 D-Bus service; they must not be implemented by running Git synchronously inside Dolphin.
 
-## Verification target
+CTest loads the built module through `KPluginFactory`, checks its metadata and conservative action
+policy, and triggers the action against an isolated helper. The launch test proves that a path with
+spaces, Unicode, and a newline reaches the external process unchanged as exactly one argument.
 
-The first implementation PR must verify the plugin output and install location, load it in Dolphin,
-exercise root/subfolder/file selections, and confirm that closing or failing the external
-LinuxGitShell process does not affect Dolphin. Development-prefix discovery and clean uninstallation
-will be documented with the implementation because the exact installed paths are part of that test.
+## Development installation
+
+The install prefix must be selected during configuration. Changing only `cmake --install --prefix`
+is too late because ECM calculates the Qt plugin directory while configuring.
+
+```bash
+cmake -S . -B build-dolphin -G Ninja -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_INSTALL_PREFIX="$PWD/install"
+cmake --build build-dolphin -j
+ctest --test-dir build-dolphin --output-on-failure
+cmake --install build-dolphin
+```
+
+For a prefix outside Qt's system prefix, ECM installs the module below `lib/plugins`. Expose both the
+application and plugin to the development session:
+
+```bash
+export PATH="$PWD/install/bin:$PATH"
+export QT_PLUGIN_PATH="$PWD/install/lib/plugins${QT_PLUGIN_PATH:+:$QT_PLUGIN_PATH}"
+kbuildsycoca6
+```
+
+For a staged system-layout check, configure with `-DCMAKE_INSTALL_PREFIX=/usr` and use `DESTDIR`.
+On the validated Arch/Manjaro environment, the resulting module path is
+`usr/lib/qt6/plugins/kf6/kfileitemaction/linuxgitshell_fileitemaction.so` inside the staging root.
+
+## Manual test checklist
+
+Use a disposable Git repository and close existing Dolphin windows before changing plugin search
+paths. `kquitapp6 dolphin` requests a clean Dolphin shutdown; starting Dolphin again loads the new
+module.
+
+- [ ] Right-click one repository root, one subdirectory, and one file; each shows
+  `Open with LinuxGitShell`.
+- [ ] Trigger each action and confirm the external application inspects the selected path.
+- [ ] A two-item selection shows no LinuxGitShell action.
+- [ ] A remote KIO URL shows no LinuxGitShell action.
+- [ ] Closing LinuxGitShell leaves Dolphin running and responsive.
+- [ ] Starting Dolphin without the development `PATH` produces a handled launch error and no crash.
+- [ ] Spanish locale displays `Abrir con LinuxGitShell`.
+
+To remove the development installation, shut down Dolphin, remove only the repository-local
+`install/` directory, restore `PATH` and `QT_PLUGIN_PATH`, run `kbuildsycoca6`, and start Dolphin
+again. Do not delete anything below `/usr` for this development workflow.

@@ -20,6 +20,10 @@ void TranslationTest::loadsSpanishCatalog()
     KLocalizedString::setApplicationDomain(domain);
 
     QCOMPARE(i18n("Repository loaded"), QStringLiteral("Repositorio cargado"));
+    QCOMPARE(i18nd("linuxgitshell", "Open with LinuxGitShell"),
+             QStringLiteral("Abrir con LinuxGitShell"));
+    QCOMPARE(i18nd("linuxgitshell", "Could not start LinuxGitShell."),
+             QStringLiteral("No se pudo iniciar LinuxGitShell."));
 }
 
 QTEST_GUILESS_MAIN(TranslationTest)

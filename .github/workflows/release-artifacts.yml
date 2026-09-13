@@ -32,10 +32,12 @@ jobs:
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Install build dependencies
         run: >-
-          pacman --noconfirm -S --needed cmake ninja qt6-base kcoreaddons ki18n gettext clang
-          glibc-locales
+          pacman --noconfirm -S --needed cmake ninja qt6-base extra-cmake-modules kcoreaddons ki18n
+          kio gettext clang glibc-locales
       - name: Configure release build
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+        run: >-
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_INSTALL_PREFIX=/usr
       - name: Validate tag metadata
         run: |
           set -eu
@@ -64,6 +66,10 @@ jobs:
           DESTDIR="$PWD/stage" cmake --install build --prefix /usr
           test -x stage/usr/bin/linuxgitshell
           test -f stage/usr/share/locale/es/LC_MESSAGES/linuxgitshell.mo
+          if test -d integrations/dolphin/contextmenu; then
+            test -f \
+              stage/usr/lib/qt6/plugins/kf6/kfileitemaction/linuxgitshell_fileitemaction.so
+          fi
       - name: Verify application version
         run: |
           set -eu

@@ -10,6 +10,8 @@ file(
     LIST_DIRECTORIES false
     "${PROJECT_SOURCE_DIR}/gui/*.cpp"
     "${PROJECT_SOURCE_DIR}/gui/*.h"
+    "${PROJECT_SOURCE_DIR}/integrations/*.cpp"
+    "${PROJECT_SOURCE_DIR}/integrations/*.h"
     "${PROJECT_SOURCE_DIR}/libs/*.cpp"
     "${PROJECT_SOURCE_DIR}/libs/*.h"
     "${PROJECT_SOURCE_DIR}/tests/*.cpp"

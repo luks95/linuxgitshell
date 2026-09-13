@@ -6,6 +6,15 @@ once the public release process begins.
 
 ## [Unreleased]
 
+### Added
+
+- KF6 Dolphin file-item action plugin that offers a translated external-launch action for one local
+  selection while keeping Git execution and application windows outside Dolphin's process.
+- Unit and integration coverage for conservative selection handling, plugin metadata and factory
+  loading, and shell-free transfer of unusual paths as one process argument.
+- Development installation, clean removal, staged system-layout verification, and a manual Dolphin
+  smoke-test checklist.
+
 ## [0.1.0] - 2026-09-13
 
 ### Added

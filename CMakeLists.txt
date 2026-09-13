@@ -10,8 +10,12 @@ project(
     LANGUAGES CXX
 )
 
+find_package(ECM 6.0 REQUIRED NO_MODULE)
+list(PREPEND CMAKE_MODULE_PATH "${ECM_MODULE_PATH}")
+
+include(KDEInstallDirs6)
+include(KDECMakeSettings)
 include(CTest)
-include(GNUInstallDirs)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -25,12 +29,14 @@ include(LinuxGitShellCompilerWarnings)
 find_package(Qt6 6.8 REQUIRED COMPONENTS Core Widgets)
 find_package(KF6CoreAddons 6.0 REQUIRED)
 find_package(KF6I18n 6.0 REQUIRED)
+find_package(KF6KIO 6.0 REQUIRED)
 find_package(Git REQUIRED)
 
 find_program(CLANG_FORMAT_EXECUTABLE NAMES clang-format)
 
 add_subdirectory(libs/gitcore)
 add_subdirectory(gui/app)
+add_subdirectory(integrations/dolphin/contextmenu)
 add_subdirectory(po)
 
 if(CLANG_FORMAT_EXECUTABLE)

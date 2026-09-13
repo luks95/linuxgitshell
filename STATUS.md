@@ -16,7 +16,7 @@ Phase 2 — Dolphin context menu.
 - MIT license, DCO contribution workflow, governance, conduct, security, and support documents.
 - GitHub-compatible issue/PR templates and CI workflow for build, tests, formatting, static analysis,
   and common secret patterns.
-- Hosted CI passing configure, build, all eight tests, static analysis, formatting, secret checks,
+- Hosted CI passing configure, build, all eight `v0.1.0` tests, static analysis, formatting, secret checks,
   and pull-request dependency review for the final release changes on the Arch Linux container.
 - Asynchronous `GitProcessRunner` validated with the native Linux Qt/KF6 toolchain and deterministic
   tests for cancellation, timeouts, process failures, environment handling, and unusual paths.
@@ -57,21 +57,26 @@ Phase 2 — Dolphin context menu.
   public repository.
 - KF6 Dolphin context-menu API and dependency plan validated against Dolphin 26.08.0 and KIO 6.29.0,
   including the synchronous plugin boundary and standard `kf6/kfileitemaction` installation path.
+- Thin KF6 file-item action plugin for a single local selection, with translated text and external
+  `linuxgitshell` launch through a separate process argument. Empty, remote, and multiple selections
+  produce no action, and the plugin performs no Git work inside Dolphin.
+- Eleven local tests, including real plugin-factory loading, metadata and action policy checks, and
+  exact transfer of a path containing spaces, Unicode, and a newline to an isolated launch helper.
+- Development install/removal guidance, a staged `/usr` layout check, and a Dolphin manual-test
+  checklist for the first context-menu increment.
 
 ## In progress
 
-- Prepare the first thin Dolphin context-menu adapter without moving Git execution or application
-  windows into Dolphin's process.
+- Verify the development install in a real Dolphin session and design the asynchronous repository
+  context boundary needed for repository-aware actions.
 
 ## Known issues
 
-- `extra-cmake-modules` is available but not installed; the bootstrap avoids requiring it.
 - Mutating user-facing Git operations are not implemented yet.
-- Dolphin integration, overlays, daemon, and D-Bus are not implemented.
+- Repository-aware Dolphin actions, overlays, daemon, and D-Bus are not implemented.
 
 ## Next steps
 
-1. Install the verified `extra-cmake-modules` 6.29.0-1 build dependency.
-2. Add the minimal external-launch plugin target and unit-test its local single-selection policy.
-3. Verify development installation, loading, and clean removal with a Dolphin manual-test
-   checklist without introducing synchronous Git work in Dolphin.
+1. Run the documented checklist with the development plugin loaded by Dolphin on Plasma Wayland.
+2. Define an asynchronous context resolver that keeps repository discovery and Git outside Dolphin.
+3. Add repository-aware actions incrementally, including multi-selection and bare-repository rules.

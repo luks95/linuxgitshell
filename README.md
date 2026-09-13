@@ -3,8 +3,10 @@
 LinuxGitShell aims to provide a native, graphical Git experience for Linux, starting with KDE
 Plasma 6 and Dolphin on Manjaro/Arch Linux. The public
 [`v0.1.0`](https://github.com/luks95/linuxgitshell/releases/tag/v0.1.0) release provides the tested
-Git Core and a read-only repository inspector. Phase 2 is preparing the Dolphin context-menu
-integration; Dolphin actions and mutating Git workflows are not available yet.
+Git Core and a read-only repository inspector. Phase 2 now includes the first thin Dolphin
+context-menu plugin on the development branch: a single local item can open the external
+LinuxGitShell application. Repository-aware actions and mutating Git workflows are not available
+yet.
 
 See [LinuxGitShell-Codex.md](LinuxGitShell-Codex.md) for the product specification and [roadmap-checklist.md](roadmap-checklist.md) for the implementation plan.
 
@@ -15,7 +17,8 @@ The bootstrap has been validated with:
 - C++20 compiler (GCC 16.2.1)
 - CMake 4.4.3
 - Qt 6.11.2 (`Core`, `Widgets`, and `Test`)
-- KDE Frameworks 6.29.0 (`CoreAddons` and `I18n`)
+- KDE Frameworks 6.29.0 (`CoreAddons`, `I18n`, and `KIO`)
+- Extra CMake Modules 6.29.0
 - Gettext 1.0 (translation catalog compilation)
 - Git 2.55.0
 - Ninja 1.13.2 or another CMake-supported build tool
@@ -23,12 +26,11 @@ The bootstrap has been validated with:
 On Manjaro/Arch, verify installed packages before changing the system:
 
 ```bash
-pacman -Q qt6-base kcoreaddons ki18n gettext cmake gcc ninja
+pacman -Q qt6-base extra-cmake-modules kcoreaddons ki18n kio gettext cmake gcc ninja
 ```
 
-`extra-cmake-modules` 6.29.0 is available in the repositories but is not installed in the validated
-environment. The released application does not require it; the Phase 2 Dolphin plugin will require
-it for standard KDE build and installation paths. See
+`extra-cmake-modules` 6.29.0 is required by the Phase 2 Dolphin plugin for standard KDE build and
+installation paths. See
 [docs/dolphin-context-menu.md](docs/dolphin-context-menu.md) for the verified API and dependency
 plan.
 
@@ -68,14 +70,21 @@ Maintainers preparing a tagged version should follow
 
 ## Local installation and removal
 
-Use a disposable user prefix while developing:
+Use a disposable user prefix while developing. Configure the prefix up front so ECM calculates the
+matching plugin directory:
 
 ```bash
-cmake --install build --prefix "$PWD/install"
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_INSTALL_PREFIX="$PWD/install"
+cmake --build build -j
+cmake --install build
 ./install/bin/linuxgitshell
 ```
 
-Remove that local installation by deleting only the repository's `install/` directory. System-wide installation is not needed during bootstrap.
+The Dolphin plugin needs the development environment described in
+[docs/dolphin-context-menu.md](docs/dolphin-context-menu.md). Remove the local installation by
+deleting only the repository's `install/` directory. A system-wide installation is not required for
+the development loop.
 
 ## Contributing and license
 
