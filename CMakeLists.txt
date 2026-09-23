@@ -35,6 +35,7 @@ find_package(Git REQUIRED)
 find_program(CLANG_FORMAT_EXECUTABLE NAMES clang-format)
 
 add_subdirectory(libs/gitcore)
+add_subdirectory(libs/repositorycontext)
 add_subdirectory(gui/app)
 add_subdirectory(integrations/dolphin/contextmenu)
 add_subdirectory(po)

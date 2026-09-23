@@ -6,7 +6,7 @@
 > ya incluye el primer plugin KF6 de Dolphin para abrir una selección local en la aplicación externa.
 > El contexto de repositorio no bloqueante está diseñado en
 > [`docs/repository-context-cache.md`](docs/repository-context-cache.md) y su implementación se sigue
-> en [#10](https://github.com/luks95/linuxgitshell/issues/10). `STATUS.md` y
+> en [#12](https://github.com/luks95/linuxgitshell/issues/12). `STATUS.md` y
 > `roadmap-checklist.md` son las fuentes de verdad para el progreso, mientras este documento conserva
 > el alcance completo del producto.
 
