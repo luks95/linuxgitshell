@@ -4,6 +4,37 @@
 
 Phase 2 — Dolphin context menu.
 
+## Resuming work
+
+Last updated 2026-09-24. The repository-context work for
+[issue #12](https://github.com/luks95/linuxgitshell/issues/12) is complete in four stacked pull
+requests. Each targets the previous branch and has passing CI. Merge them into `main` in this order,
+retargeting the next pull request to `main` after each merge:
+
+| Order | Pull request | Branch | Content |
+| --- | --- | --- | --- |
+| 1 | [#13](https://github.com/luks95/linuxgitshell/pull/13) | `feature/repository-context-cache` | Snapshot model and bounded cache in `libs/repositorycontext/` |
+| 2 | [#14](https://github.com/luks95/linuxgitshell/pull/14) | `feature/context-service` | `linuxgitshell-daemon` with `org.linuxgitshell.Experimental.Context1` |
+| 3 | [#15](https://github.com/luks95/linuxgitshell/pull/15) | `feature/plugin-context-client` | Non-blocking context client in the Dolphin plugin |
+| 4 | [#16](https://github.com/luks95/linuxgitshell/pull/16) | `feature/repository-aware-actions` | `LinuxGitShell` ▸ `Show Status` menu and this documentation |
+
+Decisions already taken:
+
+- The context service lives in `daemon/` as the first increment of the Phase 4 daemon and uses the
+  experimental bus name `org.linuxgitshell.Experimental.Context1`, not the stable `Daemon1` name.
+- The menu offers only actions the application implements. Today that is `Show Status`, which opens
+  the read-only inspector. Other roadmap actions are added when their application features land.
+
+The remaining Phase 2 work is manual and needs a native Plasma Wayland session:
+
+1. Install the development prefix, start the daemon, and restart Dolphin from the same terminal, as
+   described in [`docs/dolphin-context-menu.md`](docs/dolphin-context-menu.md#development-installation).
+   A Dolphin started from the Plasma launcher does not load the development plugin.
+2. Complete the manual checklist in that document, attach screenshots to #16, and record native
+   p50/p95/max `actions()` latency.
+3. Evaluate the Phase 2 exit criteria in `roadmap-checklist.md`, then plan the `v0.2.0` overlays
+   work (Phase 3).
+
 ## Working
 
 - Manjaro/Arch development environment inventoried.
@@ -78,22 +109,30 @@ Phase 2 — Dolphin context menu.
 - Non-blocking context client in the Dolphin plugin: `actions()` only reads a process-wide
   in-memory cache and queues cold or stale paths; requests leave from the event loop through
   asynchronous D-Bus calls that activate the service, and replies warm the cache for later menus.
-  The visible menu is unchanged. Seventeen local tests pass; the plugin test loads the real module,
+  Seventeen local tests pass; the plugin test loads the real module,
   proves that building menus neither runs Git nor contacts the service before returning, and
   measured `actions()` at p50 0.015 ms, p95 0.03 ms, and max 1.8 ms offscreen in a Debug build.
+- Repository-aware Dolphin menus for the application's current features: a warm snapshot inside a
+  repository, bare repositories included, shows `LinuxGitShell` ▸ `Show Status` with disabled
+  notices for operations in progress; a directory outside a repository shows nothing; several items
+  in the same repository open the repository root; cold, failed, remote, mixed, or cross-repository
+  selections degrade conservatively. Menu entries and notices are translated into Spanish.
 - Repository-local development installation verified with the expected binary, plugin, and Spanish
   catalog, followed by an isolated offscreen Dolphin startup with temporary D-Bus/XDG state.
 
 ## In progress
 
-- Complete interactive Dolphin verification and add repository-aware actions on top of the context
-  client, tracked by [issue #12](https://github.com/luks95/linuxgitshell/issues/12).
+- Complete interactive Dolphin verification of the repository-aware menu, tracked by [issue #12](https://github.com/luks95/linuxgitshell/issues/12).
 
 ## Known issues
 
 - Mutating user-facing Git operations are not implemented yet.
-- Repository-aware Dolphin actions, overlays, watchers, and the stable `Daemon1` D-Bus API are not
-  implemented; the context interface is experimental.
+- `Commit`, `Pull`, `Push`, `Show Log`, `Settings`, `Git Clone`, and `Create repository here` are
+  not offered because the application does not implement them yet.
+- Overlays, watchers, and the stable `Daemon1` D-Bus API are not implemented; the context interface
+  is experimental.
+- The first right-click on a new path shows the generic action; repository entries appear once the
+  asynchronous reply has arrived.
 - A repository root whose path contains a newline is reported as a discovery error, because
   `RepositoryDiscovery` reads Git's line-based path output.
 - The plugin has automated factory/loading coverage and an isolated Dolphin startup, but its manual
@@ -102,7 +141,5 @@ Phase 2 — Dolphin context menu.
 ## Next steps
 
 1. Run the documented checklist with the development plugin loaded by Dolphin on Plasma Wayland.
-2. Use the warm context to add repository-aware actions incrementally, including outside-repository,
-   bare-repository, operation-in-progress, and multi-selection rules.
-3. Record native p50/p95/max `actions()` latency in Dolphin before enabling repository-aware actions
-   by default.
+2. Record native p50/p95/max `actions()` latency in Dolphin and complete the Phase 2 exit criteria.
+3. Add further menu actions as the corresponding application features land.

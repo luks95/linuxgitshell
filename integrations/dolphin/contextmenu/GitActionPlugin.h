@@ -3,9 +3,12 @@
 
 #pragma once
 
+#include "linuxgitshell/repositorycontext/RepositoryContextSnapshot.h"
+
 #include <KAbstractFileItemActionPlugin>
 
 #include <QList>
+#include <QString>
 #include <QVariantList>
 
 class QAction;
@@ -24,6 +27,10 @@ class GitActionPlugin final : public KAbstractFileItemActionPlugin
 
     [[nodiscard]] QList<QAction*> actions(const KFileItemListProperties& fileItemInfos,
                                           QWidget* parentWidget) override;
+
+  private:
+    void launchOnTrigger(QAction* action, const QString& path);
+    [[nodiscard]] static QString operationText(RepositoryContextOperation operation);
 };
 
 } // namespace LinuxGitShell::Dolphin

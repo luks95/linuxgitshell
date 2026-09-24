@@ -1,8 +1,8 @@
 # Dolphin Context-Menu Integration
 
 Implementation status: the minimal single-local-selection plugin is merged on `main` through
-[PR #9](https://github.com/luks95/linuxgitshell/pull/9). Repository-aware menus remain planned work
-under [issue #12](https://github.com/luks95/linuxgitshell/issues/12).
+[PR #9](https://github.com/luks95/linuxgitshell/pull/9). Repository-aware menus are implemented under
+[issue #12](https://github.com/luks95/linuxgitshell/issues/12) and still need native Dolphin verification.
 
 This note records the KF6 extension API and the first implementation boundary for Phase 2. It was
 validated on 2026-09-13 against Dolphin 26.08.0, KIO 6.29.0, the installed KF6 headers, and a current
@@ -89,20 +89,32 @@ by `kcoreaddons_add_plugin`.
 
 ## Process boundary
 
-The first plugin increment is deliberately small:
+The plugin decides its entries in `ContextMenuPolicy`, a UI-independent helper that only reads
+memory-only snapshots, and launches every window as a separate process. The menu offers only actions
+that the application can already perform:
 
-1. Return no actions for an empty selection, a remote URL, or more than one selected item.
-2. For one local item, return one translated `Open with LinuxGitShell` action immediately.
-3. When triggered, start the external `linuxgitshell` application with the local path as a separate
-   process argument. Never use a shell command string.
-4. Let the external application perform repository discovery and display its typed error if the path
-   is not inside a repository.
-5. Keep selection policy in a UI-independent helper so it can be unit tested without Dolphin.
+| Selection | Snapshot | Entries |
+| --- | --- | --- |
+| Empty, remote, mixed, or more than 256 items | — | none |
+| One local item | cold or stale | `Open with LinuxGitShell`, and an asynchronous refresh |
+| One local item | inside a repository, including bare | `LinuxGitShell` ▸ `Show Status` for the selected path |
+| One local item | outside a repository | none |
+| One local item | discovery error or service unavailable | `Open with LinuxGitShell` |
+| Several local items | all warm and in the same repository | `LinuxGitShell` ▸ `Show Status` for the repository root |
+| Several local items | any cold, outside, or in another repository | none; cold items are refreshed |
+
+When a merge, rebase, cherry-pick, revert, or bisect is in progress, the submenu lists it as a
+disabled notice below `Show Status`. `Commit`, `Pull`, `Push`, `Show Log`, `Settings`, `Git Clone`,
+and `Create repository here` will be added when the application implements them, so that the menu
+never offers an action that cannot run.
+
+Triggered actions start the external `linuxgitshell` application with one path as a separate
+process argument. They never use a shell command string, and the application performs its own
+repository discovery.
 
 This increment proves loading, metadata, selection transfer, localization, and process isolation.
-The plugin also warms a non-blocking repository-context cache for later menus, as described in
-[`repository-context-cache.md`](repository-context-cache.md#implemented-client), but it does not yet
-show repository-dependent actions. Dynamic `Show Status`, `Commit`, `Pull`, `Push`,
+Repository-dependent entries come from the non-blocking context client described in
+[`repository-context-cache.md`](repository-context-cache.md#implemented-client). Dynamic `Show Status`, `Commit`, `Pull`, `Push`,
 `Show Log`, and `Settings` actions require an asynchronous external context resolver or the later
 D-Bus service; they must not be implemented by running Git synchronously inside Dolphin.
 
@@ -141,6 +153,21 @@ The session bus only activates services listed in its own data directories, so t
 prefix's `share/dbus-1/services` file is not used. When testing the experimental context service,
 start `./install/bin/linuxgitshell-daemon` manually and stop it when finished.
 
+Dolphin must be started from the terminal that exported these variables. A Dolphin started from the
+Plasma launcher, a desktop shortcut, or D-Bus activation runs under `systemd --user` without them,
+so it neither loads the development plugin nor finds `linuxgitshell`. Running `dolphin` while
+another Dolphin process exists only opens a window in that older process, so quit it first:
+
+```bash
+./install/bin/linuxgitshell-daemon &
+kquitapp6 dolphin
+dolphin &
+```
+
+To check which environment a running Dolphin uses, compare `pgrep -a dolphin` with
+`tr '\0' '\n' < /proc/<pid>/environ | grep -E '^(PATH|QT_PLUGIN_PATH)='`. The inspector also runs
+without Dolphin: `./install/bin/linuxgitshell /path/to/repository`.
+
 For a staged system-layout check, configure with `-DCMAKE_INSTALL_PREFIX=/usr` and use `DESTDIR`.
 On the validated Arch/Manjaro environment, the resulting module path is
 `usr/lib/qt6/plugins/kf6/kfileitemaction/linuxgitshell_fileitemaction.so` inside the staging root,
@@ -161,14 +188,20 @@ development artifacts into `/usr`. A future package must own installation, upgra
 
 ## Verification status
 
-As of 2026-09-13:
+As of 2026-09-24:
 
-- the complete local and hosted CI suites pass 11/11 tests;
+- the complete local and hosted CI suites pass 17/17 tests, including `clang-tidy`;
 - CTest loads the real module through `KPluginFactory` and validates its metadata and actions;
 - an unusual selected path reaches an external helper unchanged as one argument;
-- clean development-prefix and staged `/usr` layouts contain the expected plugin;
-- Dolphin starts offscreen with the development plugin path in isolated D-Bus/XDG state;
-- interactive right-click behavior on native Wayland remains pending.
+- on a private bus with the activatable context service, the real module shows the generic action
+  while cold, then `Show Status` for repositories, operation notices, no entry outside
+  repositories, the repository root for same-repository selections, and no entry across
+  repositories;
+- building 200 menus neither runs Git nor contacts the service before returning, with an offscreen
+  `actions()` p95 of about 0.03 ms;
+- clean development-prefix and staged `/usr` layouts contain the expected plugin, daemon, and
+  activation file;
+- interactive right-click behavior and native latency on Plasma Wayland remain pending.
 
 ## Manual test checklist
 
@@ -176,14 +209,23 @@ Use a disposable Git repository and close existing Dolphin windows before changi
 paths. `kquitapp6 dolphin` requests a clean Dolphin shutdown; starting Dolphin again loads the new
 module.
 
-- [ ] Right-click one repository root, one subdirectory, and one file; each shows
-  `Open with LinuxGitShell`.
+Start `linuxgitshell-daemon` from the development prefix first, because the session bus does not
+read activation files from it.
+
+- [ ] The first right-click on a repository root, a subdirectory, and a file shows
+  `Open with LinuxGitShell`; a later right-click on each shows `LinuxGitShell` ▸ `Show Status`.
 - [ ] Trigger each action and confirm the external application inspects the selected path.
-- [ ] A two-item selection shows no LinuxGitShell action.
+- [ ] A directory outside any repository shows no LinuxGitShell entry after the first right-click.
+- [ ] A bare repository directory shows `Show Status`, and the application reports a bare repository.
+- [ ] During a merge or rebase, the submenu shows the operation as a disabled notice.
+- [ ] Two files in one repository show `Show Status` for the repository root after the first
+  right-click; files from two repositories show no entry.
 - [ ] A remote KIO URL shows no LinuxGitShell action.
+- [ ] Without a running daemon, menus keep showing `Open with LinuxGitShell` and Dolphin stays
+  responsive.
 - [ ] Closing LinuxGitShell leaves Dolphin running and responsive.
 - [ ] Starting Dolphin without the development `PATH` produces a handled launch error and no crash.
-- [ ] Spanish locale displays `Abrir con LinuxGitShell`.
+- [ ] Spanish locale displays `Abrir con LinuxGitShell` and `Mostrar estado`.
 
 To remove the development installation, shut down Dolphin and any manually started
 `linuxgitshell-daemon`, remove only the repository-local `install/` directory, restore `PATH` and `QT_PLUGIN_PATH`, run `kbuildsycoca6`, and start Dolphin

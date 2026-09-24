@@ -227,3 +227,24 @@ msgstr "Abrir con LinuxGitShell"
 
 msgid "Could not start LinuxGitShell."
 msgstr "No se pudo iniciar LinuxGitShell."
+
+msgid "LinuxGitShell"
+msgstr "LinuxGitShell"
+
+msgid "Show Status"
+msgstr "Mostrar estado"
+
+msgid "Merge in progress"
+msgstr "Fusión en curso"
+
+msgid "Rebase in progress"
+msgstr "Rebase en curso"
+
+msgid "Cherry-pick in progress"
+msgstr "Cherry-pick en curso"
+
+msgid "Revert in progress"
+msgstr "Reversión en curso"
+
+msgid "Bisect in progress"
+msgstr "Bisección en curso"

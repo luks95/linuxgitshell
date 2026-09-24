@@ -19,8 +19,8 @@ Este roadmap deriva de la [especificación maestra](LinuxGitShell-Codex.md). La 
 [#9](https://github.com/luks95/linuxgitshell/pull/9); diseño del contexto no bloqueante en
 [`docs/repository-context-cache.md`](docs/repository-context-cache.md), seguido por
 [#10](https://github.com/luks95/linuxgitshell/issues/10); modelo de snapshots y cache acotado sin Git
-en `libs/repositorycontext/`, servicio de contexto experimental en `daemon/` y cliente no bloqueante
-en el plugin, seguidos por
+en `libs/repositorycontext/`, servicio de contexto experimental en `daemon/`, cliente no bloqueante
+y menú según el repositorio (`Show Status`), seguidos por
 [#12](https://github.com/luks95/linuxgitshell/issues/12).
 
 ## Cómo utilizar este documento
@@ -215,11 +215,13 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 
 - [x] Investigar y documentar la API KF6 vigente para plugins de Dolphin.
 - [x] Crear un plugin pequeño que delegue acciones al core o a procesos externos de LinuxGitShell.
-- [ ] Detectar selección de archivo/carpeta, raíz y pertenencia a repositorio.
-- [ ] Limitar acciones cuando la selección atraviesa repositorios diferentes.
+- [x] Detectar selección de archivo/carpeta, raíz y pertenencia a repositorio.
+- [x] Limitar acciones cuando la selección atraviesa repositorios diferentes.
 - [ ] Fuera de un repositorio: mostrar `Git Clone...` y `Git Create repository here...`.
+  Pendiente de que la aplicación implemente clonado y creación; hoy no se muestra ninguna entrada.
 - [ ] Dentro de un repositorio: mostrar `Show Status`, `Commit`, `Pull`, `Push`, `Show Log` y `Settings`.
-- [ ] Adaptar acciones para repositorios bare y operaciones Git en progreso.
+  `Show Status` está disponible; las demás acciones se añadirán cuando la aplicación las implemente.
+- [x] Adaptar acciones para repositorios bare y operaciones Git en progreso.
 - [ ] Abrir Settings y demás ventanas como aplicaciones externas con contexto de repositorio.
 - [x] Evitar cualquier status síncrono pesado en el proceso de Dolphin.
 - [x] Añadir logging diagnóstico para carga del plugin sin registrar rutas sensibles por defecto.
@@ -887,6 +889,8 @@ El orden de estas tareas se decidirá con uso real, métricas e interés comunit
 
 ## Próxima tarea recomendada
 
-Completar el checklist interactivo del plugin en Dolphin/Wayland e implementar el cliente de
-snapshots y servicio de contexto definidos en `docs/repository-context-cache.md`, sin ejecutar Git,
-recorrer el filesystem ni esperar IPC dentro del proceso de Dolphin.
+Completar el checklist interactivo de `docs/dolphin-context-menu.md` en Dolphin/Wayland con el menú
+según el repositorio (`Show Status`, avisos de operaciones y multiselección), medir la latencia
+nativa de `actions()` (p50/p95/máximo) y adjuntar capturas. Con eso se pueden evaluar los criterios de
+salida de la Fase 2; las acciones `Commit`, `Pull`, `Push`, `Show Log`, `Settings`, `Git Clone` y
+`Create repository here` se añadirán al menú cuando la aplicación las implemente.
