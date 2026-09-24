@@ -4,6 +4,9 @@
 #include "GitActionPlugin.h"
 
 #include "ContextMenuSelection.h"
+#include "RepositoryContextClient.h"
+
+#include "linuxgitshell/repositorycontext/RepositoryContextSnapshot.h"
 
 #include <KFileItemListProperties>
 #include <KLocalizedString>
@@ -38,6 +41,15 @@ QList<QAction*> GitActionPlugin::actions(const KFileItemListProperties& fileItem
     if (!path.has_value())
     {
         return {};
+    }
+
+    // Memory-only lookup: a cold or stale entry is refreshed from the event loop after this menu
+    // is built, so a later menu can use it. Git, discovery, and IPC never run here.
+    RepositoryContextClient& contextClient = RepositoryContextClient::instance();
+    const QString pathKey = repositoryContextPathKey(path.value());
+    if (!pathKey.isEmpty() && !contextClient.lookup(pathKey).snapshot.has_value())
+    {
+        contextClient.refreshLater({pathKey});
     }
 
     auto* action = new QAction(QIcon::fromTheme(QStringLiteral("git")),

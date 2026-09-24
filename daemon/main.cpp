@@ -6,6 +6,7 @@
 #include "DaemonLogging.h"
 
 #include "linuxgitshell/gitcore/ProjectInfo.h"
+#include "linuxgitshell/repositorycontext/RepositoryContextWire.h"
 
 #include <QCommandLineParser>
 #include <QCoreApplication>
@@ -35,12 +36,12 @@ int main(int argc, char* argv[])
     new LinuxGitShell::ContextServiceAdaptor(&service);
 
     // Register the object before the name so that activated clients never see a missing object.
-    if (!bus.registerObject(QString::fromLatin1(LinuxGitShell::ContextObjectPath), &service))
+    if (!bus.registerObject(LinuxGitShell::RepositoryContextObjectPath, &service))
     {
         qCCritical(LinuxGitShell::daemonLog) << "Could not register the context object";
         return 1;
     }
-    if (!bus.registerService(QString::fromLatin1(LinuxGitShell::ContextServiceName)))
+    if (!bus.registerService(LinuxGitShell::RepositoryContextServiceName))
     {
         qCWarning(LinuxGitShell::daemonLog) << "Context service is already running";
         return 1;

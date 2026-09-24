@@ -74,15 +74,20 @@ Phase 2 — Dolphin context menu.
   `RepositoryDiscovery` outside Dolphin and publishes it over
   `org.linuxgitshell.Experimental.Context1` (contract in `dbus/`), with D-Bus activation, random
   per-instance generations, bounded requests, a 10-second discovery timeout, and a service cache.
-  Fifteen local tests pass, including the real daemon on a private bus. It is not yet used by the
-  plugin.
+  The service exits when its session bus disconnects.
+- Non-blocking context client in the Dolphin plugin: `actions()` only reads a process-wide
+  in-memory cache and queues cold or stale paths; requests leave from the event loop through
+  asynchronous D-Bus calls that activate the service, and replies warm the cache for later menus.
+  The visible menu is unchanged. Seventeen local tests pass; the plugin test loads the real module,
+  proves that building menus neither runs Git nor contacts the service before returning, and
+  measured `actions()` at p50 0.015 ms, p95 0.03 ms, and max 1.8 ms offscreen in a Debug build.
 - Repository-local development installation verified with the expected binary, plugin, and Spanish
   catalog, followed by an isolated offscreen Dolphin startup with temporary D-Bus/XDG state.
 
 ## In progress
 
-- Complete interactive Dolphin verification and implement the asynchronous plugin client on top of
-  the cache and context service, tracked by [issue #12](https://github.com/luks95/linuxgitshell/issues/12).
+- Complete interactive Dolphin verification and add repository-aware actions on top of the context
+  client, tracked by [issue #12](https://github.com/luks95/linuxgitshell/issues/12).
 
 ## Known issues
 
@@ -97,8 +102,7 @@ Phase 2 — Dolphin context menu.
 ## Next steps
 
 1. Run the documented checklist with the development plugin loaded by Dolphin on Plasma Wayland.
-2. Add the asynchronous plugin client on top of `RepositoryContextCache` and the experimental
-   context service, proving that `actions()` performs no Git, filesystem discovery, or synchronous
-   IPC.
-3. Use the resulting context to add repository-aware actions incrementally, including
-   multi-selection and bare-repository rules.
+2. Use the warm context to add repository-aware actions incrementally, including outside-repository,
+   bare-repository, operation-in-progress, and multi-selection rules.
+3. Record native p50/p95/max `actions()` latency in Dolphin before enabling repository-aware actions
+   by default.
