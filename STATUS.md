@@ -4,6 +4,37 @@
 
 Phase 2 — Dolphin context menu.
 
+## Resuming work
+
+Last updated 2026-09-24. The repository-context work for
+[issue #12](https://github.com/luks95/linuxgitshell/issues/12) is complete in four stacked pull
+requests. Each targets the previous branch and has passing CI. Merge them into `main` in this order,
+retargeting the next pull request to `main` after each merge:
+
+| Order | Pull request | Branch | Content |
+| --- | --- | --- | --- |
+| 1 | [#13](https://github.com/luks95/linuxgitshell/pull/13) | `feature/repository-context-cache` | Snapshot model and bounded cache in `libs/repositorycontext/` |
+| 2 | [#14](https://github.com/luks95/linuxgitshell/pull/14) | `feature/context-service` | `linuxgitshell-daemon` with `org.linuxgitshell.Experimental.Context1` |
+| 3 | [#15](https://github.com/luks95/linuxgitshell/pull/15) | `feature/plugin-context-client` | Non-blocking context client in the Dolphin plugin |
+| 4 | [#16](https://github.com/luks95/linuxgitshell/pull/16) | `feature/repository-aware-actions` | `LinuxGitShell` ▸ `Show Status` menu and this documentation |
+
+Decisions already taken:
+
+- The context service lives in `daemon/` as the first increment of the Phase 4 daemon and uses the
+  experimental bus name `org.linuxgitshell.Experimental.Context1`, not the stable `Daemon1` name.
+- The menu offers only actions the application implements. Today that is `Show Status`, which opens
+  the read-only inspector. Other roadmap actions are added when their application features land.
+
+The remaining Phase 2 work is manual and needs a native Plasma Wayland session:
+
+1. Install the development prefix, start the daemon, and restart Dolphin from the same terminal, as
+   described in [`docs/dolphin-context-menu.md`](docs/dolphin-context-menu.md#development-installation).
+   A Dolphin started from the Plasma launcher does not load the development plugin.
+2. Complete the manual checklist in that document, attach screenshots to #16, and record native
+   p50/p95/max `actions()` latency.
+3. Evaluate the Phase 2 exit criteria in `roadmap-checklist.md`, then plan the `v0.2.0` overlays
+   work (Phase 3).
+
 ## Working
 
 - Manjaro/Arch development environment inventoried.

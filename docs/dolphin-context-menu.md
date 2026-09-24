@@ -153,6 +153,21 @@ The session bus only activates services listed in its own data directories, so t
 prefix's `share/dbus-1/services` file is not used. When testing the experimental context service,
 start `./install/bin/linuxgitshell-daemon` manually and stop it when finished.
 
+Dolphin must be started from the terminal that exported these variables. A Dolphin started from the
+Plasma launcher, a desktop shortcut, or D-Bus activation runs under `systemd --user` without them,
+so it neither loads the development plugin nor finds `linuxgitshell`. Running `dolphin` while
+another Dolphin process exists only opens a window in that older process, so quit it first:
+
+```bash
+./install/bin/linuxgitshell-daemon &
+kquitapp6 dolphin
+dolphin &
+```
+
+To check which environment a running Dolphin uses, compare `pgrep -a dolphin` with
+`tr '\0' '\n' < /proc/<pid>/environ | grep -E '^(PATH|QT_PLUGIN_PATH)='`. The inspector also runs
+without Dolphin: `./install/bin/linuxgitshell /path/to/repository`.
+
 For a staged system-layout check, configure with `-DCMAKE_INSTALL_PREFIX=/usr` and use `DESTDIR`.
 On the validated Arch/Manjaro environment, the resulting module path is
 `usr/lib/qt6/plugins/kf6/kfileitemaction/linuxgitshell_fileitemaction.so` inside the staging root,
