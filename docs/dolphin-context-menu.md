@@ -173,14 +173,20 @@ development artifacts into `/usr`. A future package must own installation, upgra
 
 ## Verification status
 
-As of 2026-09-13:
+As of 2026-09-24:
 
-- the complete local and hosted CI suites pass 11/11 tests;
+- the complete local and hosted CI suites pass 17/17 tests, including `clang-tidy`;
 - CTest loads the real module through `KPluginFactory` and validates its metadata and actions;
 - an unusual selected path reaches an external helper unchanged as one argument;
-- clean development-prefix and staged `/usr` layouts contain the expected plugin;
-- Dolphin starts offscreen with the development plugin path in isolated D-Bus/XDG state;
-- interactive right-click behavior on native Wayland remains pending.
+- on a private bus with the activatable context service, the real module shows the generic action
+  while cold, then `Show Status` for repositories, operation notices, no entry outside
+  repositories, the repository root for same-repository selections, and no entry across
+  repositories;
+- building 200 menus neither runs Git nor contacts the service before returning, with an offscreen
+  `actions()` p95 of about 0.03 ms;
+- clean development-prefix and staged `/usr` layouts contain the expected plugin, daemon, and
+  activation file;
+- interactive right-click behavior and native latency on Plasma Wayland remain pending.
 
 ## Manual test checklist
 

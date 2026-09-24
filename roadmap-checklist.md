@@ -889,6 +889,8 @@ El orden de estas tareas se decidirá con uso real, métricas e interés comunit
 
 ## Próxima tarea recomendada
 
-Completar el checklist interactivo del plugin en Dolphin/Wayland e implementar el cliente de
-snapshots y servicio de contexto definidos en `docs/repository-context-cache.md`, sin ejecutar Git,
-recorrer el filesystem ni esperar IPC dentro del proceso de Dolphin.
+Completar el checklist interactivo de `docs/dolphin-context-menu.md` en Dolphin/Wayland con el menú
+según el repositorio (`Show Status`, avisos de operaciones y multiselección), medir la latencia
+nativa de `actions()` (p50/p95/máximo) y adjuntar capturas. Con eso se pueden evaluar los criterios de
+salida de la Fase 2; las acciones `Commit`, `Pull`, `Push`, `Show Log`, `Settings`, `Git Clone` y
+`Create repository here` se añadirán al menú cuando la aplicación las implemente.
