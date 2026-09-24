@@ -3,8 +3,9 @@
 Status: accepted for Phase 2; designed in
 [`#10`](https://github.com/luks95/linuxgitshell/issues/10). The snapshot model and bounded cache
 live in `libs/repositorycontext/`, and the experimental context service in `daemon/` (see
-[Implemented service](#implemented-service)). The plugin client and repository-aware actions are
-tracked by [`#12`](https://github.com/luks95/linuxgitshell/issues/12).
+[Implemented service](#implemented-service)), and the plugin client in
+`integrations/dolphin/contextmenu/` (see [Implemented client](#implemented-client)). Repository-aware
+actions are tracked by [`#12`](https://github.com/luks95/linuxgitshell/issues/12).
 
 ## Problem and constraints
 
@@ -133,3 +134,35 @@ may change without a compatibility period.
   it.
 - A repository root whose path contains a newline is reported as `error`, because Git reports
   repository paths one per line. Files with newlines inside a repository are supported.
+
+## Implemented client
+
+`RepositoryContextClient` is a single process-wide object owned by the application, because Dolphin
+may create a new plugin object for each context menu. Constructing it performs no D-Bus work.
+
+1. `actions()` computes the lexical path key and calls `lookup()`, a hash lookup in a
+   `RepositoryContextCache` with the default bounds.
+2. A cold or stale key goes through `refreshLater()`, which only appends to an in-memory queue and
+   schedules a zero-delay timer. Keys already queued or in flight are skipped; at most 256 keys are
+   in flight, and an unanswered key can be requested again after 30 seconds.
+3. From the event loop, `DBusRepositoryContextTransport` sends `RequestContext` with
+   `QDBusConnection::asyncCall()`, which also triggers D-Bus activation. It uses no generated proxy,
+   because proxies resolve the name owner synchronously. It subscribes to `ContextReady` without a
+   sender filter so that subscribing needs no name lookup either.
+4. The returned generation, and the generation of each reply, replaces the cache generation when it
+   differs, which drops snapshots from a previous service instance. Unrecognized replies are ignored.
+5. A failed or refused call releases its keys, so a later menu can retry.
+
+The menu itself is unchanged in this increment: one local selection still produces only
+`Open with LinuxGitShell`.
+
+The plugin test loads the real module on a private bus with an activatable service. It builds 200
+menus and verifies three things. The service is not activated before control returns to the event
+loop, so no synchronous IPC happened. A `git` placed first in `PATH` is never executed. The service
+is then activated by the deferred request. Temporarily adding either a synchronous D-Bus call or an
+in-process Git execution to `actions()` makes the test fail.
+
+Offscreen measurements in a Debug build on the development workstation gave p50 0.015 ms, p95
+0.03 ms, and max 1.8 ms for `actions()`; the maximum is the first call. CI enforces only a loose 20 ms
+p95 bound to catch blocking work. Native Dolphin measurements remain required before
+repository-aware actions are enabled by default.

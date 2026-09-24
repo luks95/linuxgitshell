@@ -12,10 +12,8 @@ namespace LinuxGitShell
 
 class ContextService;
 
-inline constexpr auto ContextServiceName = "org.linuxgitshell.Experimental.Context1";
-inline constexpr auto ContextObjectPath = "/org/linuxgitshell/Context";
-
-// Exposes ContextService as dbus/org.linuxgitshell.Experimental.Context1.xml.
+// Exposes ContextService as dbus/org.linuxgitshell.Experimental.Context1.xml. The interface name in
+// Q_CLASSINFO must match RepositoryContextInterfaceName.
 class ContextServiceAdaptor final : public QDBusAbstractAdaptor
 {
     Q_OBJECT
