@@ -15,7 +15,7 @@ yet.
 | Git process runner, repository discovery, status, and config inspection | Released in `v0.1.0` |
 | Read-only Qt/KF6 repository inspector | Released in `v0.1.0` |
 | Minimal Dolphin action for one local selection | Available on `main`, unreleased |
-| Repository-aware menus and context cache | Cache, experimental context service, and non-blocking plugin client implemented; repository-aware actions tracked by [#12](https://github.com/luks95/linuxgitshell/issues/12) |
+| Repository-aware menus and context cache | `Show Status` for repositories, operation notices, and same-repository multiple selections; native verification tracked by [#12](https://github.com/luks95/linuxgitshell/issues/12) |
 | Overlays, stable daemon/D-Bus API, and mutating Git workflows | Not implemented |
 
 See [`STATUS.md`](STATUS.md) for verification evidence and the exact next steps.
@@ -71,7 +71,7 @@ ctest --test-dir build --output-on-failure
 The current suite registers 17 tests, including plugin metadata/factory loading, selection policy,
 unusual-path process transfer, the bounded repository-context cache and its D-Bus encoding, the
 context service against temporary repositories, the real daemon and D-Bus activation on a private
-session bus through `dbus-run-session`, the plugin's non-blocking context client, and Spanish
+session bus through `dbus-run-session`, the plugin's non-blocking context client and repository-aware menus, and Spanish
 translations.
 
 Check formatting before submitting C++ changes:

@@ -1,8 +1,8 @@
 # Dolphin Context-Menu Integration
 
 Implementation status: the minimal single-local-selection plugin is merged on `main` through
-[PR #9](https://github.com/luks95/linuxgitshell/pull/9). Repository-aware menus remain planned work
-under [issue #12](https://github.com/luks95/linuxgitshell/issues/12).
+[PR #9](https://github.com/luks95/linuxgitshell/pull/9). Repository-aware menus are implemented under
+[issue #12](https://github.com/luks95/linuxgitshell/issues/12) and still need native Dolphin verification.
 
 This note records the KF6 extension API and the first implementation boundary for Phase 2. It was
 validated on 2026-09-13 against Dolphin 26.08.0, KIO 6.29.0, the installed KF6 headers, and a current
@@ -89,20 +89,32 @@ by `kcoreaddons_add_plugin`.
 
 ## Process boundary
 
-The first plugin increment is deliberately small:
+The plugin decides its entries in `ContextMenuPolicy`, a UI-independent helper that only reads
+memory-only snapshots, and launches every window as a separate process. The menu offers only actions
+that the application can already perform:
 
-1. Return no actions for an empty selection, a remote URL, or more than one selected item.
-2. For one local item, return one translated `Open with LinuxGitShell` action immediately.
-3. When triggered, start the external `linuxgitshell` application with the local path as a separate
-   process argument. Never use a shell command string.
-4. Let the external application perform repository discovery and display its typed error if the path
-   is not inside a repository.
-5. Keep selection policy in a UI-independent helper so it can be unit tested without Dolphin.
+| Selection | Snapshot | Entries |
+| --- | --- | --- |
+| Empty, remote, mixed, or more than 256 items | — | none |
+| One local item | cold or stale | `Open with LinuxGitShell`, and an asynchronous refresh |
+| One local item | inside a repository, including bare | `LinuxGitShell` ▸ `Show Status` for the selected path |
+| One local item | outside a repository | none |
+| One local item | discovery error or service unavailable | `Open with LinuxGitShell` |
+| Several local items | all warm and in the same repository | `LinuxGitShell` ▸ `Show Status` for the repository root |
+| Several local items | any cold, outside, or in another repository | none; cold items are refreshed |
+
+When a merge, rebase, cherry-pick, revert, or bisect is in progress, the submenu lists it as a
+disabled notice below `Show Status`. `Commit`, `Pull`, `Push`, `Show Log`, `Settings`, `Git Clone`,
+and `Create repository here` will be added when the application implements them, so that the menu
+never offers an action that cannot run.
+
+Triggered actions start the external `linuxgitshell` application with one path as a separate
+process argument. They never use a shell command string, and the application performs its own
+repository discovery.
 
 This increment proves loading, metadata, selection transfer, localization, and process isolation.
-The plugin also warms a non-blocking repository-context cache for later menus, as described in
-[`repository-context-cache.md`](repository-context-cache.md#implemented-client), but it does not yet
-show repository-dependent actions. Dynamic `Show Status`, `Commit`, `Pull`, `Push`,
+Repository-dependent entries come from the non-blocking context client described in
+[`repository-context-cache.md`](repository-context-cache.md#implemented-client). Dynamic `Show Status`, `Commit`, `Pull`, `Push`,
 `Show Log`, and `Settings` actions require an asynchronous external context resolver or the later
 D-Bus service; they must not be implemented by running Git synchronously inside Dolphin.
 
@@ -176,14 +188,23 @@ Use a disposable Git repository and close existing Dolphin windows before changi
 paths. `kquitapp6 dolphin` requests a clean Dolphin shutdown; starting Dolphin again loads the new
 module.
 
-- [ ] Right-click one repository root, one subdirectory, and one file; each shows
-  `Open with LinuxGitShell`.
+Start `linuxgitshell-daemon` from the development prefix first, because the session bus does not
+read activation files from it.
+
+- [ ] The first right-click on a repository root, a subdirectory, and a file shows
+  `Open with LinuxGitShell`; a later right-click on each shows `LinuxGitShell` ▸ `Show Status`.
 - [ ] Trigger each action and confirm the external application inspects the selected path.
-- [ ] A two-item selection shows no LinuxGitShell action.
+- [ ] A directory outside any repository shows no LinuxGitShell entry after the first right-click.
+- [ ] A bare repository directory shows `Show Status`, and the application reports a bare repository.
+- [ ] During a merge or rebase, the submenu shows the operation as a disabled notice.
+- [ ] Two files in one repository show `Show Status` for the repository root after the first
+  right-click; files from two repositories show no entry.
 - [ ] A remote KIO URL shows no LinuxGitShell action.
+- [ ] Without a running daemon, menus keep showing `Open with LinuxGitShell` and Dolphin stays
+  responsive.
 - [ ] Closing LinuxGitShell leaves Dolphin running and responsive.
 - [ ] Starting Dolphin without the development `PATH` produces a handled launch error and no crash.
-- [ ] Spanish locale displays `Abrir con LinuxGitShell`.
+- [ ] Spanish locale displays `Abrir con LinuxGitShell` and `Mostrar estado`.
 
 To remove the development installation, shut down Dolphin and any manually started
 `linuxgitshell-daemon`, remove only the repository-local `install/` directory, restore `PATH` and `QT_PLUGIN_PATH`, run `kbuildsycoca6`, and start Dolphin

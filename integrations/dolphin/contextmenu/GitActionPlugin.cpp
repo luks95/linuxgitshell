@@ -3,10 +3,8 @@
 
 #include "GitActionPlugin.h"
 
-#include "ContextMenuSelection.h"
+#include "ContextMenuPolicy.h"
 #include "RepositoryContextClient.h"
-
-#include "linuxgitshell/repositorycontext/RepositoryContextSnapshot.h"
 
 #include <KFileItemListProperties>
 #include <KLocalizedString>
@@ -15,6 +13,7 @@
 #include <QAction>
 #include <QIcon>
 #include <QLoggingCategory>
+#include <QMenu>
 #include <QProcess>
 #include <QStringList>
 #include <QWidget>
@@ -36,39 +35,81 @@ GitActionPlugin::GitActionPlugin(QObject* parent, const QVariantList& arguments)
 QList<QAction*> GitActionPlugin::actions(const KFileItemListProperties& fileItemInfos,
                                          QWidget* parentWidget)
 {
-    const std::optional<QString> path =
-        ContextMenuSelection::singleLocalPath(fileItemInfos.urlList());
-    if (!path.has_value())
-    {
-        return {};
-    }
-
-    // Memory-only lookup: a cold or stale entry is refreshed from the event loop after this menu
-    // is built, so a later menu can use it. Git, discovery, and IPC never run here.
+    // Memory-only lookups: cold or stale entries are refreshed from the event loop after this
+    // menu is built, so a later menu can use them. Git, discovery, and IPC never run here.
     RepositoryContextClient& contextClient = RepositoryContextClient::instance();
-    const QString pathKey = repositoryContextPathKey(path.value());
-    if (!pathKey.isEmpty() && !contextClient.lookup(pathKey).snapshot.has_value())
+    const ContextMenuDecision decision =
+        ContextMenuPolicy::decide(fileItemInfos.urlList(), [&contextClient](const QString& pathKey)
+                                  { return contextClient.lookup(pathKey); });
+    if (!decision.refreshKeys.isEmpty())
     {
-        contextClient.refreshLater({pathKey});
+        contextClient.refreshLater(decision.refreshKeys);
     }
 
-    auto* action = new QAction(QIcon::fromTheme(QStringLiteral("git")),
-                               i18nd("linuxgitshell", "Open with LinuxGitShell"), parentWidget);
+    switch (decision.kind)
+    {
+    case ContextMenuKind::None:
+        return {};
+    case ContextMenuKind::Generic:
+    {
+        auto* open = new QAction(i18nd("linuxgitshell", "Open with LinuxGitShell"), parentWidget);
+        launchOnTrigger(open, decision.launchPath);
+        return {open};
+    }
+    case ContextMenuKind::Repository:
+        break;
+    }
 
+    auto* menu = new QMenu(i18nd("linuxgitshell", "LinuxGitShell"), parentWidget);
+    menu->setIcon(QIcon::fromTheme(QStringLiteral("git")));
+    auto* showStatus = new QAction(i18nd("linuxgitshell", "Show Status"), menu);
+    launchOnTrigger(showStatus, decision.launchPath);
+    menu->addAction(showStatus);
+    if (!decision.operations.isEmpty())
+    {
+        menu->addSeparator();
+        for (const RepositoryContextOperation operation : decision.operations)
+        {
+            auto* notice = new QAction(operationText(operation), menu);
+            notice->setEnabled(false);
+            menu->addAction(notice);
+        }
+    }
+    return {menu->menuAction()};
+}
+
+void GitActionPlugin::launchOnTrigger(QAction* action, const QString& path)
+{
+    action->setIcon(QIcon::fromTheme(QStringLiteral("git")));
     connect(action, &QAction::triggered, this,
-            [this, selectedPath = *path]()
+            [this, path]()
             {
-                const bool started = QProcess::startDetached(QStringLiteral("linuxgitshell"),
-                                                             QStringList{selectedPath});
-                if (!started)
+                // The path is one process argument; no shell is involved.
+                if (!QProcess::startDetached(QStringLiteral("linuxgitshell"), QStringList{path}))
                 {
                     qCWarning(dolphinContextMenuLog)
                         << "Could not start the LinuxGitShell application";
                     Q_EMIT error(i18nd("linuxgitshell", "Could not start LinuxGitShell."));
                 }
             });
+}
 
-    return {action};
+QString GitActionPlugin::operationText(RepositoryContextOperation operation)
+{
+    switch (operation)
+    {
+    case RepositoryContextOperation::Merge:
+        return i18nd("linuxgitshell", "Merge in progress");
+    case RepositoryContextOperation::Rebase:
+        return i18nd("linuxgitshell", "Rebase in progress");
+    case RepositoryContextOperation::CherryPick:
+        return i18nd("linuxgitshell", "Cherry-pick in progress");
+    case RepositoryContextOperation::Revert:
+        return i18nd("linuxgitshell", "Revert in progress");
+    case RepositoryContextOperation::Bisect:
+        return i18nd("linuxgitshell", "Bisect in progress");
+    }
+    return {};
 }
 
 } // namespace LinuxGitShell::Dolphin
