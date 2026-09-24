@@ -1,0 +1,41 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<!--
+SPDX-FileCopyrightText: 2026 LinuxGitShell contributors
+SPDX-License-Identifier: MIT
+
+EXPERIMENTAL: this interface may change without a compatibility period. It is not the stable
+org.linuxgitshell.Daemon1 API; see docs/dbus-api-policy.md and docs/repository-context-cache.md.
+
+Well-known name: org.linuxgitshell.Experimental.Context1
+Object path:     /org/linuxgitshell/Context
+-->
+<node>
+  <interface name="org.linuxgitshell.Experimental.Context1">
+    <!--
+    Queues repository-context resolution for absolute local paths and returns at once with the
+    service generation. Each accepted path is answered later by ContextReady. Relative, empty, or
+    longer-than-4096-character paths, paths beyond the first 256, and paths that do not fit the
+    service queue are ignored; clients retry on a later menu opening.
+    -->
+    <method name="RequestContext">
+      <arg name="paths" type="as" direction="in"/>
+      <arg name="generation" type="t" direction="out"/>
+    </method>
+
+    <!--
+    Delivers the context for one normalized path key. The generation is random and non-zero, and
+    changes when the service restarts. The dictionary always contains "state" (s: inside, outside,
+    unavailable, or error). Inside a repository it also contains "repositoryRoot" (s), "type"
+    (s: normal, bare, worktree, or submodule), "operations" (as: merge, rebase, cherry-pick, revert,
+    bisect), "isRepositoryRoot" (b), "hasRemote" (b), and "hasUpstream" (b). Clients must ignore
+    unknown keys and values.
+    -->
+    <signal name="ContextReady">
+      <arg name="path" type="s"/>
+      <arg name="context" type="a{sv}"/>
+      <arg name="generation" type="t"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QVariantMap"/>
+    </signal>
+  </interface>
+</node>

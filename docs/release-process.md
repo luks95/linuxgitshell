@@ -32,7 +32,10 @@ QT_QPA_PLATFORM=offscreen ./build-release/linuxgitshell --version
 
 Confirm that the staged installation contains `usr/bin/linuxgitshell`, the Spanish catalog under
 `usr/share/locale/es/LC_MESSAGES`, and, for releases containing the Dolphin integration,
-`usr/lib/qt6/plugins/kf6/kfileitemaction/linuxgitshell_fileitemaction.so`. The install prefix must be
+`usr/lib/qt6/plugins/kf6/kfileitemaction/linuxgitshell_fileitemaction.so`, plus, for releases
+containing the context service, `usr/bin/linuxgitshell-daemon` and
+`usr/share/dbus-1/services/org.linuxgitshell.Experimental.Context1.service` with
+`Exec=/usr/bin/linuxgitshell-daemon`. The install prefix must be
 set during configuration because ECM calculates the plugin directory at that point. The printed
 version must be `linuxgitshell X.Y.Z`. Complete `docs/manual-smoke-test.md` in KDE Plasma 6 Wayland
 and, for releases containing the Dolphin integration, the manual checklist in
