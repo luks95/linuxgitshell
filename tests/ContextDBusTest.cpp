@@ -178,8 +178,19 @@ void ContextDBusTest::exitsWhenBusDisconnects()
     const QString processDirectory =
         QStringLiteral("/proc/") + QString::fromLatin1(pid.readAll().trimmed());
     QVERIFY(processDirectory.size() > 6);
-    QVERIFY(QTest::qWaitFor([&processDirectory] { return !QFileInfo::exists(processDirectory); },
-                            5000));
+    // A process that exited may stay a zombie when the container's init does not reap orphans.
+    const auto hasExited = [&processDirectory]
+    {
+        QFile stat(processDirectory + QStringLiteral("/stat"));
+        if (!stat.open(QIODevice::ReadOnly))
+        {
+            return true;
+        }
+        const QByteArray contents = stat.readAll();
+        const qsizetype commandEnd = contents.lastIndexOf(')');
+        return commandEnd >= 0 && contents.mid(commandEnd + 2, 1) == QByteArrayLiteral("Z");
+    };
+    QVERIFY(QTest::qWaitFor(hasExited, 5000));
 }
 
 QTEST_GUILESS_MAIN(ContextDBusTest)
