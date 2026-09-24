@@ -164,6 +164,7 @@ target_compile_definitions(
     PRIVATE
         GIT_EXECUTABLE_PATH="${GIT_EXECUTABLE}"
         DAEMON_EXECUTABLE_PATH="$<TARGET_FILE:linuxgitshell-daemon>"
+        DBUS_RUN_SESSION_PATH="${DBUS_RUN_SESSION_EXECUTABLE}"
 )
 
 target_include_directories(ContextDBusTest PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")

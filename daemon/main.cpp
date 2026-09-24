@@ -46,6 +46,11 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    // A session service must not outlive its bus, for example after logout or dbus-run-session.
+    bus.connect(QString(), QStringLiteral("/org/freedesktop/DBus/Local"),
+                QStringLiteral("org.freedesktop.DBus.Local"), QStringLiteral("Disconnected"),
+                &application, SLOT(quit()));
+
     qCDebug(LinuxGitShell::daemonLog) << "Context service started";
     return QCoreApplication::exec();
 }

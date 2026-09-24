@@ -12,6 +12,7 @@
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
 #include <QDBusPendingReply>
+#include <QFile>
 #include <QFileInfo>
 #include <QProcess>
 #include <QSignalSpy>
@@ -82,6 +83,7 @@ class ContextDBusTest final : public QObject
     void resolvesRepositoryOverSessionBus();
     void rejectsSecondInstance();
     void restartChangesGeneration();
+    void exitsWhenBusDisconnects();
 };
 
 void ContextDBusTest::initTestCase()
@@ -153,6 +155,31 @@ void ContextDBusTest::restartChangesGeneration()
     const quint64 secondGeneration = requestContext(context, {});
     QVERIFY(secondGeneration != 0);
     QVERIFY(secondGeneration != firstGeneration);
+}
+
+void ContextDBusTest::exitsWhenBusDisconnects()
+{
+    // A nested private bus ends when its shell exits; the daemon started on it must exit too.
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString pidFile = directory.filePath(QStringLiteral("daemon.pid"));
+
+    QProcess session;
+    session.setProgram(QStringLiteral(DBUS_RUN_SESSION_PATH));
+    session.setArguments({QStringLiteral("--"), QStringLiteral("/bin/sh"), QStringLiteral("-c"),
+                          QStringLiteral("\"$0\" & echo $! > \"$1\"; sleep 1"),
+                          QStringLiteral(DAEMON_EXECUTABLE_PATH), pidFile});
+    session.start();
+    QVERIFY(session.waitForFinished(10000));
+    QCOMPARE(session.exitCode(), 0);
+
+    QFile pid(pidFile);
+    QVERIFY(pid.open(QIODevice::ReadOnly));
+    const QString processDirectory =
+        QStringLiteral("/proc/") + QString::fromLatin1(pid.readAll().trimmed());
+    QVERIFY(processDirectory.size() > 6);
+    QVERIFY(QTest::qWaitFor([&processDirectory] { return !QFileInfo::exists(processDirectory); },
+                            5000));
 }
 
 QTEST_GUILESS_MAIN(ContextDBusTest)
