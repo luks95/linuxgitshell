@@ -135,9 +135,15 @@ export QT_PLUGIN_PATH="$PWD/install/lib/plugins${QT_PLUGIN_PATH:+:$QT_PLUGIN_PAT
 kbuildsycoca6
 ```
 
+The session bus only activates services listed in its own data directories, so the development
+prefix's `share/dbus-1/services` file is not used. When testing the experimental context service,
+start `./install/bin/linuxgitshell-daemon` manually and stop it when finished.
+
 For a staged system-layout check, configure with `-DCMAKE_INSTALL_PREFIX=/usr` and use `DESTDIR`.
 On the validated Arch/Manjaro environment, the resulting module path is
-`usr/lib/qt6/plugins/kf6/kfileitemaction/linuxgitshell_fileitemaction.so` inside the staging root.
+`usr/lib/qt6/plugins/kf6/kfileitemaction/linuxgitshell_fileitemaction.so` inside the staging root,
+next to `usr/bin/linuxgitshell-daemon` and
+`usr/share/dbus-1/services/org.linuxgitshell.Experimental.Context1.service`.
 
 ```bash
 cmake -S . -B build-system -G Ninja -DCMAKE_BUILD_TYPE=Release \
@@ -177,6 +183,6 @@ module.
 - [ ] Starting Dolphin without the development `PATH` produces a handled launch error and no crash.
 - [ ] Spanish locale displays `Abrir con LinuxGitShell`.
 
-To remove the development installation, shut down Dolphin, remove only the repository-local
-`install/` directory, restore `PATH` and `QT_PLUGIN_PATH`, run `kbuildsycoca6`, and start Dolphin
+To remove the development installation, shut down Dolphin and any manually started
+`linuxgitshell-daemon`, remove only the repository-local `install/` directory, restore `PATH` and `QT_PLUGIN_PATH`, run `kbuildsycoca6`, and start Dolphin
 again. Do not delete anything below `/usr` for this development workflow.

@@ -16,6 +16,12 @@ All notable user-visible changes to LinuxGitShell will be documented here. The f
 - Git-free repository-context snapshot model and bounded LRU cache with warm/cold/stale lookups,
   separate positive and negative freshness, service-generation resets, repository and subtree
   invalidation, and same-repository multiple-selection checks, ready for the Dolphin client.
+- Experimental `linuxgitshell-daemon` session service exposing
+  `org.linuxgitshell.Experimental.Context1` over D-Bus, with activation file, extensible `a{sv}`
+  snapshots, per-instance generations, bounded requests and queue, concurrent discovery with a
+  timeout, a service-side cache, and no path logging. Tests cover normal, bare, linked-worktree,
+  submodule, outside, missing, unusual, cached, deduplicated, and timed-out paths and the real
+  daemon on a private session bus.
 
 ### Changed
 

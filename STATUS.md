@@ -69,28 +69,36 @@ Phase 2 — Dolphin context menu.
 - Git-free `libs/repositorycontext` snapshot model and bounded cache implementing the warm/cold/stale,
   size, freshness, generation, and invalidation rules of `docs/repository-context-cache.md`, with
   deterministic tests for normal, bare, linked-worktree, submodule, outside-repository, unusual-path,
-  eviction, and multiple-selection cases. It is not yet wired to a service or the plugin.
+  eviction, and multiple-selection cases.
+- Experimental `linuxgitshell-daemon` session service that resolves repository context with
+  `RepositoryDiscovery` outside Dolphin and publishes it over
+  `org.linuxgitshell.Experimental.Context1` (contract in `dbus/`), with D-Bus activation, random
+  per-instance generations, bounded requests, a 10-second discovery timeout, and a service cache.
+  Fifteen local tests pass, including the real daemon on a private bus. It is not yet used by the
+  plugin.
 - Repository-local development installation verified with the expected binary, plugin, and Spanish
   catalog, followed by an isolated offscreen Dolphin startup with temporary D-Bus/XDG state.
 
 ## In progress
 
-- Complete interactive Dolphin verification and implement the context service and asynchronous
-  plugin client on top of the new cache, tracked by [issue #12](https://github.com/luks95/linuxgitshell/issues/12).
+- Complete interactive Dolphin verification and implement the asynchronous plugin client on top of
+  the cache and context service, tracked by [issue #12](https://github.com/luks95/linuxgitshell/issues/12).
 
 ## Known issues
 
 - Mutating user-facing Git operations are not implemented yet.
-- Repository-aware Dolphin actions, overlays, daemon, and D-Bus are not implemented.
+- Repository-aware Dolphin actions, overlays, watchers, and the stable `Daemon1` D-Bus API are not
+  implemented; the context interface is experimental.
+- A repository root whose path contains a newline is reported as a discovery error, because
+  `RepositoryDiscovery` reads Git's line-based path output.
 - The plugin has automated factory/loading coverage and an isolated Dolphin startup, but its manual
   right-click checklist has not yet been completed in a native interactive session.
 
 ## Next steps
 
 1. Run the documented checklist with the development plugin loaded by Dolphin on Plasma Wayland.
-2. Decide the experimental bus name and location of the context service, then implement it around
-   `RepositoryDiscovery` outside Dolphin.
-3. Add the asynchronous plugin client on top of `RepositoryContextCache`, proving that `actions()`
-   performs no Git, filesystem discovery, or synchronous IPC.
-4. Use the resulting context to add repository-aware actions incrementally, including
+2. Add the asynchronous plugin client on top of `RepositoryContextCache` and the experimental
+   context service, proving that `actions()` performs no Git, filesystem discovery, or synchronous
+   IPC.
+3. Use the resulting context to add repository-aware actions incrementally, including
    multi-selection and bare-repository rules.

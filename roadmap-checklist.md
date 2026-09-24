@@ -19,7 +19,8 @@ Este roadmap deriva de la [especificación maestra](LinuxGitShell-Codex.md). La 
 [#9](https://github.com/luks95/linuxgitshell/pull/9); diseño del contexto no bloqueante en
 [`docs/repository-context-cache.md`](docs/repository-context-cache.md), seguido por
 [#10](https://github.com/luks95/linuxgitshell/issues/10); modelo de snapshots y cache acotado sin Git
-en `libs/repositorycontext/`, seguido por [#12](https://github.com/luks95/linuxgitshell/issues/12).
+en `libs/repositorycontext/` y servicio de contexto experimental en `daemon/`, seguidos por
+[#12](https://github.com/luks95/linuxgitshell/issues/12).
 
 ## Cómo utilizar este documento
 
@@ -224,7 +225,8 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 - [x] Diseñar un cache de contexto asíncrono que soporte `.git` como archivo/directorio y repos bare,
   con fallback frío, límites, invalidación y presupuesto de latencia ([#10](https://github.com/luks95/linuxgitshell/issues/10)).
 - [x] Implementar el modelo de snapshots y el cache LRU acotado, sin Git, filesystem ni IPC.
-- [ ] Implementar el servicio de contexto fuera de Dolphin sobre `RepositoryDiscovery`.
+- [x] Implementar el servicio de contexto fuera de Dolphin sobre `RepositoryDiscovery`
+  (`linuxgitshell-daemon`, interfaz experimental `org.linuxgitshell.Experimental.Context1`).
 - [ ] Implementar el cliente asíncrono de snapshots en el plugin.
 
 ## Verificación

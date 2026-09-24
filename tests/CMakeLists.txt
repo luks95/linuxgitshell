@@ -112,6 +112,78 @@ linuxgitshell_set_compiler_warnings(RepositoryContextCacheTest)
 
 add_test(NAME repositorycontext.cache COMMAND RepositoryContextCacheTest)
 
+add_executable(RepositoryContextWireTest RepositoryContextWireTest.cpp)
+
+target_link_libraries(
+    RepositoryContextWireTest
+    PRIVATE
+        LinuxGitShell::RepositoryContext
+        Qt6::Test
+)
+
+linuxgitshell_set_compiler_warnings(RepositoryContextWireTest)
+
+add_test(NAME repositorycontext.wire COMMAND RepositoryContextWireTest)
+
+add_executable(ContextServiceTest ContextServiceTest.cpp GitTestSupport.h)
+
+target_compile_definitions(
+    ContextServiceTest
+    PRIVATE GIT_EXECUTABLE_PATH="${GIT_EXECUTABLE}"
+)
+
+target_link_libraries(
+    ContextServiceTest
+    PRIVATE
+        LinuxGitShell::DaemonCore
+        Qt6::Test
+)
+
+linuxgitshell_set_compiler_warnings(ContextServiceTest)
+
+add_test(NAME daemon.context_service COMMAND ContextServiceTest)
+
+find_program(DBUS_RUN_SESSION_EXECUTABLE NAMES dbus-run-session REQUIRED)
+
+set(context_dbus_interface_sources)
+qt_add_dbus_interface(
+    context_dbus_interface_sources
+    "${PROJECT_SOURCE_DIR}/dbus/org.linuxgitshell.Experimental.Context1.xml"
+    contextinterface
+)
+
+add_executable(
+    ContextDBusTest
+    ContextDBusTest.cpp
+    GitTestSupport.h
+    ${context_dbus_interface_sources}
+)
+
+target_compile_definitions(
+    ContextDBusTest
+    PRIVATE
+        GIT_EXECUTABLE_PATH="${GIT_EXECUTABLE}"
+        DAEMON_EXECUTABLE_PATH="$<TARGET_FILE:linuxgitshell-daemon>"
+)
+
+target_include_directories(ContextDBusTest PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+
+target_link_libraries(
+    ContextDBusTest
+    PRIVATE
+        LinuxGitShell::RepositoryContext
+        Qt6::DBus
+        Qt6::Test
+)
+
+add_dependencies(ContextDBusTest linuxgitshell-daemon)
+linuxgitshell_set_compiler_warnings(ContextDBusTest)
+
+add_test(
+    NAME daemon.context_dbus
+    COMMAND "${DBUS_RUN_SESSION_EXECUTABLE}" -- "$<TARGET_FILE:ContextDBusTest>"
+)
+
 add_executable(MainWindowTest MainWindowTest.cpp)
 
 target_compile_definitions(
