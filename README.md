@@ -15,7 +15,7 @@ yet.
 | Git process runner, repository discovery, status, and config inspection | Released in `v0.1.0` |
 | Read-only Qt/KF6 repository inspector | Released in `v0.1.0` |
 | Minimal Dolphin action for one local selection | Available on `main`, unreleased |
-| Repository-aware menus and context cache | Designed; implementation tracked by [#10](https://github.com/luks95/linuxgitshell/issues/10) |
+| Repository-aware menus and context cache | Designed; cache model implemented, service and plugin client tracked by [#12](https://github.com/luks95/linuxgitshell/issues/12) |
 | Overlays, daemon/D-Bus, and mutating Git workflows | Not implemented |
 
 See [`STATUS.md`](STATUS.md) for verification evidence and the exact next steps.
@@ -68,8 +68,8 @@ cmake --build build -j
 ctest --test-dir build --output-on-failure
 ```
 
-The current suite registers 11 tests, including plugin metadata/factory loading, selection policy,
-unusual-path process transfer, and Spanish translations.
+The current suite registers 12 tests, including plugin metadata/factory loading, selection policy,
+unusual-path process transfer, the bounded repository-context cache, and Spanish translations.
 
 Check formatting before submitting C++ changes:
 

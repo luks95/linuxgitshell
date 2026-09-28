@@ -13,6 +13,9 @@ All notable user-visible changes to LinuxGitShell will be documented here. The f
   loading, and shell-free transfer of unusual paths as one process argument.
 - Development installation, clean removal, staged system-layout verification, and a manual Dolphin
   smoke-test checklist.
+- Git-free repository-context snapshot model and bounded LRU cache with warm/cold/stale lookups,
+  separate positive and negative freshness, service-generation resets, repository and subtree
+  invalidation, and same-repository multiple-selection checks, ready for the Dolphin client.
 
 ### Changed
 

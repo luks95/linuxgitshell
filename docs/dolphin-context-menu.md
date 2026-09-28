@@ -1,8 +1,8 @@
 # Dolphin Context-Menu Integration
 
 Implementation status: the minimal single-local-selection plugin is merged on `main` through
-[PR #9](https://github.com/luks95/linuxgitshell/pull/9). Repository-aware menus remain proposed work
-under [issue #10](https://github.com/luks95/linuxgitshell/issues/10).
+[PR #9](https://github.com/luks95/linuxgitshell/pull/9). Repository-aware menus remain planned work
+under [issue #12](https://github.com/luks95/linuxgitshell/issues/12).
 
 This note records the KF6 extension API and the first implementation boundary for Phase 2. It was
 validated on 2026-09-13 against Dolphin 26.08.0, KIO 6.29.0, the installed KF6 headers, and a current

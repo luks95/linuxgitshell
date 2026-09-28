@@ -3,7 +3,8 @@
 ## Project Structure & Module Organization
 
 The repository contains the master specification (`LinuxGitShell-Codex.md`), execution plan
-(`roadmap-checklist.md`), reusable Git code under `libs/gitcore/`, the desktop inspector under
+(`roadmap-checklist.md`), reusable Git code under `libs/gitcore/`, the Git-free repository-context
+snapshot cache under `libs/repositorycontext/`, the desktop inspector under
 `gui/app/`, the first file-item action plugin under `integrations/dolphin/contextmenu/`, and
 automated checks under `tests/`. Add the session service under `daemon/`, D-Bus contracts under
 `dbus/`, artwork under `icons/`, and distribution files under `packaging/` only when their first real

@@ -99,6 +99,19 @@ linuxgitshell_set_compiler_warnings(GitConfigTest)
 
 add_test(NAME gitcore.config COMMAND GitConfigTest)
 
+add_executable(RepositoryContextCacheTest RepositoryContextCacheTest.cpp)
+
+target_link_libraries(
+    RepositoryContextCacheTest
+    PRIVATE
+        LinuxGitShell::RepositoryContext
+        Qt6::Test
+)
+
+linuxgitshell_set_compiler_warnings(RepositoryContextCacheTest)
+
+add_test(NAME repositorycontext.cache COMMAND RepositoryContextCacheTest)
+
 add_executable(MainWindowTest MainWindowTest.cpp)
 
 target_compile_definitions(

@@ -1,8 +1,9 @@
 # Repository Context Cache Design
 
-Status: proposed for Phase 2; tracked by
-[`#10`](https://github.com/luks95/linuxgitshell/issues/10). This document defines the boundary for
-the next implementation increment. It does not describe functionality already available on `main`.
+Status: accepted for Phase 2; designed in
+[`#10`](https://github.com/luks95/linuxgitshell/issues/10). The snapshot model and bounded cache
+live in `libs/repositorycontext/`; the context service, plugin client, and repository-aware actions
+are not implemented yet.
 
 ## Problem and constraints
 

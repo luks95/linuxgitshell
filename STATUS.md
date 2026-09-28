@@ -66,13 +66,17 @@ Phase 2 — Dolphin context menu.
   checklist for the first context-menu increment.
 - Phase 2 plugin merged by [PR #9](https://github.com/luks95/linuxgitshell/pull/9), closing issue #8;
   the final `main` CI run passed its build, 11 tests, Clang/`clang-tidy`, formatting, and secret checks.
+- Git-free `libs/repositorycontext` snapshot model and bounded cache implementing the warm/cold/stale,
+  size, freshness, generation, and invalidation rules of `docs/repository-context-cache.md`, with
+  deterministic tests for normal, bare, linked-worktree, submodule, outside-repository, unusual-path,
+  eviction, and multiple-selection cases. It is not yet wired to a service or the plugin.
 - Repository-local development installation verified with the expected binary, plugin, and Spanish
   catalog, followed by an isolated offscreen Dolphin startup with temporary D-Bus/XDG state.
 
 ## In progress
 
-- Complete interactive Dolphin verification and implement the proposed asynchronous repository
-  context cache tracked by [issue #10](https://github.com/luks95/linuxgitshell/issues/10).
+- Complete interactive Dolphin verification and implement the context service and asynchronous
+  plugin client on top of the new cache, tracked by [issue #12](https://github.com/luks95/linuxgitshell/issues/12).
 
 ## Known issues
 
@@ -84,7 +88,9 @@ Phase 2 — Dolphin context menu.
 ## Next steps
 
 1. Run the documented checklist with the development plugin loaded by Dolphin on Plasma Wayland.
-2. Implement the bounded warm/cold snapshot design in `docs/repository-context-cache.md` without
-   filesystem discovery or synchronous IPC in Dolphin.
-3. Use the resulting context to add repository-aware actions incrementally, including
+2. Decide the experimental bus name and location of the context service, then implement it around
+   `RepositoryDiscovery` outside Dolphin.
+3. Add the asynchronous plugin client on top of `RepositoryContextCache`, proving that `actions()`
+   performs no Git, filesystem discovery, or synchronous IPC.
+4. Use the resulting context to add repository-aware actions incrementally, including
    multi-selection and bare-repository rules.
