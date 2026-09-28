@@ -5,9 +5,9 @@
 The repository contains the master specification (`LinuxGitShell-Codex.md`), execution plan
 (`roadmap-checklist.md`), reusable Git code under `libs/gitcore/`, the Git-free repository-context
 snapshot cache under `libs/repositorycontext/`, the desktop inspector under
-`gui/app/`, the first file-item action plugin under `integrations/dolphin/contextmenu/`, and
-automated checks under `tests/`. Add the session service under `daemon/`, D-Bus contracts under
-`dbus/`, artwork under `icons/`, and distribution files under `packaging/` only when their first real
+`gui/app/`, the first file-item action plugin under `integrations/dolphin/contextmenu/`, the session
+service under `daemon/`, D-Bus contracts under `dbus/`, and automated checks under `tests/`. Add
+artwork under `icons/` and distribution files under `packaging/` only when their first real
 implementation is ready. Do not create empty placeholder directories.
 
 Keep Dolphin plugins thin. Git execution, caching, watchers, and application windows belong in reusable services, not inside Dolphin's process.

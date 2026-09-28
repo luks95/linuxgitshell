@@ -2,8 +2,9 @@
 
 Status: accepted for Phase 2; designed in
 [`#10`](https://github.com/luks95/linuxgitshell/issues/10). The snapshot model and bounded cache
-live in `libs/repositorycontext/`; the context service, plugin client, and repository-aware actions
-are not implemented yet.
+live in `libs/repositorycontext/`, and the experimental context service in `daemon/` (see
+[Implemented service](#implemented-service)). The plugin client and repository-aware actions are
+tracked by [`#12`](https://github.com/luks95/linuxgitshell/issues/12).
 
 ## Problem and constraints
 
@@ -104,3 +105,31 @@ Automated coverage must include:
 
 Native Dolphin verification must cover the same visible policies and confirm responsiveness on local,
 large, external, and deliberately slow locations before the Phase 2 exit criteria are marked complete.
+
+## Implemented service
+
+`linuxgitshell-daemon` is the first increment of the Phase 4 session daemon. It registers the
+experimental name `org.linuxgitshell.Experimental.Context1` with object
+`/org/linuxgitshell/Context`, as specified in
+[`dbus/org.linuxgitshell.Experimental.Context1.xml`](../dbus/org.linuxgitshell.Experimental.Context1.xml).
+Following [`dbus-api-policy.md`](dbus-api-policy.md), it does not use the stable `Daemon1` name and
+may change without a compatibility period.
+
+- `RequestContext(as paths) -> t generation` returns immediately. Every accepted path is answered
+  later by `ContextReady(s path, a{sv} context, t generation)`, keyed by the lexical path key.
+- The generation is random, non-zero, and new on every start, so clients can drop snapshots after a
+  restart.
+- Up to 256 paths per request and 1,024 queued paths are accepted; relative, empty, and
+  longer-than-4,096-character paths are ignored. Duplicate pending paths are resolved once.
+- Two discoveries run concurrently, each limited to 10 seconds. A timeout, a missing path, or a
+  Git failure produces a short-lived `error` state; only paths outside a repository produce
+  `outside`.
+- The service keeps its own `RepositoryContextCache`, so repeated requests and several Dolphin
+  windows do not rerun Git while an entry is fresh.
+- The installed D-Bus activation file starts the service on the first asynchronous request. A
+  second instance exits because the name is already owned.
+- Logs report counts, durations, and error categories, never paths. `ContextReady` is a broadcast
+  signal, so path keys are visible to other clients of the user's own session bus; they never leave
+  it.
+- A repository root whose path contains a newline is reported as `error`, because Git reports
+  repository paths one per line. Files with newlines inside a repository are supported.

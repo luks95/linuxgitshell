@@ -7,5 +7,5 @@ Checks: >
   readability-duplicate-include,
   readability-redundant-*
 WarningsAsErrors: ''
-HeaderFilterRegex: '^(gui|libs|tests)/'
+HeaderFilterRegex: '^(daemon|gui|integrations|libs|tests)/'
 FormatStyle: file

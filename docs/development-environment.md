@@ -26,7 +26,7 @@ matrix.
 | Git | 2.55.0 | Required external Git implementation |
 | Gettext | 1.0 | Spanish translation catalog compilation |
 | Clang/clang-tidy | 22.1.8 | Optional formatting and static analysis |
-| `qt6-base` | 6.11.2-3 | Core, Widgets, and Test |
+| `qt6-base` | 6.11.2-3 | Core, D-Bus, Widgets, and Test; pulls in `dbus` for `dbus-run-session` |
 | `qt6-tools` | 6.11.2-1 | Qt development tools |
 | `kcoreaddons` | 6.29.0-1 | Application metadata and version info |
 | `ki18n` | 6.29.0-1 | Translatable UI strings |
