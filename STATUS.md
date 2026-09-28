@@ -6,17 +6,17 @@ Phase 2 — Dolphin context menu.
 
 ## Resuming work
 
-Last updated 2026-09-24. The repository-context work for
-[issue #12](https://github.com/luks95/linuxgitshell/issues/12) is complete in four stacked pull
-requests. Each targets the previous branch and has passing CI. Merge them into `main` in this order,
-retargeting the next pull request to `main` after each merge:
+Last updated 2026-09-28. The repository-context work for
+[issue #12](https://github.com/luks95/linuxgitshell/issues/12) was split into four stacked pull
+requests. The cache, service, and client are merged into `main`. The visible repository-aware menu
+remains in #16, now targeting `main`, pending native interactive verification.
 
 | Order | Pull request | Branch | Content |
 | --- | --- | --- | --- |
-| 1 | [#13](https://github.com/luks95/linuxgitshell/pull/13) | `feature/repository-context-cache` | Snapshot model and bounded cache in `libs/repositorycontext/` |
-| 2 | [#14](https://github.com/luks95/linuxgitshell/pull/14) | `feature/context-service` | `linuxgitshell-daemon` with `org.linuxgitshell.Experimental.Context1` |
-| 3 | [#15](https://github.com/luks95/linuxgitshell/pull/15) | `feature/plugin-context-client` | Non-blocking context client in the Dolphin plugin |
-| 4 | [#16](https://github.com/luks95/linuxgitshell/pull/16) | `feature/repository-aware-actions` | `LinuxGitShell` ▸ `Show Status` menu and this documentation |
+| 1 | [#13](https://github.com/luks95/linuxgitshell/pull/13) | `feature/repository-context-cache` | Merged: snapshot model and bounded cache in `libs/repositorycontext/` |
+| 2 | [#14](https://github.com/luks95/linuxgitshell/pull/14) | `feature/context-service` | Merged: `linuxgitshell-daemon` with `org.linuxgitshell.Experimental.Context1` |
+| 3 | [#15](https://github.com/luks95/linuxgitshell/pull/15) | `feature/plugin-context-client` | Merged: non-blocking context client in the Dolphin plugin |
+| 4 | [#16](https://github.com/luks95/linuxgitshell/pull/16) | `feature/repository-aware-actions` | Pending manual verification: `LinuxGitShell` ▸ `Show Status` menu and this documentation |
 
 Decisions already taken:
 
@@ -34,6 +34,20 @@ The remaining Phase 2 work is manual and needs a native Plasma Wayland session:
    p50/p95/max `actions()` latency.
 3. Evaluate the Phase 2 exit criteria in `roadmap-checklist.md`, then plan the `v0.2.0` overlays
    work (Phase 3).
+
+Verification on 2026-09-28:
+
+- Debug configure/build and development-prefix installation pass with the installed Qt/KF6 toolchain.
+- All 17 development-build CTest tests pass outside the sandbox; private D-Bus tests need socket
+  access unavailable inside it. Formatting and common-secret checks also pass.
+- The real plugin test passes all 11 Qt Test cases with `QT_QPA_PLATFORM=wayland`, on a private
+  session bus: `actions()` p50 0.034 ms, p95 0.046 ms, max 1.327 ms over 200 cold-cache calls.
+  This is a native-backend test executable measurement, not a measurement inside Dolphin.
+- A separate Dolphin process was started on Plasma Wayland with the development plugin prefix,
+  private D-Bus/XDG state, and disposable repositories. Its accessibility tree could be inspected,
+  but synthetic keyboard input did not open the context menu. No interactive checklist items,
+  screenshots, or native Dolphin latency measurements were obtained. The test processes were
+  stopped afterwards; the manual gate remains open.
 
 ## Working
 

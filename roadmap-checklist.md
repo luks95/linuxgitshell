@@ -23,6 +23,14 @@ en `libs/repositorycontext/`, servicio de contexto experimental en `daemon/`, cl
 y menú según el repositorio (`Show Status`), seguidos por
 [#12](https://github.com/luks95/linuxgitshell/issues/12).
 
+**Integración al 2026-09-28:** cache, servicio y cliente integrados en `main` mediante
+[#13](https://github.com/luks95/linuxgitshell/pull/13),
+[#14](https://github.com/luks95/linuxgitshell/pull/14) y
+[#15](https://github.com/luks95/linuxgitshell/pull/15).
+El menú visible en [#16](https://github.com/luks95/linuxgitshell/pull/16) apunta ahora a `main` y
+sigue pendiente de la verificación interactiva y las mediciones dentro de Dolphin. Las pruebas del
+módulo con backend Wayland pasan, pero no cierran ese criterio de salida.
+
 ## Cómo utilizar este documento
 
 - Marcar una tarea solo cuando exista evidencia verificable en el repositorio, CI o artefactos publicados.

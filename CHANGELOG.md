@@ -34,8 +34,9 @@ All notable user-visible changes to LinuxGitShell will be documented here. The f
 
 - The Dolphin selection helper was replaced by a context-menu policy covering single and multiple
   selections.
-- Project documentation now reflects the public `v0.1.0` release, the merged Phase 2 plugin, the
-  eleven-test suite, current dependencies, and the proposed non-blocking repository-context cache.
+- Project documentation now reflects the public `v0.1.0` release, the Phase 2 plugin, the
+  seventeen-test suite, current dependencies, and the implemented non-blocking repository-context
+  cache and experimental service. Native Dolphin verification remains pending.
 
 ## [0.1.0] - 2026-09-13
 

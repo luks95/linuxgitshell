@@ -113,10 +113,11 @@ process argument. They never use a shell command string, and the application per
 repository discovery.
 
 This increment proves loading, metadata, selection transfer, localization, and process isolation.
-Repository-dependent entries come from the non-blocking context client described in
-[`repository-context-cache.md`](repository-context-cache.md#implemented-client). Dynamic `Show Status`, `Commit`, `Pull`, `Push`,
-`Show Log`, and `Settings` actions require an asynchronous external context resolver or the later
-D-Bus service; they must not be implemented by running Git synchronously inside Dolphin.
+Repository-dependent entries come from the implemented non-blocking context client and experimental
+D-Bus service described in
+[`repository-context-cache.md`](repository-context-cache.md#implemented-client). Future `Commit`,
+`Pull`, `Push`, `Show Log`, and `Settings` entries must use this external context boundary and become
+available only when the application implements their workflows.
 
 Repository detection must also account for `.git` being either a directory or an indirection file,
 and for bare repositories without a conventional worktree marker. The plugin will not inspect these
@@ -188,7 +189,7 @@ development artifacts into `/usr`. A future package must own installation, upgra
 
 ## Verification status
 
-As of 2026-09-24:
+As of 2026-09-28:
 
 - the complete local and hosted CI suites pass 17/17 tests, including `clang-tidy`;
 - CTest loads the real module through `KPluginFactory` and validates its metadata and actions;
@@ -202,6 +203,18 @@ As of 2026-09-24:
 - clean development-prefix and staged `/usr` layouts contain the expected plugin, daemon, and
   activation file;
 - interactive right-click behavior and native latency on Plasma Wayland remain pending.
+
+The development-prefix build, installation, and 17/17 CTest suite were rechecked on 2026-09-28.
+The real module's Qt Test executable also passed its 11 cases with the Wayland backend and a
+private session bus, measuring cold-cache `actions()` over 200 calls at p50 0.034 ms, p95 0.046 ms,
+and max 1.327 ms. This measures the plugin in the test executable, not inside Dolphin, and does
+not cover warm-cache native latency.
+
+An isolated Dolphin instance started successfully on Plasma Wayland with the development prefix
+and disposable repositories. Accessibility exposed its window and file list, but synthetic
+keyboard input did not open the context menu. The instance and its context service were stopped
+afterwards. The interactive checklist below, screenshots, theme checks, and native Dolphin
+measurements remain pending before merging the visible menu in #16.
 
 ## Manual test checklist
 
