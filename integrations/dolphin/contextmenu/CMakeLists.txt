@@ -5,6 +5,10 @@ add_library(
     linuxgitshell_dolphin_context STATIC
     ContextMenuSelection.cpp
     ContextMenuSelection.h
+    RepositoryContextClient.cpp
+    RepositoryContextClient.h
+    RepositoryContextTransport.cpp
+    RepositoryContextTransport.h
 )
 
 add_library(LinuxGitShell::DolphinContext ALIAS linuxgitshell_dolphin_context)
@@ -19,7 +23,13 @@ target_include_directories(
     PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
-target_link_libraries(linuxgitshell_dolphin_context PUBLIC Qt6::Core)
+target_link_libraries(
+    linuxgitshell_dolphin_context
+    PUBLIC
+        LinuxGitShell::RepositoryContext
+        Qt6::Core
+        Qt6::DBus
+)
 
 linuxgitshell_set_compiler_warnings(linuxgitshell_dolphin_context)
 

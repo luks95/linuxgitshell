@@ -145,6 +145,18 @@ add_test(NAME daemon.context_service COMMAND ContextServiceTest)
 
 find_program(DBUS_RUN_SESSION_EXECUTABLE NAMES dbus-run-session REQUIRED)
 
+# Lets dbus-run-session activate the built daemon; system data directories stay available for
+# MIME and icon lookups.
+set(LINUXGITSHELL_TEST_ACTIVATION_DIR "${CMAKE_CURRENT_BINARY_DIR}/dbus-activation")
+file(
+    GENERATE
+    OUTPUT "${LINUXGITSHELL_TEST_ACTIVATION_DIR}/dbus-1/services/org.linuxgitshell.Experimental.Context1.service"
+    CONTENT "[D-BUS Service]\nName=org.linuxgitshell.Experimental.Context1\nExec=$<TARGET_FILE:linuxgitshell-daemon>\n"
+)
+set(LINUXGITSHELL_TEST_ACTIVATION_DATA_DIRS
+    "${LINUXGITSHELL_TEST_ACTIVATION_DIR}:/usr/local/share:/usr/share"
+)
+
 set(context_dbus_interface_sources)
 qt_add_dbus_interface(
     context_dbus_interface_sources
@@ -252,11 +264,14 @@ target_compile_definitions(
     PRIVATE
         DOLPHIN_CONTEXT_PLUGIN_PATH="$<TARGET_FILE:linuxgitshell_fileitemaction>"
         DOLPHIN_PLUGIN_LAUNCH_HELPER_PATH="$<TARGET_FILE:DolphinPluginLaunchHelper>"
+        GIT_EXECUTABLE_PATH="${GIT_EXECUTABLE}"
 )
 
 target_link_libraries(
     DolphinContextMenuPluginTest
     PRIVATE
+        LinuxGitShell::RepositoryContext
+        Qt6::DBus
         Qt6::Test
         KF6::CoreAddons
         KF6::KIOWidgets
@@ -266,11 +281,66 @@ add_dependencies(
     DolphinContextMenuPluginTest
     linuxgitshell_fileitemaction
     DolphinPluginLaunchHelper
+    linuxgitshell-daemon
 )
 linuxgitshell_set_compiler_warnings(DolphinContextMenuPluginTest)
 
-add_test(NAME dolphin.context_plugin COMMAND DolphinContextMenuPluginTest)
+add_test(
+    NAME dolphin.context_plugin
+    COMMAND
+        "${DBUS_RUN_SESSION_EXECUTABLE}" -- "$<TARGET_FILE:DolphinContextMenuPluginTest>"
+)
 set_tests_properties(
     dolphin.context_plugin
-    PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen;LANGUAGE=C;LC_ALL=C"
+    PROPERTIES
+        ENVIRONMENT
+            "QT_QPA_PLATFORM=offscreen;LANGUAGE=C;LC_ALL=C;XDG_DATA_DIRS=${LINUXGITSHELL_TEST_ACTIVATION_DATA_DIRS}"
+)
+
+add_executable(
+    DolphinContextClientTest
+    DolphinContextClientTest.cpp
+)
+
+target_link_libraries(
+    DolphinContextClientTest
+    PRIVATE
+        LinuxGitShell::DolphinContext
+        Qt6::Test
+)
+
+linuxgitshell_set_compiler_warnings(DolphinContextClientTest)
+
+add_test(NAME dolphin.context_client COMMAND DolphinContextClientTest)
+
+add_executable(
+    DolphinContextClientDBusTest
+    DolphinContextClientDBusTest.cpp
+    DBusTestSupport.h
+    GitTestSupport.h
+)
+
+target_compile_definitions(
+    DolphinContextClientDBusTest
+    PRIVATE GIT_EXECUTABLE_PATH="${GIT_EXECUTABLE}"
+)
+
+target_link_libraries(
+    DolphinContextClientDBusTest
+    PRIVATE
+        LinuxGitShell::DolphinContext
+        Qt6::Test
+)
+
+add_dependencies(DolphinContextClientDBusTest linuxgitshell-daemon)
+linuxgitshell_set_compiler_warnings(DolphinContextClientDBusTest)
+
+add_test(
+    NAME dolphin.context_client_dbus
+    COMMAND
+        "${DBUS_RUN_SESSION_EXECUTABLE}" -- "$<TARGET_FILE:DolphinContextClientDBusTest>"
+)
+set_tests_properties(
+    dolphin.context_client_dbus
+    PROPERTIES ENVIRONMENT "XDG_DATA_DIRS=${LINUXGITSHELL_TEST_ACTIVATION_DATA_DIRS}"
 )

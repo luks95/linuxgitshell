@@ -100,7 +100,9 @@ The first plugin increment is deliberately small:
 5. Keep selection policy in a UI-independent helper so it can be unit tested without Dolphin.
 
 This increment proves loading, metadata, selection transfer, localization, and process isolation.
-It does not yet claim repository-dependent menus. Dynamic `Show Status`, `Commit`, `Pull`, `Push`,
+The plugin also warms a non-blocking repository-context cache for later menus, as described in
+[`repository-context-cache.md`](repository-context-cache.md#implemented-client), but it does not yet
+show repository-dependent actions. Dynamic `Show Status`, `Commit`, `Pull`, `Push`,
 `Show Log`, and `Settings` actions require an asynchronous external context resolver or the later
 D-Bus service; they must not be implemented by running Git synchronously inside Dolphin.
 

@@ -21,7 +21,10 @@ All notable user-visible changes to LinuxGitShell will be documented here. The f
   snapshots, per-instance generations, bounded requests and queue, concurrent discovery with a
   timeout, a service-side cache, and no path logging. Tests cover normal, bare, linked-worktree,
   submodule, outside, missing, unusual, cached, deduplicated, and timed-out paths and the real
-  daemon on a private session bus.
+  daemon on a private session bus. The service exits when its session bus disconnects.
+- Non-blocking repository-context client in the Dolphin plugin. Menus read only an in-memory cache,
+  and cold paths are requested asynchronously from the event loop through D-Bus activation. Tests
+  load the real module and prove that building a menu neither runs Git nor contacts the service.
 
 ### Changed
 

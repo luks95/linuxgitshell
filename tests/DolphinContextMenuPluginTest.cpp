@@ -1,6 +1,9 @@
 // SPDX-FileCopyrightText: 2026 LinuxGitShell contributors
 // SPDX-License-Identifier: MIT
 
+#include "DBusTestSupport.h"
+#include "GitTestSupport.h"
+
 #include <KAbstractFileItemActionPlugin>
 #include <KFileItem>
 #include <KFileItemListProperties>
@@ -8,13 +11,18 @@
 #include <KPluginMetaData>
 
 #include <QAction>
+#include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
+#include <QScopeGuard>
 #include <QScopedPointer>
 #include <QTemporaryDir>
 #include <QTest>
 #include <QUrl>
 #include <QWidget>
+
+#include <algorithm>
+#include <vector>
 
 namespace
 {
@@ -33,10 +41,79 @@ class DolphinContextMenuPluginTest final : public QObject
     Q_OBJECT
 
   private Q_SLOTS:
+    void initTestCase();
+    // Runs first, before other tests trigger service activation from the event loop.
+    void buildsMenuWithoutWaitingForGitOrService();
     void exposesExpectedMetadata();
     void loadsAndCreatesConservativeActions();
     void launchesSelectedPathAsOneArgument();
 };
+
+void DolphinContextMenuPluginTest::initTestCase()
+{
+    GitTestSupport::isolateGitConfiguration();
+    QVERIFY2(QDBusConnection::sessionBus().isConnected(), "run this test through dbus-run-session");
+}
+
+void DolphinContextMenuPluginTest::buildsMenuWithoutWaitingForGitOrService()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString root = directory.filePath(QStringLiteral("repo"));
+    QVERIFY(GitTestSupport::createRepository(root));
+
+    // A git executable that records any invocation from this process. The activated service
+    // inherits the bus environment, not this PATH, so only in-process Git would reach it.
+    const QString fakeGitDirectory = directory.filePath(QStringLiteral("fake-git"));
+    const QString marker = directory.filePath(QStringLiteral("git-was-run"));
+    QVERIFY(QDir().mkpath(fakeGitDirectory));
+    const QString fakeGit = QDir(fakeGitDirectory).filePath(QStringLiteral("git"));
+    QVERIFY(GitTestSupport::writeTextFile(fakeGit, QByteArrayLiteral("#!/bin/sh\ntouch \"") +
+                                                       QFile::encodeName(marker) +
+                                                       QByteArrayLiteral("\"\n")));
+    QVERIFY(QFile::setPermissions(fakeGit, QFileDevice::ReadOwner | QFileDevice::ExeOwner));
+    const QByteArray originalPath = qgetenv("PATH");
+    qputenv("PATH", QFile::encodeName(fakeGitDirectory) + ':' + originalPath);
+    const auto restorePath = qScopeGuard([&originalPath] { qputenv("PATH", originalPath); });
+
+    QVERIFY(DBusTestSupport::stopContextService());
+    QScopedPointer<KAbstractFileItemActionPlugin> plugin(loadPlugin(nullptr));
+    QVERIFY(plugin);
+    QWidget parentWidget;
+    const KFileItem item(QUrl::fromLocalFile(root), QStringLiteral("inode/directory"));
+    const KFileItemListProperties selection(KFileItemList{item});
+
+    constexpr int Iterations = 200;
+    std::vector<qint64> nanoseconds;
+    nanoseconds.reserve(Iterations);
+    for (int iteration = 0; iteration < Iterations; ++iteration)
+    {
+        QElapsedTimer timer;
+        timer.start();
+        const QList<QAction*> actions = plugin->actions(selection, &parentWidget);
+        nanoseconds.push_back(timer.nsecsElapsed());
+        QCOMPARE(actions.size(), 1);
+        QCOMPARE(actions.constFirst()->text(), QStringLiteral("Open with LinuxGitShell"));
+        qDeleteAll(actions);
+    }
+
+    // A synchronous request from actions() would already have activated the service.
+    QVERIFY(!DBusTestSupport::isContextServiceRegistered());
+
+    std::sort(nanoseconds.begin(), nanoseconds.end());
+    const auto percentile = [&nanoseconds](std::size_t value)
+    { return static_cast<double>(nanoseconds.at(nanoseconds.size() * value / 100)) / 1e6; };
+    const double p95 = percentile(95);
+    qInfo("actions() latency over %d calls: p50 %.3f ms, p95 %.3f ms, max %.3f ms", Iterations,
+          percentile(50), p95, static_cast<double>(nanoseconds.back()) / 1e6);
+    // The 2 ms budget is measured natively; this bound only catches blocking work under CI load.
+    QVERIFY2(p95 < 20.0, "actions() took longer than a non-blocking lookup should");
+
+    // The deferred request leaves from the event loop and activates the service.
+    QVERIFY(QTest::qWaitFor([] { return DBusTestSupport::isContextServiceRegistered(); }, 15000));
+    QTest::qWait(500);
+    QVERIFY(!QFileInfo::exists(marker));
+}
 
 void DolphinContextMenuPluginTest::exposesExpectedMetadata()
 {
