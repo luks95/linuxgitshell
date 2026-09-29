@@ -11,10 +11,12 @@
 #include <KPluginFactory>
 
 #include <QAction>
+#include <QElapsedTimer>
 #include <QIcon>
 #include <QLoggingCategory>
 #include <QMenu>
 #include <QProcess>
+#include <QScopeGuard>
 #include <QStringList>
 #include <QWidget>
 
@@ -22,6 +24,7 @@ namespace LinuxGitShell::Dolphin
 {
 
 Q_LOGGING_CATEGORY(dolphinContextMenuLog, "linuxgitshell.dolphin.contextmenu")
+Q_LOGGING_CATEGORY(dolphinContextMenuTimingLog, "linuxgitshell.dolphin.timing", QtInfoMsg)
 
 K_PLUGIN_CLASS_WITH_JSON(GitActionPlugin, "linuxgitshellfileitemaction.json")
 
@@ -35,12 +38,32 @@ GitActionPlugin::GitActionPlugin(QObject* parent, const QVariantList& arguments)
 QList<QAction*> GitActionPlugin::actions(const KFileItemListProperties& fileItemInfos,
                                          QWidget* parentWidget)
 {
+    QElapsedTimer timer;
+    const bool measure = dolphinContextMenuTimingLog().isDebugEnabled();
+    if (measure)
+    {
+        timer.start();
+    }
+    ContextMenuKind measuredKind = ContextMenuKind::None;
+    const auto reportTiming = qScopeGuard(
+        [&timer, measure, &measuredKind, &fileItemInfos]()
+        {
+            if (measure)
+            {
+                const qint64 elapsed = timer.nsecsElapsed();
+                qCDebug(dolphinContextMenuTimingLog).nospace()
+                    << "actions() kind=" << static_cast<int>(measuredKind)
+                    << " selected=" << fileItemInfos.urlList().size() << " elapsed_ns=" << elapsed;
+            }
+        });
+
     // Memory-only lookups: cold or stale entries are refreshed from the event loop after this
     // menu is built, so a later menu can use them. Git, discovery, and IPC never run here.
     RepositoryContextClient& contextClient = RepositoryContextClient::instance();
     const ContextMenuDecision decision =
         ContextMenuPolicy::decide(fileItemInfos.urlList(), [&contextClient](const QString& pathKey)
                                   { return contextClient.lookup(pathKey); });
+    measuredKind = decision.kind;
     if (!decision.refreshKeys.isEmpty())
     {
         contextClient.refreshLater(decision.refreshKeys);

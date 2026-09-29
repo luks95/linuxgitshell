@@ -46,8 +46,16 @@ Verification on 2026-09-28:
 - A separate Dolphin process was started on Plasma Wayland with the development plugin prefix,
   private D-Bus/XDG state, and disposable repositories. Its accessibility tree could be inspected,
   but synthetic keyboard input did not open the context menu. No interactive checklist items,
-  screenshots, or native Dolphin latency measurements were obtained. The test processes were
+  context-menu screenshots, or native Dolphin latency measurements were obtained. The test processes were
   stopped afterwards; the manual gate remains open.
+- Follow-up: the plugin now exposes opt-in `linuxgitshell.dolphin.timing` diagnostics, disabled by
+  default, to measure `actions()` inside Dolphin without logging paths. The development build,
+  all 17 CTest tests, the real-module test with timing enabled, formatting, secret checks, and the
+  Clang/clang-tidy plugin build pass. A temporary desktop-portal keyboard session was granted,
+  but input did not reliably open the selected-item context menu. The native checklist and latency
+  samples remain pending. The portal session and isolated test processes were closed, the temporary
+  compositor script was unloaded, and accessibility preferences were restored to their original
+  values. No native Dolphin menu samples have been claimed.
 
 ## Working
 

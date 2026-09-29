@@ -29,6 +29,8 @@ All notable user-visible changes to LinuxGitShell will be documented here. The f
   bare ones), disabled notices for operations in progress, the repository root for several items in
   one repository, and no entry outside repositories or across repositories. Spanish translations
   cover the new entries.
+- Optional Dolphin menu timing diagnostics, disabled by default, reporting menu kind, selection
+  count, and elapsed nanoseconds without logging paths.
 
 ### Changed
 

@@ -212,11 +212,34 @@ not cover warm-cache native latency.
 
 An isolated Dolphin instance started successfully on Plasma Wayland with the development prefix
 and disposable repositories. Accessibility exposed its window and file list, but synthetic
-keyboard input did not open the context menu. The instance and its context service were stopped
-afterwards. The interactive checklist below, screenshots, theme checks, and native Dolphin
+keyboard input did not open the context menu reliably, even after the desktop portal granted a
+temporary keyboard session. The instance, context service, portal session, and temporary compositor
+script were stopped afterwards, and accessibility preferences were restored. The interactive
+checklist below, context-menu screenshots, theme checks, and native Dolphin
 measurements remain pending before merging the visible menu in #16.
 
 ## Manual test checklist
+
+### Measuring menu latency inside Dolphin
+
+The plugin has an opt-in timing category, disabled by default. Start the development Dolphin
+process with `QT_LOGGING_RULES='linuxgitshell.dolphin.timing.debug=true'` in addition to the
+development `PATH` and `QT_PLUGIN_PATH` above. Each `actions()` call logs only its menu kind,
+selection count, and `elapsed_ns`; paths and repository contents are not included.
+
+| `kind` | Decision |
+| --- | --- |
+| `0` | No LinuxGitShell entry |
+| `1` | Generic `Open with LinuxGitShell` action |
+| `2` | Repository-aware submenu |
+
+The elapsed time covers menu policy evaluation and action construction through scope cleanup;
+writing the timing line is excluded. Collect cold and warm samples separately, including the
+first call, and record sample counts plus p50/p95/max after converting nanoseconds to milliseconds.
+Use fresh selected paths for cold samples; reopening a menu after discovery gives warm samples.
+Remove the debug rule for normal use. This instrumentation adds no Git or IPC to menu construction.
+
+### Interactive checks
 
 Use a disposable Git repository and close existing Dolphin windows before changing plugin search
 paths. `kquitapp6 dolphin` requests a clean Dolphin shutdown; starting Dolphin again loads the new
