@@ -218,6 +218,17 @@ script were stopped afterwards, and accessibility preferences were restored. The
 checklist below, context-menu screenshots, theme checks, and native Dolphin
 measurements remain pending before merging the visible menu in #16.
 
+The timing follow-up at `eaa48cc` passed
+[hosted CI](https://github.com/luks95/linuxgitshell/actions/runs/36503897725), including build/tests,
+Clang/clang-tidy, formatting, secret checks, and dependency review. The final local suite passed
+17/17 tests. In the real-module test, default logging produced no timing lines; enabling timing
+produced 234 lines covering all three menu decisions, containing only kind, selection count, and
+elapsed nanoseconds. This verifies the diagnostic format, not latency inside Dolphin.
+
+As recorded on 2026-09-29, a fresh isolated Dolphin window was prepared with a disposable `repo`
+selection for physical right-click checks. No completed interactive check has been confirmed.
+If resuming later, do not rely on the temporary session or fixture still existing.
+
 ## Manual test checklist
 
 ### Measuring menu latency inside Dolphin
@@ -247,6 +258,11 @@ module.
 
 Start `linuxgitshell-daemon` from the development prefix first, because the session bus does not
 read activation files from it.
+
+For the initial check, right-click the selected repository directory and record the cold generic
+action. Close the menu, allow asynchronous discovery to finish, then right-click the same selection
+again and inspect `LinuxGitShell` ▸ `Show Status`. Keep the second menu open for inspection or a
+screenshot. A prepared window or successful startup alone does not complete this check.
 
 - [ ] The first right-click on a repository root, a subdirectory, and a file shows
   `Open with LinuxGitShell`; a later right-click on each shows `LinuxGitShell` ▸ `Show Status`.

@@ -38,7 +38,9 @@ All notable user-visible changes to LinuxGitShell will be documented here. The f
   selections.
 - Project documentation now reflects the public `v0.1.0` release, the Phase 2 plugin, the
   seventeen-test suite, current dependencies, and the implemented non-blocking repository-context
-  cache and experimental service. Native Dolphin verification remains pending.
+  cache and experimental service. The timing diagnostic validation, passing implementation CI,
+  and manual-test handoff are recorded separately from native Dolphin verification, which remains
+  pending.
 
 ## [0.1.0] - 2026-09-13
 

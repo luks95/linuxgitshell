@@ -6,7 +6,7 @@ Phase 2 — Dolphin context menu.
 
 ## Resuming work
 
-Last updated 2026-09-28. The repository-context work for
+Last updated 2026-09-29. The repository-context work for
 [issue #12](https://github.com/luks95/linuxgitshell/issues/12) was split into four stacked pull
 requests. The cache, service, and client are merged into `main`. The visible repository-aware menu
 remains in #16, now targeting `main`, pending native interactive verification.
@@ -46,8 +46,8 @@ Verification on 2026-09-28:
 - A separate Dolphin process was started on Plasma Wayland with the development plugin prefix,
   private D-Bus/XDG state, and disposable repositories. Its accessibility tree could be inspected,
   but synthetic keyboard input did not open the context menu. No interactive checklist items,
-  context-menu screenshots, or native Dolphin latency measurements were obtained. The test processes were
-  stopped afterwards; the manual gate remains open.
+  context-menu screenshots, or native Dolphin latency measurements were obtained. The test
+  processes were stopped afterwards; the manual gate remains open.
 - Follow-up: the plugin now exposes opt-in `linuxgitshell.dolphin.timing` diagnostics, disabled by
   default, to measure `actions()` inside Dolphin without logging paths. The development build,
   all 17 CTest tests, the real-module test with timing enabled, formatting, secret checks, and the
@@ -56,6 +56,28 @@ Verification on 2026-09-28:
   samples remain pending. The portal session and isolated test processes were closed, the temporary
   compositor script was unloaded, and accessibility preferences were restored to their original
   values. No native Dolphin menu samples have been claimed.
+
+### Checkpoint on 2026-09-29
+
+- Branch: `feature/repository-aware-actions`; published implementation commit: `eaa48cc`
+  (`Add opt-in Dolphin menu timing diagnostics`, with DCO sign-off).
+- [CI run 36503897725](https://github.com/luks95/linuxgitshell/actions/runs/36503897725)
+  passes build/tests, Clang/clang-tidy, formatting, secret checks, and dependency review for that
+  commit. PR #16 remains open against `main`; #13, #14, and #15 are already merged.
+- Final local verification passed all 17 CTest tests. The real-module test also passed both with
+  default logging (no timing lines) and with timing enabled (234 lines: 10 no-entry, 219 generic,
+  and 5 repository decisions). Every timing line contained only kind, selection count, and elapsed
+  nanoseconds. These are test-process diagnostics, not native Dolphin latency samples.
+- After closing the automated-input attempt, a new isolated Dolphin window was prepared with the
+  disposable `repo` directory selected and timing enabled, awaiting physical right-click checks.
+  This preparation does not prove menu loading or behavior; no completed manual check has been
+  confirmed.
+- Resume with a first right-click, close the menu, wait for asynchronous discovery, then right-click
+  the same selection again. Record the cold fallback and warm submenu before continuing the full
+  checklist. Do not assume the temporary window or fixture survives; recreate an isolated test
+  session if needed using the documented development installation.
+- Do not merge #16 or close Phase 2 until the interactive checklist, context-menu screenshots,
+  and separate cold/warm native latency measurements are recorded.
 
 ## Working
 
