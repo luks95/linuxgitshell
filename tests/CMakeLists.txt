@@ -240,18 +240,18 @@ set_tests_properties(
     PROPERTIES ENVIRONMENT "LC_ALL=es_PY.UTF-8;LANGUAGE=es"
 )
 
-add_executable(DolphinContextMenuSelectionTest DolphinContextMenuSelectionTest.cpp)
+add_executable(DolphinContextMenuPolicyTest DolphinContextMenuPolicyTest.cpp)
 
 target_link_libraries(
-    DolphinContextMenuSelectionTest
+    DolphinContextMenuPolicyTest
     PRIVATE
         LinuxGitShell::DolphinContext
         Qt6::Test
 )
 
-linuxgitshell_set_compiler_warnings(DolphinContextMenuSelectionTest)
+linuxgitshell_set_compiler_warnings(DolphinContextMenuPolicyTest)
 
-add_test(NAME dolphin.context_selection COMMAND DolphinContextMenuSelectionTest)
+add_test(NAME dolphin.context_policy COMMAND DolphinContextMenuPolicyTest)
 
 add_executable(DolphinPluginLaunchHelper DolphinPluginLaunchHelper.cpp)
 target_link_libraries(DolphinPluginLaunchHelper PRIVATE Qt6::Core)

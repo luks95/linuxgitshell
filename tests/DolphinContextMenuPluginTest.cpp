@@ -11,9 +11,11 @@
 #include <KPluginMetaData>
 
 #include <QAction>
+#include <QDir>
 #include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
+#include <QMenu>
 #include <QScopeGuard>
 #include <QScopedPointer>
 #include <QTemporaryDir>
@@ -22,6 +24,7 @@
 #include <QWidget>
 
 #include <algorithm>
+#include <functional>
 #include <vector>
 
 namespace
@@ -32,6 +35,106 @@ KAbstractFileItemActionPlugin* loadPlugin(QObject* parent)
     const KPluginMetaData metadata(QStringLiteral(DOLPHIN_CONTEXT_PLUGIN_PATH));
     return KPluginFactory::instantiatePlugin<KAbstractFileItemActionPlugin>(metadata, parent)
         .plugin;
+}
+
+// Replaces the linuxgitshell executable with a helper that records its single argument.
+class LaunchCapture final
+{
+  public:
+    LaunchCapture() : originalPath(qgetenv("PATH"))
+    {
+        const QString helperPath = directory.filePath(QStringLiteral("linuxgitshell"));
+        ready = directory.isValid() &&
+                QFile::copy(QStringLiteral(DOLPHIN_PLUGIN_LAUNCH_HELPER_PATH), helperPath) &&
+                QFile::setPermissions(helperPath, QFile::permissions(helperPath) | QFile::ExeOwner |
+                                                      QFile::ExeUser);
+        qputenv("PATH", QFile::encodeName(directory.path()));
+        qputenv("LINUXGITSHELL_PLUGIN_TEST_OUTPUT", QFile::encodeName(outputPath()));
+    }
+
+    ~LaunchCapture()
+    {
+        qputenv("PATH", originalPath);
+        qunsetenv("LINUXGITSHELL_PLUGIN_TEST_OUTPUT");
+    }
+
+    LaunchCapture(const LaunchCapture&) = delete;
+    LaunchCapture& operator=(const LaunchCapture&) = delete;
+    LaunchCapture(LaunchCapture&&) = delete;
+    LaunchCapture& operator=(LaunchCapture&&) = delete;
+
+    [[nodiscard]] bool isReady() const { return ready; }
+
+    // Triggers the action and returns the argument received by the launched process.
+    [[nodiscard]] QString launch(QAction* action) const
+    {
+        QFile::remove(outputPath());
+        action->trigger();
+        if (!QTest::qWaitFor([this] { return QFileInfo::exists(outputPath()); }, 5000))
+        {
+            return {};
+        }
+        QFile output(outputPath());
+        return output.open(QIODevice::ReadOnly) ? QString::fromUtf8(output.readAll()) : QString();
+    }
+
+  private:
+    [[nodiscard]] QString outputPath() const
+    {
+        return directory.filePath(QStringLiteral("argument.txt"));
+    }
+
+    QTemporaryDir directory;
+    QByteArray originalPath;
+    bool ready = false;
+};
+
+[[nodiscard]] KFileItemListProperties selectionOf(const QStringList& paths)
+{
+    KFileItemList items;
+    for (const QString& path : paths)
+    {
+        items.append(KFileItem(QUrl::fromLocalFile(path), QStringLiteral("inode/directory")));
+    }
+    return KFileItemListProperties(items);
+}
+
+[[nodiscard]] QMenu* repositoryMenu(const QList<QAction*>& actions)
+{
+    return actions.size() == 1 ? actions.constFirst()->menu() : nullptr;
+}
+
+// Opens menus until the asynchronous context reply changes the result, as repeated right-clicks
+// would in Dolphin. Returns the final actions, owned by `parentWidget`.
+[[nodiscard]] QList<QAction*>
+actionsWhen(KAbstractFileItemActionPlugin& plugin, const KFileItemListProperties& selection,
+            QWidget& parentWidget, const std::function<bool(const QList<QAction*>&)>& predicate)
+{
+    QList<QAction*> actions;
+    // Callers verify the returned actions, which also report a timeout.
+    (void)QTest::qWaitFor(
+        [&]
+        {
+            qDeleteAll(actions);
+            actions = plugin.actions(selection, &parentWidget);
+            return predicate(actions);
+        },
+        15000);
+    return actions;
+}
+
+[[nodiscard]] QStringList actionTexts(const QMenu* menu)
+{
+    QStringList texts;
+    for (const QAction* action : menu->actions())
+    {
+        if (!action->isSeparator())
+        {
+            texts.append(action->text() +
+                         (action->isEnabled() ? QString() : QStringLiteral(" [disabled]")));
+        }
+    }
+    return texts;
 }
 
 } // namespace
@@ -47,6 +150,11 @@ class DolphinContextMenuPluginTest final : public QObject
     void exposesExpectedMetadata();
     void loadsAndCreatesConservativeActions();
     void launchesSelectedPathAsOneArgument();
+    void showsRepositoryMenuOnceContextIsWarm();
+    void showsOperationInProgress();
+    void hidesMenuOutsideRepository();
+    void opensRootForSelectionInOneRepository();
+    void offersNothingForSelectionAcrossRepositories();
 };
 
 void DolphinContextMenuPluginTest::initTestCase()
@@ -150,39 +258,139 @@ void DolphinContextMenuPluginTest::loadsAndCreatesConservativeActions()
 
 void DolphinContextMenuPluginTest::launchesSelectedPathAsOneArgument()
 {
-    QTemporaryDir temporaryDirectory;
-    QVERIFY(temporaryDirectory.isValid());
-
-    const QString helperPath = temporaryDirectory.filePath(QStringLiteral("linuxgitshell"));
-    QVERIFY(QFile::copy(QStringLiteral(DOLPHIN_PLUGIN_LAUNCH_HELPER_PATH), helperPath));
-    const QFile::Permissions permissions =
-        QFile::permissions(helperPath) | QFile::ExeOwner | QFile::ExeUser | QFile::ExeGroup;
-    QVERIFY(QFile::setPermissions(helperPath, permissions));
-
-    const QString outputPath = temporaryDirectory.filePath(QStringLiteral("argument.txt"));
-    const QByteArray originalPath = qgetenv("PATH");
-    qputenv("PATH", QFile::encodeName(temporaryDirectory.path()));
-    qputenv("LINUXGITSHELL_PLUGIN_TEST_OUTPUT", QFile::encodeName(outputPath));
-
+    const LaunchCapture capture;
+    QVERIFY(capture.isReady());
     QScopedPointer<KAbstractFileItemActionPlugin> plugin(loadPlugin(nullptr));
     QVERIFY(plugin);
     QWidget parentWidget;
     const QString selectedPath = QString::fromUtf8("/tmp/répôt with spaces/file\nname.cpp");
     const KFileItem localItem(QUrl::fromLocalFile(selectedPath),
                               QStringLiteral("application/octet-stream"));
-    const KFileItemListProperties localSelection(KFileItemList{localItem});
-    const QList<QAction*> actions = plugin->actions(localSelection, &parentWidget);
+    const QList<QAction*> actions =
+        plugin->actions(KFileItemListProperties(KFileItemList{localItem}), &parentWidget);
     QCOMPARE(actions.size(), 1);
 
-    actions.constFirst()->trigger();
-    QTRY_VERIFY_WITH_TIMEOUT(QFileInfo::exists(outputPath), 5000);
+    QCOMPARE(capture.launch(actions.constFirst()), selectedPath);
+}
 
-    QFile output(outputPath);
-    QVERIFY(output.open(QIODevice::ReadOnly));
-    QCOMPARE(QString::fromUtf8(output.readAll()), selectedPath);
+void DolphinContextMenuPluginTest::showsRepositoryMenuOnceContextIsWarm()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString root = directory.filePath(QStringLiteral("repo"));
+    QVERIFY(GitTestSupport::createRepository(root));
+    const QString file = QDir(root).filePath(QStringLiteral("file.txt"));
 
-    qputenv("PATH", originalPath);
-    qunsetenv("LINUXGITSHELL_PLUGIN_TEST_OUTPUT");
+    QScopedPointer<KAbstractFileItemActionPlugin> plugin(loadPlugin(nullptr));
+    QVERIFY(plugin);
+    QWidget parentWidget;
+    const KFileItemListProperties selection = selectionOf({file});
+
+    // The first menu is cold and offers the generic action while the context is requested.
+    const QList<QAction*> cold = plugin->actions(selection, &parentWidget);
+    QCOMPARE(cold.size(), 1);
+    QCOMPARE(cold.constFirst()->text(), QStringLiteral("Open with LinuxGitShell"));
+
+    const QList<QAction*> warm =
+        actionsWhen(*plugin, selection, parentWidget, [](const QList<QAction*>& actions)
+                    { return repositoryMenu(actions) != nullptr; });
+    QMenu* menu = repositoryMenu(warm);
+    QVERIFY(menu != nullptr);
+    QCOMPARE(menu->title(), QStringLiteral("LinuxGitShell"));
+    QCOMPARE(actionTexts(menu), QStringList{QStringLiteral("Show Status")});
+
+    const LaunchCapture capture;
+    QVERIFY(capture.isReady());
+    QCOMPARE(capture.launch(menu->actions().constFirst()), file);
+}
+
+void DolphinContextMenuPluginTest::showsOperationInProgress()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString root = directory.filePath(QStringLiteral("merging"));
+    QVERIFY(GitTestSupport::createRepository(root));
+    QVERIFY(GitTestSupport::writeTextFile(QDir(root).filePath(QStringLiteral(".git/MERGE_HEAD")),
+                                          "0000000000000000000000000000000000000000\n"));
+
+    QScopedPointer<KAbstractFileItemActionPlugin> plugin(loadPlugin(nullptr));
+    QVERIFY(plugin);
+    QWidget parentWidget;
+    const QList<QAction*> actions =
+        actionsWhen(*plugin, selectionOf({root}), parentWidget, [](const QList<QAction*>& actions)
+                    { return repositoryMenu(actions) != nullptr; });
+
+    QMenu* menu = repositoryMenu(actions);
+    QVERIFY(menu != nullptr);
+    QCOMPARE(actionTexts(menu), (QStringList{QStringLiteral("Show Status"),
+                                             QStringLiteral("Merge in progress [disabled]")}));
+}
+
+void DolphinContextMenuPluginTest::hidesMenuOutsideRepository()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString outside = directory.filePath(QStringLiteral("plain"));
+    QVERIFY(QDir().mkpath(outside));
+
+    QScopedPointer<KAbstractFileItemActionPlugin> plugin(loadPlugin(nullptr));
+    QVERIFY(plugin);
+    QWidget parentWidget;
+    const QList<QAction*> actions =
+        actionsWhen(*plugin, selectionOf({outside}), parentWidget,
+                    [](const QList<QAction*>& actions) { return actions.isEmpty(); });
+
+    QVERIFY(actions.isEmpty());
+}
+
+void DolphinContextMenuPluginTest::opensRootForSelectionInOneRepository()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString root = directory.filePath(QStringLiteral("repo"));
+    QVERIFY(GitTestSupport::createRepository(root));
+    const QString first = QDir(root).filePath(QStringLiteral("file.txt"));
+    const QString second = QDir(root).filePath(QStringLiteral("other.txt"));
+    QVERIFY(GitTestSupport::writeTextFile(second, "other\n"));
+
+    QScopedPointer<KAbstractFileItemActionPlugin> plugin(loadPlugin(nullptr));
+    QVERIFY(plugin);
+    QWidget parentWidget;
+    const KFileItemListProperties selection = selectionOf({first, second});
+
+    // Cold multiple selections offer nothing, but request both items.
+    QVERIFY(plugin->actions(selection, &parentWidget).isEmpty());
+    const QList<QAction*> actions =
+        actionsWhen(*plugin, selection, parentWidget, [](const QList<QAction*>& actions)
+                    { return repositoryMenu(actions) != nullptr; });
+    QMenu* menu = repositoryMenu(actions);
+    QVERIFY(menu != nullptr);
+
+    const LaunchCapture capture;
+    QVERIFY(capture.isReady());
+    QCOMPARE(capture.launch(menu->actions().constFirst()), QFileInfo(root).canonicalFilePath());
+}
+
+void DolphinContextMenuPluginTest::offersNothingForSelectionAcrossRepositories()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString first = directory.filePath(QStringLiteral("first"));
+    const QString second = directory.filePath(QStringLiteral("second"));
+    QVERIFY(GitTestSupport::createRepository(first));
+    QVERIFY(GitTestSupport::createRepository(second));
+
+    QScopedPointer<KAbstractFileItemActionPlugin> plugin(loadPlugin(nullptr));
+    QVERIFY(plugin);
+    QWidget parentWidget;
+    for (const QString& root : {first, second})
+    {
+        QVERIFY(repositoryMenu(actionsWhen(
+                    *plugin, selectionOf({root}), parentWidget, [](const QList<QAction*>& actions)
+                    { return repositoryMenu(actions) != nullptr; })) != nullptr);
+    }
+
+    QVERIFY(plugin->actions(selectionOf({first, second}), &parentWidget).isEmpty());
 }
 
 QTEST_MAIN(DolphinContextMenuPluginTest)

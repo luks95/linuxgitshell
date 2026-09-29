@@ -3,8 +3,8 @@
 
 add_library(
     linuxgitshell_dolphin_context STATIC
-    ContextMenuSelection.cpp
-    ContextMenuSelection.h
+    ContextMenuPolicy.cpp
+    ContextMenuPolicy.h
     RepositoryContextClient.cpp
     RepositoryContextClient.h
     RepositoryContextTransport.cpp

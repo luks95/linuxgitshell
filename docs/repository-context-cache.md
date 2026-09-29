@@ -5,7 +5,8 @@ Status: accepted for Phase 2; designed in
 live in `libs/repositorycontext/`, and the experimental context service in `daemon/` (see
 [Implemented service](#implemented-service)), and the plugin client in
 `integrations/dolphin/contextmenu/` (see [Implemented client](#implemented-client)). Repository-aware
-actions are tracked by [`#12`](https://github.com/luks95/linuxgitshell/issues/12).
+actions for the application's current features are implemented; native Dolphin verification is
+tracked by [`#12`](https://github.com/luks95/linuxgitshell/issues/12).
 
 ## Problem and constraints
 
@@ -153,8 +154,8 @@ may create a new plugin object for each context menu. Constructing it performs n
    differs, which drops snapshots from a previous service instance. Unrecognized replies are ignored.
 5. A failed or refused call releases its keys, so a later menu can retry.
 
-The menu itself is unchanged in this increment: one local selection still produces only
-`Open with LinuxGitShell`.
+`ContextMenuPolicy` turns the lookups into the entries listed in
+[`dolphin-context-menu.md`](dolphin-context-menu.md#process-boundary).
 
 The plugin test loads the real module on a private bus with an activatable service. It builds 200
 menus and verifies three things. The service is not activated before control returns to the event
