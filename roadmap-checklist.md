@@ -27,15 +27,20 @@ y menú según el repositorio (`Show Status`), seguidos por
 [#13](https://github.com/luks95/linuxgitshell/pull/13),
 [#14](https://github.com/luks95/linuxgitshell/pull/14) y
 [#15](https://github.com/luks95/linuxgitshell/pull/15).
-El menú visible en [#16](https://github.com/luks95/linuxgitshell/pull/16) apunta ahora a `main` y
-sigue pendiente de la verificación interactiva y las mediciones dentro de Dolphin. Las pruebas del
-módulo con backend Wayland pasan, pero no cierran ese criterio de salida.
+El menú visible en [#16](https://github.com/luks95/linuxgitshell/pull/16) apunta ahora a `main`.
+La verificación interactiva y la evaluación de latencia nativa están completas; queda documentar
+los resultados en #16 y completar la revisión antes del merge.
 
-**Último checkpoint:** `eaa48cc` añade métricas opcionales de `actions()` sin registrar rutas,
-desactivadas por defecto. Sus 17 tests locales y la
-[CI](https://github.com/luks95/linuxgitshell/actions/runs/36503897725) pasan. La ventana aislada
-preparada para un clic físico no cuenta como verificación del menú; no se han confirmado checks
-manuales ni muestras de latencia dentro de Dolphin. El detalle para retomar está en `STATUS.md`.
+**Checkpoint (2026-10-05):** se confirmaron físicamente los menús frío/cálido, bare,
+operación de merge, multiselección y degradación sin daemon. El plugin se midió dentro de Dolphin:
+p95 cálido 0,703 ms (24 muestras), p95 de acción genérica fría 4,427 ms (9 muestras), por encima
+del objetivo local de 2 ms. Una compilación nueva fija inglés para los textos propios de
+LinuxGitShell y pasa 17 tests; Dolphin siguió responsivo con 2.000 archivos y Git lento. La nueva
+medición cálida dio p95 0,465 ms (29 muestras) y se añadió una captura del menú. El 2026-10-06
+se confirmó que la acción genérica abre el inspector y que `trash:/` no muestra acciones del
+plugin. Una nueva serie dentro de Dolphin dio p95 frío 0,589 ms con 22 muestras
+(máximo 2,028 ms); 20 selecciones de archivos nuevos dieron p95 0,276 ms. El p95 ya cumple el
+objetivo local, aunque permanece registrado el pico de la primera llamada. Ver `STATUS.md`.
 
 ## Cómo utilizar este documento
 
@@ -252,16 +257,16 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 - [x] Documentar instalación de desarrollo y layout de sistema mediante `DESTDIR`; el paquete del
   sistema sigue diferido a la fase de packaging.
 - [x] Documentar desinstalación limpia y recarga/reinicio de Dolphin.
-- [ ] Verificar menú sobre raíz, subcarpeta, archivo, multiselección y fuera de repo.
-- [ ] Verificar que un error o cierre de LinuxGitShell no derriba Dolphin.
+- [x] Verificar menú sobre raíz, subcarpeta, archivo, multiselección y fuera de repo.
+- [x] Verificar que un error o cierre de LinuxGitShell no derriba Dolphin.
 - [x] Crear checklist de prueba manual para versiones soportadas de Dolphin.
 
 ## Criterio de salida de la Fase 2
 
-- [ ] El plugin carga de forma estable en Dolphin.
-- [ ] Las acciones solo aparecen cuando son válidas.
-- [ ] Las acciones abren flujos conectados al Git Core.
-- [ ] Dolphin permanece responsivo en repositorios grandes o lentos.
+- [x] El plugin carga de forma estable en Dolphin.
+- [x] Las acciones solo aparecen cuando son válidas.
+- [x] Las acciones abren flujos conectados al Git Core.
+- [x] Dolphin permanece responsivo en repositorios grandes o lentos.
 
 ---
 
@@ -903,8 +908,7 @@ El orden de estas tareas se decidirá con uso real, métricas e interés comunit
 
 ## Próxima tarea recomendada
 
-Completar el checklist interactivo de `docs/dolphin-context-menu.md` en Dolphin/Wayland con el menú
-según el repositorio (`Show Status`, avisos de operaciones y multiselección), medir la latencia
-nativa de `actions()` (p50/p95/máximo) y adjuntar capturas. Con eso se pueden evaluar los criterios de
-salida de la Fase 2; las acciones `Commit`, `Pull`, `Push`, `Show Log`, `Settings`, `Git Clone` y
-`Create repository here` se añadirán al menú cuando la aplicación las implemente.
+Adjuntar a #16 la captura del submenú y el resumen de verificación nativa. El checklist manual y
+los cuatro criterios de salida de la Fase 2 están completos; falta revisar y fusionar #16. Las
+acciones `Commit`, `Pull`, `Push`, `Show Log`, `Settings`,
+`Git Clone` y `Create repository here` se añadirán cuando la aplicación las implemente.

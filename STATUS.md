@@ -6,17 +6,17 @@ Phase 2 — Dolphin context menu.
 
 ## Resuming work
 
-Last updated 2026-09-29. The repository-context work for
+Last updated 2026-10-06. The repository-context work for
 [issue #12](https://github.com/luks95/linuxgitshell/issues/12) was split into four stacked pull
 requests. The cache, service, and client are merged into `main`. The visible repository-aware menu
-remains in #16, now targeting `main`, pending native interactive verification.
+remains in #16, now targeting `main`, with native performance verification in progress.
 
 | Order | Pull request | Branch | Content |
 | --- | --- | --- | --- |
 | 1 | [#13](https://github.com/luks95/linuxgitshell/pull/13) | `feature/repository-context-cache` | Merged: snapshot model and bounded cache in `libs/repositorycontext/` |
 | 2 | [#14](https://github.com/luks95/linuxgitshell/pull/14) | `feature/context-service` | Merged: `linuxgitshell-daemon` with `org.linuxgitshell.Experimental.Context1` |
 | 3 | [#15](https://github.com/luks95/linuxgitshell/pull/15) | `feature/plugin-context-client` | Merged: non-blocking context client in the Dolphin plugin |
-| 4 | [#16](https://github.com/luks95/linuxgitshell/pull/16) | `feature/repository-aware-actions` | Pending manual verification: `LinuxGitShell` ▸ `Show Status` menu and this documentation |
+| 4 | [#16](https://github.com/luks95/linuxgitshell/pull/16) | `feature/repository-aware-actions` | Native menu checklist and latency review completed; PR screenshot and merge remain |
 
 Decisions already taken:
 
@@ -25,15 +25,10 @@ Decisions already taken:
 - The menu offers only actions the application implements. Today that is `Show Status`, which opens
   the read-only inspector. Other roadmap actions are added when their application features land.
 
-The remaining Phase 2 work is manual and needs a native Plasma Wayland session:
+Remaining Phase 2 work:
 
-1. Install the development prefix, start the daemon, and restart Dolphin from the same terminal, as
-   described in [`docs/dolphin-context-menu.md`](docs/dolphin-context-menu.md#development-installation).
-   A Dolphin started from the Plasma launcher does not load the development plugin.
-2. Complete the manual checklist in that document, attach screenshots to #16, and record native
-   p50/p95/max `actions()` latency.
-3. Evaluate the Phase 2 exit criteria in `roadmap-checklist.md`, then plan the `v0.2.0` overlays
-   work (Phase 3).
+1. Attach the existing menu screenshot to #16 and review the completed verification before merge.
+2. After #16 merges, plan the `v0.2.0` overlays work (Phase 3).
 
 Verification on 2026-09-28:
 
@@ -78,6 +73,45 @@ Verification on 2026-09-28:
   session if needed using the documented development installation.
 - Do not merge #16 or close Phase 2 until the interactive checklist, context-menu screenshots,
   and separate cold/warm native latency measurements are recorded.
+
+### Checkpoint on 2026-10-05
+
+- Physical checks in disposable repositories on Plasma Wayland confirmed cold generic and warm
+  `Show Status` menus for a root, subdirectory, file, and bare repository; an inspector launch for
+  the selected repository; a disabled merge notice; no entry outside Git or across two
+  repositories; and the repository root for two selected files. The user supplied a screenshot of
+  the bare inspector. Dolphin stayed responsive without the daemon and showed a handled launch
+  error when the development binary was absent from `PATH`; the user supplied an error screenshot.
+- Native timing from the original development module: generic single-item decisions with the
+  daemon available, n=9, p50 1.680 ms, p95/max 4.427 ms; warm single-item repository menus,
+  n=24, p50 0.235 ms, p95 0.703 ms, max 0.910 ms. The cold p95 exceeds the design target of 2 ms.
+  Samples include first calls and use nearest-rank percentiles. Details and limits are in
+  [`docs/dolphin-context-menu.md`](docs/dolphin-context-menu.md#native-checkpoint-on-2026-10-05).
+- The user requested English as LinuxGitShell's default language. Local changes select English in
+  the inspector and only for the plugin's own labels, preserving Dolphin's locale. The rebuilt
+  real-module test runs with a Spanish host locale and confirms English action labels. Configure,
+  build, all 17 CTest tests, formatting, and common-secret checks pass locally.
+- With the new build, a fresh Dolphin process remained responsive while an external Git wrapper
+  delayed discovery by one second per call in a temporary repository with 2,000 tracked files.
+  The user confirmed that the menu reached `Show Status` in English and supplied a
+  [menu screenshot](docs/images/dolphin-repository-menu.png). Generic single-item decisions had
+  n=3, p50 0.211 ms, p95/max 1.787 ms; warm repository menus had n=29, p50 0.173 ms, p95
+  0.465 ms, max 0.593 ms. The new cold sample is small, so the earlier cold p95 overrun remains
+  open. The real-module test covers a remote URL automatically.
+
+### Checkpoint on 2026-10-06
+
+- The user confirmed that the cold generic action opens the inspector and that an item in Dolphin's
+  non-local `trash:/` location shows no LinuxGitShell action. The manual checklist is complete.
+- Native `actions()` timing in a development Dolphin process: 22 single-item generic decisions,
+  p50 0.129 ms, p95 0.589 ms, max 2.028 ms. Twenty decisions came from 20 new files in a
+  disposable repository: p50 0.125 ms, p95 0.276 ms, max 0.589 ms. The user repeated one click;
+  the log contains one additional warm submenu during that sequence. The 22-sample cold p95 meets
+  the 2 ms target. Its first-call maximum and the older nine-sample overrun remain recorded for
+  context. See [`docs/dolphin-context-menu.md`](docs/dolphin-context-menu.md#native-checkpoint-on-2026-10-05).
+- Four warm menus in this process had p50 0.247 ms, p95/max 0.582 ms; the larger 2026-10-05 warm
+  series had p95 0.465 ms over 29 samples. The menu screenshot is in `docs/images/` and still
+  needs to be attached to #16.
 
 ## Working
 
@@ -166,7 +200,7 @@ Verification on 2026-09-28:
 
 ## In progress
 
-- Complete interactive Dolphin verification of the repository-aware menu, tracked by [issue #12](https://github.com/luks95/linuxgitshell/issues/12).
+- Review and merge the verified repository-aware menu in [#16](https://github.com/luks95/linuxgitshell/pull/16).
 
 ## Known issues
 
@@ -179,11 +213,12 @@ Verification on 2026-09-28:
   asynchronous reply has arrived.
 - A repository root whose path contains a newline is reported as a discovery error, because
   `RepositoryDiscovery` reads Git's line-based path output.
-- The plugin has automated factory/loading coverage and an isolated Dolphin startup, but its manual
-  right-click checklist has not yet been completed in a native interactive session.
+- The first measured native menu in the latest process took 2.028 ms, above the 2 ms p95 target
+  on its own; p95 across 22 generic menus was 0.589 ms. An earlier nine-sample series had p95
+  4.427 ms. First-call variation remains visible, though no synchronous Git or IPC runs in
+  `actions()`.
 
 ## Next steps
 
-1. Run the documented checklist with the development plugin loaded by Dolphin on Plasma Wayland.
-2. Record native p50/p95/max `actions()` latency in Dolphin and complete the Phase 2 exit criteria.
-3. Add further menu actions as the corresponding application features land.
+1. Attach the menu screenshot and verification summary to #16, then merge after review.
+2. Plan Phase 3 overlays. Add further menu actions as their application features land.
