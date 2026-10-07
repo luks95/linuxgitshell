@@ -31,6 +31,9 @@ void TranslationTest::loadsSpanishCatalog()
              QStringLiteral("Cherry-pick en curso"));
     QCOMPARE(i18nd("linuxgitshell", "Revert in progress"), QStringLiteral("Reversión en curso"));
     QCOMPARE(i18nd("linuxgitshell", "Bisect in progress"), QStringLiteral("Bisección en curso"));
+
+    KLocalizedString::setLanguages({QStringLiteral("en")});
+    QCOMPARE(i18n("Repository loaded"), QStringLiteral("Repository loaded"));
 }
 
 QTEST_GUILESS_MAIN(TranslationTest)

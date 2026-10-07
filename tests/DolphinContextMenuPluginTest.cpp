@@ -7,6 +7,7 @@
 #include <KAbstractFileItemActionPlugin>
 #include <KFileItem>
 #include <KFileItemListProperties>
+#include <KLocalizedString>
 #include <KPluginFactory>
 #include <KPluginMetaData>
 
@@ -145,6 +146,7 @@ class DolphinContextMenuPluginTest final : public QObject
 
   private Q_SLOTS:
     void initTestCase();
+    void cleanupTestCase();
     // Runs first, before other tests trigger service activation from the event loop.
     void buildsMenuWithoutWaitingForGitOrService();
     void exposesExpectedMetadata();
@@ -161,6 +163,15 @@ void DolphinContextMenuPluginTest::initTestCase()
 {
     GitTestSupport::isolateGitConfiguration();
     QVERIFY2(QDBusConnection::sessionBus().isConnected(), "run this test through dbus-run-session");
+    KLocalizedString::addDomainLocaleDir(QByteArrayLiteral("linuxgitshell"),
+                                         QStringLiteral(TRANSLATION_LOCALE_DIR));
+    KLocalizedString::setLanguages({QStringLiteral("es")});
+    QCOMPARE(i18nd("linuxgitshell", "Show Status"), QStringLiteral("Mostrar estado"));
+}
+
+void DolphinContextMenuPluginTest::cleanupTestCase()
+{
+    QCOMPARE(KLocalizedString::languages(), QStringList{QStringLiteral("es")});
 }
 
 void DolphinContextMenuPluginTest::buildsMenuWithoutWaitingForGitOrService()

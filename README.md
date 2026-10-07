@@ -5,8 +5,8 @@ Plasma 6 and Dolphin on Manjaro/Arch Linux. The public
 [`v0.1.0`](https://github.com/luks95/linuxgitshell/releases/tag/v0.1.0) release provides the tested
 Git Core and a read-only repository inspector. Phase 2 includes a thin Dolphin context-menu
 plugin on `main`, backed by a bounded context cache and an experimental D-Bus service. The
-development branch adds repository-aware `Show Status` menus; native Dolphin verification remains
-pending. Mutating Git workflows are not implemented yet.
+development branch adds repository-aware `Show Status` menus; native Dolphin verification is in
+progress. Mutating Git workflows are not implemented yet.
 
 ## Current status
 
@@ -91,6 +91,8 @@ Run the application shell with:
 
 The optional path is discovered asynchronously. The window displays repository metadata, a working
 tree summary, configuration values and origins, and diagnostic Git output when inspection fails.
+LinuxGitShell currently displays its own text in English by default, regardless of the desktop
+locale.
 Use [docs/manual-smoke-test.md](docs/manual-smoke-test.md) for the KDE/Wayland verification checklist.
 Repository discovery behavior for symlinks, mount boundaries, long paths, and case sensitivity is
 documented in [docs/path-handling.md](docs/path-handling.md).

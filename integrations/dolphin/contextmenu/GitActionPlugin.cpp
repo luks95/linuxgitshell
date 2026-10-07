@@ -23,6 +23,9 @@
 namespace LinuxGitShell::Dolphin
 {
 
+// Choose the plugin's language per string without changing Dolphin's process-wide locale.
+const QStringList englishLanguages{QStringLiteral("en")};
+
 Q_LOGGING_CATEGORY(dolphinContextMenuLog, "linuxgitshell.dolphin.contextmenu")
 Q_LOGGING_CATEGORY(dolphinContextMenuTimingLog, "linuxgitshell.dolphin.timing", QtInfoMsg)
 
@@ -75,7 +78,9 @@ QList<QAction*> GitActionPlugin::actions(const KFileItemListProperties& fileItem
         return {};
     case ContextMenuKind::Generic:
     {
-        auto* open = new QAction(i18nd("linuxgitshell", "Open with LinuxGitShell"), parentWidget);
+        auto* open = new QAction(
+            ki18nd("linuxgitshell", "Open with LinuxGitShell").toString(englishLanguages),
+            parentWidget);
         launchOnTrigger(open, decision.launchPath);
         return {open};
     }
@@ -83,9 +88,11 @@ QList<QAction*> GitActionPlugin::actions(const KFileItemListProperties& fileItem
         break;
     }
 
-    auto* menu = new QMenu(i18nd("linuxgitshell", "LinuxGitShell"), parentWidget);
+    auto* menu = new QMenu(ki18nd("linuxgitshell", "LinuxGitShell").toString(englishLanguages),
+                           parentWidget);
     menu->setIcon(QIcon::fromTheme(QStringLiteral("git")));
-    auto* showStatus = new QAction(i18nd("linuxgitshell", "Show Status"), menu);
+    auto* showStatus =
+        new QAction(ki18nd("linuxgitshell", "Show Status").toString(englishLanguages), menu);
     launchOnTrigger(showStatus, decision.launchPath);
     menu->addAction(showStatus);
     if (!decision.operations.isEmpty())
@@ -112,7 +119,8 @@ void GitActionPlugin::launchOnTrigger(QAction* action, const QString& path)
                 {
                     qCWarning(dolphinContextMenuLog)
                         << "Could not start the LinuxGitShell application";
-                    Q_EMIT error(i18nd("linuxgitshell", "Could not start LinuxGitShell."));
+                    Q_EMIT error(ki18nd("linuxgitshell", "Could not start LinuxGitShell.")
+                                     .toString(englishLanguages));
                 }
             });
 }
@@ -122,15 +130,15 @@ QString GitActionPlugin::operationText(RepositoryContextOperation operation)
     switch (operation)
     {
     case RepositoryContextOperation::Merge:
-        return i18nd("linuxgitshell", "Merge in progress");
+        return ki18nd("linuxgitshell", "Merge in progress").toString(englishLanguages);
     case RepositoryContextOperation::Rebase:
-        return i18nd("linuxgitshell", "Rebase in progress");
+        return ki18nd("linuxgitshell", "Rebase in progress").toString(englishLanguages);
     case RepositoryContextOperation::CherryPick:
-        return i18nd("linuxgitshell", "Cherry-pick in progress");
+        return ki18nd("linuxgitshell", "Cherry-pick in progress").toString(englishLanguages);
     case RepositoryContextOperation::Revert:
-        return i18nd("linuxgitshell", "Revert in progress");
+        return ki18nd("linuxgitshell", "Revert in progress").toString(englishLanguages);
     case RepositoryContextOperation::Bisect:
-        return i18nd("linuxgitshell", "Bisect in progress");
+        return ki18nd("linuxgitshell", "Bisect in progress").toString(englishLanguages);
     }
     return {};
 }

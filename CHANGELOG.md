@@ -34,6 +34,8 @@ All notable user-visible changes to LinuxGitShell will be documented here. The f
 
 ### Changed
 
+- LinuxGitShell's own window and Dolphin action labels use English by default, without changing
+  Dolphin's language.
 - The Dolphin selection helper was replaced by a context-menu policy covering single and multiple
   selections.
 - Project documentation now reflects the public `v0.1.0` release, the Phase 2 plugin, the
