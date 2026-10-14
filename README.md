@@ -3,10 +3,10 @@
 LinuxGitShell aims to provide a native, graphical Git experience for Linux, starting with KDE
 Plasma 6 and Dolphin on Manjaro/Arch Linux. The public
 [`v0.1.0`](https://github.com/luks95/linuxgitshell/releases/tag/v0.1.0) release provides the tested
-Git Core and a read-only repository inspector. Phase 2 now includes the first thin Dolphin
-context-menu plugin on the development branch: a single local item can open the external
-LinuxGitShell application. Repository-aware actions and mutating Git workflows are not available
-yet.
+Git Core and a read-only repository inspector. Phase 2 includes a thin Dolphin context-menu
+plugin on `main`, backed by a bounded context cache and an experimental D-Bus service. The
+development branch adds repository-aware `Show Status` menus; native Dolphin verification is in
+progress. Mutating Git workflows are not implemented yet.
 
 ## Current status
 
@@ -15,12 +15,12 @@ yet.
 | Git process runner, repository discovery, status, and config inspection | Released in `v0.1.0` |
 | Read-only Qt/KF6 repository inspector | Released in `v0.1.0` |
 | Minimal Dolphin action for one local selection | Available on `main`, unreleased |
-| Repository-aware menus and context cache | Cache, experimental context service, and non-blocking plugin client implemented; repository-aware actions tracked by [#12](https://github.com/luks95/linuxgitshell/issues/12) |
+| Context cache, experimental D-Bus service, and non-blocking plugin client | Available on `main`, unreleased |
+| Repository-aware menus | Implemented in [#16](https://github.com/luks95/linuxgitshell/pull/16): `Show Status`, operation notices, and same-repository multiple selections; native verification tracked by [#12](https://github.com/luks95/linuxgitshell/issues/12) |
 | Overlays, stable daemon/D-Bus API, and mutating Git workflows | Not implemented |
 
-This table describes the published release and local `main`. The repository-aware menu is
-implemented and natively verified in the branch for #16, pending integration according to the
-recorded handoff. See [`STATUS.md`](STATUS.md) for branch-specific evidence and the exact next steps.
+The repository-aware menu is integrated through #16 (`ec85d2d`), following native verification
+and passing CI. Phase 3 starts with the status-index model; see [`STATUS.md`](STATUS.md).
 
 ## Documentation map
 
@@ -75,7 +75,7 @@ ctest --test-dir build --output-on-failure
 The current suite registers 17 tests, including plugin metadata/factory loading, selection policy,
 unusual-path process transfer, the bounded repository-context cache and its D-Bus encoding, the
 context service against temporary repositories, the real daemon and D-Bus activation on a private
-session bus through `dbus-run-session`, the plugin's non-blocking context client, and Spanish
+session bus through `dbus-run-session`, the plugin's non-blocking context client and repository-aware menus, and Spanish
 translations.
 
 Check formatting before submitting C++ changes:
@@ -94,6 +94,8 @@ Run the application shell with:
 
 The optional path is discovered asynchronously. The window displays repository metadata, a working
 tree summary, configuration values and origins, and diagnostic Git output when inspection fails.
+LinuxGitShell currently displays its own text in English by default, regardless of the desktop
+locale.
 Use [docs/manual-smoke-test.md](docs/manual-smoke-test.md) for the KDE/Wayland verification checklist.
 Repository discovery behavior for symlinks, mount boundaries, long paths, and case sensitivity is
 documented in [docs/path-handling.md](docs/path-handling.md).

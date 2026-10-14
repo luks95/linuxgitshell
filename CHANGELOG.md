@@ -25,11 +25,20 @@ All notable user-visible changes to LinuxGitShell will be documented here. The f
 - Non-blocking repository-context client in the Dolphin plugin. Menus read only an in-memory cache,
   and cold paths are requested asynchronously from the event loop through D-Bus activation. Tests
   load the real module and prove that building a menu neither runs Git nor contacts the service.
+- Repository-aware Dolphin menu: `LinuxGitShell` ▸ `Show Status` inside repositories (including
+  bare ones), disabled notices for operations in progress, the repository root for several items in
+  one repository, and no entry outside repositories or across repositories. Spanish translations
+  cover the new entries.
+- Optional Dolphin menu timing diagnostics, disabled by default, reporting menu kind, selection
+  count, and elapsed nanoseconds without logging paths.
 
 ### Changed
 
+- LinuxGitShell window and action labels default to English while preserving Dolphin's locale.
+- The Dolphin selection helper is now a policy for single and multiple repository selections.
+
 - Project documentation distinguishes the published release, integrated Phase 2 context service
-  and client (17 registered tests), and repository-aware menus verified in a pending branch.
+  and client (17 registered tests), and repository-aware menus integrated through #16.
   Deferred menu actions have explicit target phases; the proposed overlay contract specifies
   snapshot coverage, initial replies, invalidation, and bounded background refresh.
 

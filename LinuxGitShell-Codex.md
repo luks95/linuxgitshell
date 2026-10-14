@@ -2,11 +2,10 @@
 
 > **Objetivo:** desarrollar para la comunidad Linux una integración gráfica de Git inspirada en la experiencia de TortoiseGit, comenzando por **KDE Plasma 6 + Dolphin** en **Manjaro/Arch Linux**, con la mayor cantidad posible de operaciones Git accesibles mediante interfaz gráfica, menú contextual, iconos de estado, historial visual, diff, resolución de conflictos, ramas, rebase, stash, reflog, submódulos, worktrees y configuración completa.
 
-> **Estado documental al 2026-10-13:** Fases 0 y 1 completadas; `v0.1.0` publicada. El `main` local
-> incluye el plugin mínimo, cache de contexto, servicio experimental y cliente asíncrono. El menú
-> según repositorio está implementado y verificado en la rama de #16, pendiente de integración
-> según el último handoff; esta revisión no revalidó el estado remoto. El
-> [diseño de overlays](docs/overlay-status-design.md) es una propuesta sin implementación. `STATUS.md` y
+> **Estado documental al 2026-10-13:** Fases 0–2 completadas; `v0.1.0` publicada. #16 se
+> fusionó en `main` (`ec85d2d`) tras verificar CI y la evidencia nativa. El menú según repositorio,
+> el cache, el servicio experimental y el cliente asíncrono están integrados. La Fase 3 comienza
+> con el [diseño de overlays](docs/overlay-status-design.md) y su índice sin Git. `STATUS.md` y
 > `roadmap-checklist.md` son las fuentes de verdad para el progreso, mientras este documento conserva
 > el alcance completo del producto.
 
@@ -2221,12 +2220,11 @@ Criterios:
 
 ---
 
-## Fase 2 — Dolphin Context Menu MVP (en curso)
+## Fase 2 — Dolphin Context Menu MVP (completada)
 
-Integrado en `main`: plugin mínimo con lanzamiento externo sin shell, cache de snapshots,
-servicio de contexto experimental y cliente asíncrono; 17 tests registrados. El menú según
-repositorio y su verificación nativa están en la rama de #16, pendientes de integración según
-el último handoff. Ver `STATUS.md` para los commits y límites de esa evidencia.
+Integrado en `main` mediante #16 (`ec85d2d`): menú según repositorio, cache de snapshots,
+servicio experimental y cliente asíncrono. La verificación nativa y los 17 tests de la fase
+están registrados en `STATUS.md` y `docs/dolphin-context-menu.md`.
 
 Alcance de cierre: `LinuxGitShell > Show Status`, reglas de selección y multiselección,
 repositorios bare, avisos de operaciones en curso y fallback conservador. Las acciones deben

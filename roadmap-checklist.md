@@ -13,21 +13,20 @@ Este roadmap deriva de la [especificación maestra](LinuxGitShell-Codex.md). La 
 - [x] Comunidad, licencia y procesos de contribución formalizados con canales públicos y privados.
 - [x] Primera versión publicada: [`v0.1.0`](https://github.com/luks95/linuxgitshell/releases/tag/v0.1.0).
 
-**Fase actual:** Fase 2 — Menú contextual de Dolphin (`v0.2.0`, parte 1).
+**Fase actual:** Fase 3 — Overlays MVP (`v0.2.0`, parte 2).
 
 **Último incremento:** plugin mínimo fusionado en
 [#9](https://github.com/luks95/linuxgitshell/pull/9); diseño del contexto no bloqueante en
 [`docs/repository-context-cache.md`](docs/repository-context-cache.md), seguido por
 [#10](https://github.com/luks95/linuxgitshell/issues/10); modelo de snapshots y cache acotado sin Git
-en `libs/repositorycontext/`, servicio de contexto experimental en `daemon/` y cliente no bloqueante
-en el plugin, seguidos por
+en `libs/repositorycontext/`, servicio de contexto experimental en `daemon/`, cliente no bloqueante
+y menú según el repositorio (`Show Status`), seguidos por
 [#12](https://github.com/luks95/linuxgitshell/issues/12).
 
-**Separación de estados (2026-10-13):** lo anterior está integrado en el `main` local (`d087776`).
-El menú según repositorio y su verificación nativa están en `feature/repository-aware-actions`
-(`cfd04ff`, #16), pendientes de integración según el último handoff. El estado remoto no se
-revalidó en esta revisión documental. Los checks de Fase 2 se actualizarán al integrar esa rama;
-sus resultados nativos deben conservarse. El diseño de overlays sigue siendo una propuesta.
+**Integración (2026-10-13):** #16 fusionado en `main` (`ec85d2d`) tras revisar el commit
+`cfd04ff`, sus tres checks de CI exitosos y la verificación nativa adjunta. Fase 2 completada.
+La evidencia y las capturas están en `docs/dolphin-context-menu.md`; se conservan los checkpoints
+históricos en `STATUS.md`. Fase 3 comienza con el índice puro y el contrato de overlays.
 
 ## Cómo utilizar este documento
 
@@ -232,12 +231,12 @@ implementan sus ventanas y operaciones; no bloquean el menú MVP ni se muestran 
 
 - [x] Investigar y documentar la API KF6 vigente para plugins de Dolphin.
 - [x] Crear un plugin pequeño que delegue acciones al core o a procesos externos de LinuxGitShell.
-- [ ] Detectar selección de archivo/carpeta, raíz y pertenencia a repositorio.
-- [ ] Limitar acciones cuando la selección atraviesa repositorios diferentes.
-- [ ] Dentro de un repositorio: mostrar `Show Status` conectado al inspector externo.
-- [ ] Fuera de un repositorio: omitir acciones aún no implementadas; mantener fallback frío seguro.
-- [ ] Adaptar acciones para repositorios bare y operaciones Git en progreso.
-- [ ] Transferir selección o raíz al inspector externo según la política de multiselección.
+- [x] Detectar selección de archivo/carpeta, raíz y pertenencia a repositorio.
+- [x] Limitar acciones cuando la selección atraviesa repositorios diferentes.
+- [x] Dentro de un repositorio: mostrar `Show Status` conectado al inspector externo.
+- [x] Fuera de un repositorio: omitir acciones aún no implementadas; mantener fallback frío seguro.
+- [x] Adaptar acciones para repositorios bare y operaciones Git en progreso.
+- [x] Transferir selección o raíz al inspector externo según la política de multiselección.
 - [x] Evitar cualquier status síncrono pesado en el proceso de Dolphin.
 - [x] Añadir logging diagnóstico para carga del plugin sin registrar rutas sensibles por defecto.
 - [x] Diseñar un cache de contexto asíncrono que soporte `.git` como archivo/directorio y repos bare,
@@ -253,16 +252,16 @@ implementan sus ventanas y operaciones; no bloquean el menú MVP ni se muestran 
 - [x] Documentar instalación de desarrollo y layout de sistema mediante `DESTDIR`; el paquete del
   sistema sigue diferido a la fase de packaging.
 - [x] Documentar desinstalación limpia y recarga/reinicio de Dolphin.
-- [ ] Verificar menú sobre raíz, subcarpeta, archivo, multiselección y fuera de repo.
-- [ ] Verificar que un error o cierre de LinuxGitShell no derriba Dolphin.
+- [x] Verificar menú sobre raíz, subcarpeta, archivo, multiselección y fuera de repo.
+- [x] Verificar que un error o cierre de LinuxGitShell no derriba Dolphin.
 - [x] Crear checklist de prueba manual para versiones soportadas de Dolphin.
 
 ## Criterio de salida de la Fase 2
 
-- [ ] El plugin carga de forma estable en Dolphin.
-- [ ] Las acciones solo aparecen cuando son válidas.
-- [ ] Las acciones abren flujos conectados al Git Core.
-- [ ] Dolphin permanece responsivo en repositorios grandes o lentos.
+- [x] El plugin carga de forma estable en Dolphin.
+- [x] Las acciones solo aparecen cuando son válidas.
+- [x] Las acciones abren flujos conectados al Git Core.
+- [x] Dolphin permanece responsivo en repositorios grandes o lentos.
 
 ---
 
@@ -926,9 +925,7 @@ El orden de estas tareas se decidirá con uso real, métricas e interés comunit
 
 ## Próxima tarea recomendada
 
-Revisar y fusionar [#16](https://github.com/luks95/linuxgitshell/pull/16) (CI en verde, resumen de
-verificación nativa y captura adjuntos según el último handoff; revalidar antes del merge) para
-cerrar la Fase 2. Conservar la evidencia de esa rama al reconciliar documentación. Después,
-implementar `RepositoryStatusIndex` con tests conforme al contrato revisado en
-`docs/overlay-status-design.md`, sin Git, filesystem ni IPC. Las acciones diferidas tienen fases
-responsables en la tabla de alcance de Fase 2.
+Implementar `RepositoryStatusIndex` con tests conforme al contrato revisado en
+`docs/overlay-status-design.md`, sin Git, filesystem ni IPC. Después, añadir captura de procesos
+acotada e inventario de archivos seguidos para el proveedor del daemon. Las acciones diferidas
+conservan sus fases responsables en la tabla de alcance de Fase 2.
