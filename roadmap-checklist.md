@@ -13,7 +13,7 @@ Este roadmap deriva de la [especificación maestra](LinuxGitShell-Codex.md). La 
 - [x] Comunidad, licencia y procesos de contribución formalizados con canales públicos y privados.
 - [x] Primera versión publicada: [`v0.1.0`](https://github.com/luks95/linuxgitshell/releases/tag/v0.1.0).
 
-**Fase actual:** Fase 2 — Menú contextual de Dolphin (`v0.2.0`, parte 1).
+**Fase actual:** Fase 3 — Overlays MVP (`v0.2.0`, parte 2).
 
 **Último incremento:** plugin mínimo fusionado en
 [#9](https://github.com/luks95/linuxgitshell/pull/9); diseño del contexto no bloqueante en
@@ -23,24 +23,10 @@ en `libs/repositorycontext/`, servicio de contexto experimental en `daemon/`, cl
 y menú según el repositorio (`Show Status`), seguidos por
 [#12](https://github.com/luks95/linuxgitshell/issues/12).
 
-**Integración al 2026-09-29:** cache, servicio y cliente integrados en `main` mediante
-[#13](https://github.com/luks95/linuxgitshell/pull/13),
-[#14](https://github.com/luks95/linuxgitshell/pull/14) y
-[#15](https://github.com/luks95/linuxgitshell/pull/15).
-El menú visible en [#16](https://github.com/luks95/linuxgitshell/pull/16) apunta ahora a `main`.
-La verificación interactiva y la evaluación de latencia nativa están completas; queda documentar
-los resultados en #16 y completar la revisión antes del merge.
-
-**Checkpoint (2026-10-05):** se confirmaron físicamente los menús frío/cálido, bare,
-operación de merge, multiselección y degradación sin daemon. El plugin se midió dentro de Dolphin:
-p95 cálido 0,703 ms (24 muestras), p95 de acción genérica fría 4,427 ms (9 muestras), por encima
-del objetivo local de 2 ms. Una compilación nueva fija inglés para los textos propios de
-LinuxGitShell y pasa 17 tests; Dolphin siguió responsivo con 2.000 archivos y Git lento. La nueva
-medición cálida dio p95 0,465 ms (29 muestras) y se añadió una captura del menú. El 2026-10-06
-se confirmó que la acción genérica abre el inspector y que `trash:/` no muestra acciones del
-plugin. Una nueva serie dentro de Dolphin dio p95 frío 0,589 ms con 22 muestras
-(máximo 2,028 ms); 20 selecciones de archivos nuevos dieron p95 0,276 ms. El p95 ya cumple el
-objetivo local, aunque permanece registrado el pico de la primera llamada. Ver `STATUS.md`.
+**Integración (2026-10-13):** #16 fusionado en `main` (`ec85d2d`) tras revisar el commit
+`cfd04ff`, sus tres checks de CI exitosos y la verificación nativa adjunta. Fase 2 completada.
+La evidencia y las capturas están en `docs/dolphin-context-menu.md`; se conservan los checkpoints
+históricos en `STATUS.md`. Fase 3 comienza con el índice puro y el contrato de overlays.
 
 ## Cómo utilizar este documento
 
@@ -230,18 +216,27 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 
 # Fase 2 — Menú contextual de Dolphin (`v0.2.0`, parte 1)
 
+El cierre de esta fase cubre `Show Status`, selección y contexto de repositorio, fallback seguro,
+aislamiento del proceso y verificación nativa. Las acciones siguientes pertenecen a las fases que
+implementan sus ventanas y operaciones; no bloquean el menú MVP ni se muestran sin funcionalidad:
+
+| Acción diferida | Fase responsable |
+| --- | --- |
+| `Create repository here`, `Commit` | Fase 5 (`v0.4.0`) |
+| `Show Log` | Fase 7 (`v0.5.0`) |
+| `Git Clone`, `Pull`, `Push` | Fase 10 (`v0.8.0`) |
+| `Settings` | Fase 14 (`v1.0.0`) |
+
 ## Implementación
 
 - [x] Investigar y documentar la API KF6 vigente para plugins de Dolphin.
 - [x] Crear un plugin pequeño que delegue acciones al core o a procesos externos de LinuxGitShell.
 - [x] Detectar selección de archivo/carpeta, raíz y pertenencia a repositorio.
 - [x] Limitar acciones cuando la selección atraviesa repositorios diferentes.
-- [ ] Fuera de un repositorio: mostrar `Git Clone...` y `Git Create repository here...`.
-  Pendiente de que la aplicación implemente clonado y creación; hoy no se muestra ninguna entrada.
-- [ ] Dentro de un repositorio: mostrar `Show Status`, `Commit`, `Pull`, `Push`, `Show Log` y `Settings`.
-  `Show Status` está disponible; las demás acciones se añadirán cuando la aplicación las implemente.
+- [x] Dentro de un repositorio: mostrar `Show Status` conectado al inspector externo.
+- [x] Fuera de un repositorio: omitir acciones aún no implementadas; mantener fallback frío seguro.
 - [x] Adaptar acciones para repositorios bare y operaciones Git en progreso.
-- [ ] Abrir Settings y demás ventanas como aplicaciones externas con contexto de repositorio.
+- [x] Transferir selección o raíz al inspector externo según la política de multiselección.
 - [x] Evitar cualquier status síncrono pesado en el proceso de Dolphin.
 - [x] Añadir logging diagnóstico para carga del plugin sin registrar rutas sensibles por defecto.
 - [x] Diseñar un cache de contexto asíncrono que soporte `.git` como archivo/directorio y repos bare,
@@ -272,7 +267,14 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 
 # Fase 3 — Overlays MVP (`v0.2.0`, parte 2)
 
+Contrato propuesto: [diseño de overlays](docs/overlay-status-design.md). El primer incremento,
+`RepositoryStatusIndex`, está implementado en esta rama sin Git, filesystem ni IPC. La propuesta define cobertura de snapshots,
+respuestas iniciales y retirada de iconos obsoletos. Repintado nativo y rendimiento deben medirse
+antes de cerrar la fase; los valores de polling y límites son provisionales.
+
 ## Implementación
+
+- [x] Implementar `RepositoryStatusIndex` puro con cobertura, frescura, revisiones, límites y tests deterministas.
 
 - [ ] Crear iconos propios y libres para clean, modified, added, conflict y untracked.
 - [ ] Conservar fuente, licencia y atribución de cada recurso visual.
@@ -305,7 +307,7 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 
 ## Daemon
 
-- [ ] Crear `linuxgitshell-daemon` como servicio de sesión del usuario.
+- [ ] Consolidar el `linuxgitshell-daemon` experimental introducido en Fase 2 como servicio estable.
 - [ ] Implementar registro y descubrimiento eficiente de múltiples repositorios.
 - [ ] Cachear la relación `path -> repository root` con invalidación correcta.
 - [ ] Implementar límites de memoria, expiración y diagnóstico del cache.
@@ -334,7 +336,8 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 
 ## Integración y resiliencia
 
-- [ ] Migrar contexto y overlays a consultas rápidas por IPC.
+- [ ] Migrar los contratos experimentales de contexto y overlays a la API estable, manteniendo
+  snapshots locales y solicitudes asíncronas en Dolphin.
 - [ ] Reiniciar el daemon sin cerrar Dolphin.
 - [ ] Recuperar el registro/cache después de un crash sin datos corruptos.
 - [ ] Añadir métricas diagnósticas: repos observados, entradas, memoria estimada y último refresh.
@@ -352,6 +355,12 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 ---
 
 # Fase 5 — Working Tree y Commit (`v0.4.0`, parte 1)
+
+## Crear repositorio y acciones de Dolphin
+
+- [ ] Implementar creación gráfica con `git init`, rama inicial y opción bare en un destino validado.
+- [ ] Añadir `Create repository here` fuera de un repositorio cuando el flujo esté probado.
+- [ ] Añadir `Commit` al menú cuando su ventana esté implementada, transfiriendo contexto al proceso externo.
 
 ## Working Tree
 
@@ -423,6 +432,8 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 ---
 
 # Fase 7 — Log e historial de archivo (`v0.5.0`)
+
+- [ ] Añadir `Show Log` al menú de Dolphin cuando el visor esté implementado.
 
 ## Datos
 
@@ -516,6 +527,13 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 ---
 
 # Fase 10 — Red y sincronización (`v0.8.0`)
+
+## Clone y acciones de Dolphin
+
+- [ ] Implementar wizard de Clone con URL, destino, rama, profundidad y opciones de submódulos,
+  bare y mirror conforme a la especificación; reutilizar progreso, cancelación y autenticación.
+- [ ] Probar clonado correcto, destino inválido, fallo de autenticación y cancelación en fixtures aislados.
+- [ ] Añadir `Git Clone` fuera de repositorios y `Pull`/`Push` dentro cuando sus flujos estén probados.
 
 ## Infraestructura común
 
@@ -669,6 +687,7 @@ Estas funciones entrarán en 1.0 solo si alcanzan el mismo nivel de estabilidad.
 
 ## Settings
 
+- [ ] Añadir `Settings` al menú de Dolphin con apertura externa y contexto de repositorio.
 - [ ] Crear `linuxgitshell-settings` externo al plugin de Dolphin.
 - [ ] Implementar General, Git, Context Menu, Icon Overlays y Status Cache.
 - [ ] Implementar Network, SSH, Diff, Merge, Log y Commit.
@@ -908,7 +927,7 @@ El orden de estas tareas se decidirá con uso real, métricas e interés comunit
 
 ## Próxima tarea recomendada
 
-Adjuntar a #16 la captura del submenú y el resumen de verificación nativa. El checklist manual y
-los cuatro criterios de salida de la Fase 2 están completos; falta revisar y fusionar #16. Las
-acciones `Commit`, `Pull`, `Push`, `Show Log`, `Settings`,
-`Git Clone` y `Create repository here` se añadirán cuando la aplicación las implemente.
+Añadir captura de procesos acotada e inventario de archivos seguidos para el proveedor del daemon,
+reutilizando el `RepositoryStatusIndex` implementado y probado en esta rama. Después, conectar el
+contrato experimental y el plugin conforme a `docs/overlay-status-design.md`. Las acciones diferidas
+conservan sus fases responsables en la tabla de alcance de Fase 2.

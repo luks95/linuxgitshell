@@ -8,9 +8,11 @@ add_library(
     include/linuxgitshell/repositorycontext/RepositoryContextCache.h
     include/linuxgitshell/repositorycontext/RepositoryContextSnapshot.h
     include/linuxgitshell/repositorycontext/RepositoryContextWire.h
+    include/linuxgitshell/repositorycontext/RepositoryStatusIndex.h
     src/RepositoryContextCache.cpp
     src/RepositoryContextSnapshot.cpp
     src/RepositoryContextWire.cpp
+    src/RepositoryStatusIndex.cpp
 )
 add_library(LinuxGitShell::RepositoryContext ALIAS linuxgitshell_repositorycontext)
 

@@ -2,33 +2,25 @@
 
 ## Current phase
 
-Phase 2 — Dolphin context menu.
+Phase 3 — Overlay status model.
 
 ## Resuming work
 
-Last updated 2026-10-06. The repository-context work for
-[issue #12](https://github.com/luks95/linuxgitshell/issues/12) was split into four stacked pull
-requests. The cache, service, and client are merged into `main`. The visible repository-aware menu
-remains in #16, now targeting `main`, with native performance verification in progress.
+Last updated 2026-10-13.
 
-| Order | Pull request | Branch | Content |
-| --- | --- | --- | --- |
-| 1 | [#13](https://github.com/luks95/linuxgitshell/pull/13) | `feature/repository-context-cache` | Merged: snapshot model and bounded cache in `libs/repositorycontext/` |
-| 2 | [#14](https://github.com/luks95/linuxgitshell/pull/14) | `feature/context-service` | Merged: `linuxgitshell-daemon` with `org.linuxgitshell.Experimental.Context1` |
-| 3 | [#15](https://github.com/luks95/linuxgitshell/pull/15) | `feature/plugin-context-client` | Merged: non-blocking context client in the Dolphin plugin |
-| 4 | [#16](https://github.com/luks95/linuxgitshell/pull/16) | `feature/repository-aware-actions` | Native menu checklist and latency review completed; PR screenshot and merge remain |
+- PR [#16](https://github.com/luks95/linuxgitshell/pull/16) merged as `ec85d2d` after review of
+  `cfd04ff`, passing build/quality/dependency checks, and the attached native verification summary
+  and screenshot. Phase 2 is complete; the published release remains `v0.1.0`.
+- Branch `feature/repository-status-index` combines the integrated menu with the revised
+  [overlay contract](docs/overlay-status-design.md). Documentation corrections are preserved in
+  `17252eb`; no overlays/provider are implemented yet.
+- Implemented in this branch: pure `RepositoryStatusIndex` and deterministic tests. Native overlay
+  repaint and large-repository measurements remain release gates for Phase 3.
 
-Decisions already taken:
+## Historical Phase 2 verification
 
-- The context service lives in `daemon/` as the first increment of the Phase 4 daemon and uses the
-  experimental bus name `org.linuxgitshell.Experimental.Context1`, not the stable `Daemon1` name.
-- The menu offers only actions the application implements. Today that is `Show Status`, which opens
-  the read-only inspector. Other roadmap actions are added when their application features land.
-
-Remaining Phase 2 work:
-
-1. Attach the existing menu screenshot to #16 and review the completed verification before merge.
-2. After #16 merges, plan the `v0.2.0` overlays work (Phase 3).
+These checkpoints retain the evidence recorded before #16 merged. Their pending-action notes
+are historical and are superseded by the integration state above.
 
 Verification on 2026-09-28:
 
@@ -187,7 +179,7 @@ Verification on 2026-09-28:
 - Non-blocking context client in the Dolphin plugin: `actions()` only reads a process-wide
   in-memory cache and queues cold or stale paths; requests leave from the event loop through
   asynchronous D-Bus calls that activate the service, and replies warm the cache for later menus.
-  Seventeen local tests pass; the plugin test loads the real module,
+  At that checkpoint, seventeen local tests passed; the plugin test loads the real module,
   proves that building menus neither runs Git nor contacts the service before returning, and
   measured `actions()` at p50 0.015 ms, p95 0.03 ms, and max 1.8 ms offscreen in a Debug build.
 - Repository-aware Dolphin menus for the application's current features: a warm snapshot inside a
@@ -197,10 +189,27 @@ Verification on 2026-09-28:
   selections degrade conservatively. Menu entries and notices are translated into Spanish.
 - Repository-local development installation verified with the expected binary, plugin, and Spanish
   catalog, followed by an isolated offscreen Dolphin startup with temporary D-Bus/XDG state.
+- Pure `RepositoryStatusIndex` with tracked membership, detailed and combined states, recursive
+  directory summaries, ignored-prefix exceptions, submodule flags, ownership boundaries, explicit
+  freshness, monotonic revisions, whole-snapshot eviction, and record/byte limits. It adds one
+  Qt Core/Qt Test-only CTest target; no provider, IPC, or widget dependency is introduced.
+
+## Verification of the status-index increment
+
+- Debug configure/build passed with the installed Qt/KF6 toolchain; all 18 CTest targets passed,
+  including real-module Dolphin loading and private-bus daemon/client tests.
+- `RepositoryStatusIndexTest` reports 51 passed, zero failed; it also passes in the Clang build.
+  The library and new test target build with configured clang-tidy checks without findings.
+- Formatting, common-secret checks, `git diff --check`, and local Markdown link destinations pass.
+- A disposable Git fixture confirms that untracked-only submodule content is `.M` / `S..U`;
+  the model preserves the detailed M but presents Untracked unless stronger staged changes exist.
+- Post-merge `main` CI for `ec85d2d` passed build and quality; dependency review was skipped on push.
+  Native UI verification was not repeated for this model-only increment.
 
 ## In progress
 
-- Review and merge the verified repository-aware menu in [#16](https://github.com/luks95/linuxgitshell/pull/16).
+- Review of the status-index increment on `feature/repository-status-index`. The provider,
+  experimental overlay transport, and visible plugin remain subsequent increments.
 
 ## Known issues
 
@@ -220,5 +229,5 @@ Verification on 2026-09-28:
 
 ## Next steps
 
-1. Attach the menu screenshot and verification summary to #16, then merge after review.
-2. Plan Phase 3 overlays. Add further menu actions as their application features land.
+1. Implement bounded process capture and tracked inventory, then the daemon status provider.
+2. Implement overlay transport/plugin and native verification before `v0.2.0`.

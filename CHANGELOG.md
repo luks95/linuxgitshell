@@ -7,6 +7,10 @@ All notable user-visible changes to LinuxGitShell will be documented here. The f
 
 ### Added
 
+- Pure `RepositoryStatusIndex` for the upcoming overlays: separate index/work-tree details,
+  tracked membership, directory propagation, ignored-prefix exceptions, submodule flags, bounded
+  atomic snapshot replacement, explicit freshness and revision-based invalidation. The daemon
+  provider and visible overlays are not connected yet.
 - KF6 Dolphin file-item action plugin that offers a translated external-launch action for one local
   selection while keeping Git execution and application windows outside Dolphin's process.
 - Unit and integration coverage for conservative selection handling, plugin metadata and factory
@@ -34,15 +38,12 @@ All notable user-visible changes to LinuxGitShell will be documented here. The f
 
 ### Changed
 
-- LinuxGitShell's own window and Dolphin action labels use English by default, without changing
-  Dolphin's language.
-- The Dolphin selection helper was replaced by a context-menu policy covering single and multiple
-  selections.
-- Project documentation now reflects the public `v0.1.0` release, the Phase 2 plugin, the
-  seventeen-test suite, current dependencies, and the implemented non-blocking repository-context
-  cache and experimental service. The timing diagnostic validation, passing implementation CI,
-  and manual-test handoff are recorded separately from native Dolphin verification, which remains
-  pending.
+- LinuxGitShell window and action labels default to English while preserving Dolphin's locale.
+- The Dolphin selection helper is now a policy for single and multiple repository selections.
+- Project documentation distinguishes the published release, integrated Phase 2 context service
+  and client, the 18-test suite, and repository-aware menus integrated through #16.
+  Deferred menu actions have explicit target phases; the proposed overlay contract specifies
+  snapshot coverage, initial replies, invalidation, and bounded background refresh.
 
 ## [0.1.0] - 2026-09-13
 

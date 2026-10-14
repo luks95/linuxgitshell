@@ -2,12 +2,10 @@
 
 > **Objetivo:** desarrollar para la comunidad Linux una integración gráfica de Git inspirada en la experiencia de TortoiseGit, comenzando por **KDE Plasma 6 + Dolphin** en **Manjaro/Arch Linux**, con la mayor cantidad posible de operaciones Git accesibles mediante interfaz gráfica, menú contextual, iconos de estado, historial visual, diff, resolución de conflictos, ramas, rebase, stash, reflog, submódulos, worktrees y configuración completa.
 
-> **Estado al 2026-09-24:** Fases 0 y 1 completadas; `v0.1.0` publicada. La Fase 2 está en curso:
-> el plugin KF6 de Dolphin muestra `LinuxGitShell` ▸ `Show Status` dentro de repositorios a partir de
-> un contexto no bloqueante (cache acotado, servicio de sesión experimental por D-Bus y cliente
-> asíncrono), descrito en [`docs/repository-context-cache.md`](docs/repository-context-cache.md) y
-> seguido en [#12](https://github.com/luks95/linuxgitshell/issues/12). Falta la verificación nativa
-> en Dolphin. `STATUS.md` y
+> **Estado documental al 2026-10-13:** Fases 0–2 completadas; `v0.1.0` publicada. #16 se
+> fusionó en `main` (`ec85d2d`) tras verificar CI y la evidencia nativa. El menú según repositorio,
+> el cache, el servicio experimental y el cliente asíncrono están integrados. La Fase 3 comienza
+> con el [diseño de overlays](docs/overlay-status-design.md) y su índice sin Git. `STATUS.md` y
 > `roadmap-checklist.md` son las fuentes de verdad para el progreso, mientras este documento conserva
 > el alcance completo del producto.
 
@@ -1307,6 +1305,9 @@ Mostrar conflictos y errores de forma entendible.
 
 # 31. Clone y Create Repository
 
+Planificación: Create Repository y su acción de Dolphin pertenecen a Fase 5 (`v0.4.0`);
+Clone y su acción pertenecen a Fase 10 (`v0.8.0`), junto a progreso y autenticación de red.
+
 ## Clone
 
 Wizard gráfico:
@@ -2219,28 +2220,19 @@ Criterios:
 
 ---
 
-## Fase 2 — Dolphin Context Menu MVP (en curso)
+## Fase 2 — Dolphin Context Menu MVP (completada)
 
-Completado: plugin KF6 pequeño con lanzamiento externo sin shell; cache de snapshots acotado;
-servicio de sesión experimental `org.linuxgitshell.Experimental.Context1`; cliente asíncrono que no
-ejecuta Git ni espera IPC en `actions()`; y menú según el repositorio con `Show Status`, avisos de
-operaciones en curso y reglas de multiselección. Hay 17 tests en total. Pendiente: verificación nativa
-en Dolphin y las acciones siguientes a medida que la aplicación las implemente.
+Integrado en `main` mediante #16 (`ec85d2d`): menú según repositorio, cache de snapshots,
+servicio experimental y cliente asíncrono. La verificación nativa y los 17 tests de la fase
+están registrados en `STATUS.md` y `docs/dolphin-context-menu.md`.
 
-Implementar:
+Alcance de cierre: `LinuxGitShell > Show Status`, reglas de selección y multiselección,
+repositorios bare, avisos de operaciones en curso y fallback conservador. Las acciones deben
+abrir el inspector externo conectado al Git Core.
 
-```text
-Git Clone...
-Git Create repository here...
-Git > Show Status
-Git > Commit...
-Git > Pull...
-Git > Push...
-Git > Show Log
-Git > Settings
-```
-
-Al principio las acciones pueden abrir ventanas simples, pero deben estar conectadas al Git Core.
+Las demás acciones se entregan con su funcionalidad: Create Repository y Commit en Fase 5,
+Show Log en Fase 7, Clone/Pull/Push en Fase 10 y Settings en Fase 14. No bloquean el cierre
+de Fase 2. El roadmap contiene sus tareas y criterios de seguimiento.
 
 Criterio:
 
@@ -2262,7 +2254,9 @@ Conflict
 Untracked
 ```
 
-Primero cache simple.
+Primero un índice de estado acotado sin Git ni IPC; luego proveedor en el daemon experimental y
+cliente local de overlays. El [contrato propuesto](docs/overlay-status-design.md) define cobertura,
+frescura, respuestas iniciales y retirada de iconos obsoletos. Polling en Fase 3; watchers en Fase 4.
 
 Criterio:
 
@@ -2274,7 +2268,8 @@ Criterio:
 
 ## Fase 4 — Daemon + D-Bus
 
-Mover estado a daemon.
+Consolidar el daemon experimental introducido en Fase 2 y el proveedor de overlays de Fase 3;
+migrar sus contratos a la API estable sin bloquear los callbacks de Dolphin.
 
 Implementar:
 
