@@ -887,6 +887,9 @@ El orden de estas tareas se decidirá con uso real, métricas e interés comunit
 
 ## Próxima tarea recomendada
 
-Completar el checklist interactivo del plugin en Dolphin/Wayland e implementar el cliente de
-snapshots y servicio de contexto definidos en `docs/repository-context-cache.md`, sin ejecutar Git,
-recorrer el filesystem ni esperar IPC dentro del proceso de Dolphin.
+Revisar y fusionar [#16](https://github.com/luks95/linuxgitshell/pull/16) (CI en verde, resumen de
+verificación nativa y captura adjuntos) para cerrar la Fase 2. Después, revisar
+`docs/overlay-status-design.md`, resolver sus preguntas abiertas e implementar primero
+`RepositoryStatusIndex` (sin Git ni IPC) con tests. Las acciones `Commit`, `Pull`, `Push`,
+`Show Log`, `Settings`, `Git Clone` y `Create repository here` se añadirán cuando la aplicación
+las implemente.

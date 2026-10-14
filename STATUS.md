@@ -4,6 +4,22 @@
 
 Phase 2 — Dolphin context menu.
 
+## Resuming work
+
+Last updated 2026-10-13.
+
+- PR [#16](https://github.com/luks95/linuxgitshell/pull/16) (repository-aware Dolphin menu) has all
+  CI checks passing and carries the native verification summary and menu screenshot. It awaits human
+  review and merge; its branch is `feature/repository-aware-actions`. Merging it closes Phase 2.
+- This branch (`docs/overlay-status-design`, from `main`) holds only the Phase 3 design,
+  [`docs/overlay-status-design.md`](docs/overlay-status-design.md). It is committed locally and not
+  yet pushed; no draft PR exists. Nothing in the design is implemented.
+- The design's four open questions (Dolphin repaint after `overlaysChanged`, cache staleness before
+  watchers, default for directory aggregation, `git status` cost on large repositories) need an
+  answer before implementation.
+- Planned increments: `RepositoryStatusIndex` (Git-free, tested), daemon status provider with
+  experimental D-Bus methods, overlay plugin with first icon set, native verification and `v0.2.0`.
+
 ## Working
 
 - Manjaro/Arch development environment inventoried.
@@ -86,8 +102,8 @@ Phase 2 — Dolphin context menu.
 
 ## In progress
 
-- Complete interactive Dolphin verification and add repository-aware actions on top of the context
-  client, tracked by [issue #12](https://github.com/luks95/linuxgitshell/issues/12).
+- Review and merge of [#16](https://github.com/luks95/linuxgitshell/pull/16), then review of the
+  Phase 3 overlay design.
 
 ## Known issues
 
@@ -101,8 +117,6 @@ Phase 2 — Dolphin context menu.
 
 ## Next steps
 
-1. Run the documented checklist with the development plugin loaded by Dolphin on Plasma Wayland.
-2. Use the warm context to add repository-aware actions incrementally, including outside-repository,
-   bare-repository, operation-in-progress, and multi-selection rules.
-3. Record native p50/p95/max `actions()` latency in Dolphin before enabling repository-aware actions
-   by default.
+1. Review and merge #16; update this file and the roadmap to mark Phase 2 complete.
+2. Review the overlay design, settle its open questions, and open it as a draft pull request.
+3. Implement `RepositoryStatusIndex` with unit tests, then the daemon status provider.
