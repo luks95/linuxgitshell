@@ -28,8 +28,10 @@ All notable user-visible changes to LinuxGitShell will be documented here. The f
 
 ### Changed
 
-- Project documentation now reflects the public `v0.1.0` release, the merged Phase 2 plugin, the
-  eleven-test suite, current dependencies, and the proposed non-blocking repository-context cache.
+- Project documentation distinguishes the published release, integrated Phase 2 context service
+  and client (17 registered tests), and repository-aware menus verified in a pending branch.
+  Deferred menu actions have explicit target phases; the proposed overlay contract specifies
+  snapshot coverage, initial replies, invalidation, and bounded background refresh.
 
 ## [0.1.0] - 2026-09-13
 

@@ -18,13 +18,16 @@ yet.
 | Repository-aware menus and context cache | Cache, experimental context service, and non-blocking plugin client implemented; repository-aware actions tracked by [#12](https://github.com/luks95/linuxgitshell/issues/12) |
 | Overlays, stable daemon/D-Bus API, and mutating Git workflows | Not implemented |
 
-See [`STATUS.md`](STATUS.md) for verification evidence and the exact next steps.
+This table describes the published release and local `main`. The repository-aware menu is
+implemented and natively verified in the branch for #16, pending integration according to the
+recorded handoff. See [`STATUS.md`](STATUS.md) for branch-specific evidence and the exact next steps.
 
 ## Documentation map
 
 - Development: [environment](docs/development-environment.md),
   [Dolphin plugin](docs/dolphin-context-menu.md),
   [repository-context cache](docs/repository-context-cache.md),
+  [proposed overlay design](docs/overlay-status-design.md),
   [path handling](docs/path-handling.md), and [translations](docs/translations.md).
 - Verification and delivery: [application smoke test](docs/manual-smoke-test.md),
   [release process](docs/release-process.md), and [release notes](docs/releases/v0.1.0.md).
@@ -40,7 +43,7 @@ The current development branch has been validated with:
 
 - C++20 compiler (GCC 16.2.1)
 - CMake 4.4.3
-- Qt 6.11.2 (`Core`, `Widgets`, and `Test`)
+- Qt 6.11.2 (`Core`, `DBus`, `Widgets`, and `Test`)
 - KDE Frameworks 6.29.0 (`CoreAddons`, `I18n`, and `KIO`)
 - Extra CMake Modules 6.29.0
 - Gettext 1.0 (translation catalog compilation)
@@ -53,8 +56,9 @@ On Manjaro/Arch, verify installed packages before changing the system:
 pacman -Q qt6-base extra-cmake-modules kcoreaddons ki18n kio gettext cmake gcc ninja
 ```
 
-`extra-cmake-modules` 6.29.0 is required by the Phase 2 Dolphin plugin for standard KDE build and
-installation paths. See
+These are validated versions, not minimum requirements. CMake declares minimums of CMake 3.25,
+Qt 6.8, and ECM/KDE Frameworks 6.0; older supported configurations still need validation.
+`extra-cmake-modules` supplies the Phase 2 plugin's standard KDE build and installation paths. See
 [docs/dolphin-context-menu.md](docs/dolphin-context-menu.md) for the verified API and dependency
 plan.
 
@@ -93,7 +97,7 @@ tree summary, configuration values and origins, and diagnostic Git output when i
 Use [docs/manual-smoke-test.md](docs/manual-smoke-test.md) for the KDE/Wayland verification checklist.
 Repository discovery behavior for symlinks, mount boundaries, long paths, and case sensitivity is
 documented in [docs/path-handling.md](docs/path-handling.md).
-The proposed non-blocking path-to-repository cache is documented in
+The implemented non-blocking path-to-repository cache is documented in
 [docs/repository-context-cache.md](docs/repository-context-cache.md).
 
 Maintainers preparing a tagged version should follow

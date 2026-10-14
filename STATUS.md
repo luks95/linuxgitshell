@@ -8,15 +8,21 @@ Phase 2 — Dolphin context menu.
 
 Last updated 2026-10-13.
 
-- PR [#16](https://github.com/luks95/linuxgitshell/pull/16) (repository-aware Dolphin menu) has all
-  CI checks passing and carries the native verification summary and menu screenshot. It awaits human
-  review and merge; its branch is `feature/repository-aware-actions`. Merging it closes Phase 2.
-- This branch (`docs/overlay-status-design`, from `main`) holds only the Phase 3 design,
-  [`docs/overlay-status-design.md`](docs/overlay-status-design.md). It is committed locally and not
-  yet pushed; no draft PR exists. Nothing in the design is implemented.
-- The design's four open questions (Dolphin repaint after `overlaysChanged`, cache staleness before
-  watchers, default for directory aggregation, `git status` cost on large repositories) need an
-  answer before implementation.
+- Published: `v0.1.0` provides the Git core and read-only inspector.
+- Integrated in local `main` (`d087776`): minimal Dolphin action, context cache, experimental
+  service, and asynchronous plugin client, through PRs #9 and #13–#15.
+- Implemented and natively verified in `feature/repository-aware-actions` (`cfd04ff`):
+  repository-aware menus for PR [#16](https://github.com/luks95/linuxgitshell/pull/16). The previous
+  handoff records passing CI and an attached verification summary and screenshot. The remote PR
+  state was not rechecked during this documentation review. Review and merge remain the recorded
+  Phase 2 integration gate; the roadmap now explicitly assigns later actions to their feature phases.
+- This branch (`docs/overlay-status-design`, from `main`) contains the Phase 3 design and the
+  documentation reconciliation, with no implementation changes. The earlier design/handoff commits
+  are local; this review adds working-tree edits. No push or PR creation was performed in this review.
+- The overlay design now specifies snapshot coverage, initial replies, invalidation, observation
+  leases, and provisional refresh/bounds defaults. These are proposed implementation contracts,
+  not implemented capabilities. Native repaint verification and large-repository measurements
+  remain Phase 3 validation gates; they do not block the isolated status-index model.
 - Planned increments: `RepositoryStatusIndex` (Git-free, tested), daemon status provider with
   experimental D-Bus methods, overlay plugin with first icon set, native verification and `v0.2.0`.
 
@@ -104,19 +110,27 @@ Last updated 2026-10-13.
 
 - Review and merge of [#16](https://github.com/luks95/linuxgitshell/pull/16), then review of the
   Phase 3 overlay design.
+- Documentation reconciliation completed on this branch: phase ownership, branch-specific
+  implementation evidence, dependency minimums, path limits, and the revised overlay contract.
+  Verification: `git diff --check`, local link destinations in 25 Markdown files, fenced-block
+  checks, `check-secrets`, and the proposed Git collectors in an isolated temporary repository.
+  No application code changed; the application test suite and native UI checks were not rerun.
 
 ## Known issues
 
 - Mutating user-facing Git operations are not implemented yet.
-- Repository-aware Dolphin actions, overlays, watchers, and the stable `Daemon1` D-Bus API are not
-  implemented; the context interface is experimental.
+- Repository-aware Dolphin actions are implemented in the #16 branch but are not integrated in
+  this checkout's `main` base. Overlays, watchers, and the stable `Daemon1` D-Bus API are not
+  implemented; the context interface remains experimental.
 - A repository root whose path contains a newline is reported as a discovery error, because
   `RepositoryDiscovery` reads Git's line-based path output.
-- The plugin has automated factory/loading coverage and an isolated Dolphin startup, but its manual
-  right-click checklist has not yet been completed in a native interactive session.
+- The native right-click checklist and latency results are recorded in the #16 branch, including
+  its `docs/dolphin-context-menu.md` and screenshot. The older checklist in this checkout describes
+  the minimal plugin; it is not evidence that the later verification is still outstanding.
 
 ## Next steps
 
 1. Review and merge #16; update this file and the roadmap to mark Phase 2 complete.
-2. Review the overlay design, settle its open questions, and open it as a draft pull request.
+2. Review the revised overlay contract and carry this documentation forward after #16 integration,
+   preserving its native verification evidence when reconciling overlapping documentation changes.
 3. Implement `RepositoryStatusIndex` with unit tests, then the daemon status provider.

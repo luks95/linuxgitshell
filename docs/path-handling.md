@@ -13,9 +13,11 @@ Paths are never lowercased or compared case-insensitively. On a case-sensitive f
 `Repository` and `repository` remain distinct repositories. On a case-insensitive filesystem, Git
 and the filesystem define the resulting identity.
 
-No application-defined path-length limit is imposed. The effective limit is the lowest limit of the
-operating system, filesystem, Qt, and Git. Automated coverage currently exercises discovery from a
-path longer than 1,400 characters.
+The Git core discovery API imposes no application-defined path-length limit. Its effective limit
+is the lowest limit of the operating system, filesystem, Qt, and Git. Automated coverage exercises
+discovery from a path longer than 1,400 characters. The experimental context service separately
+limits incoming path keys to 4,096 QString code units and rejects relative or empty paths;
+see [the service bounds](repository-context-cache.md#implemented-service).
 
 The integration tests also cover directory and file symlinks and a worktree whose `.git` file points
 to a separate Git directory. They use temporary repositories and require no privileged mounts.
@@ -24,5 +26,5 @@ see the overlays and daemon phases in the roadmap.
 
 For Dolphin, a `.git` directory, a `.git` indirection file, or a bare-repository layout may be a
 useful cache invalidation signal, but the synchronous plugin callback must not walk parents or parse
-metadata to establish repository identity. The proposed asynchronous boundary and its cold-cache
+metadata to establish repository identity. The implemented asynchronous boundary and its cold-cache
 fallback are documented in [`repository-context-cache.md`](repository-context-cache.md).

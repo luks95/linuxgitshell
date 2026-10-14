@@ -8,8 +8,10 @@ The only interface available today is the experimental
 served by `linuxgitshell-daemon` for the Dolphin repository context. It follows the experimental
 rules below and may change or disappear without a compatibility period.
 
-The proposed repository-context cache in
-[`repository-context-cache.md`](repository-context-cache.md) is the first planned consumer boundary.
+The implemented repository-context cache in
+[`repository-context-cache.md`](repository-context-cache.md) is the first consumer boundary.
+The [overlay protocol](overlay-status-design.md#d-bus-contract-experimental) is a proposal only;
+it adds no installed interface or introspection XML at this stage.
 The Dolphin plugin must use asynchronous requests and a local snapshot; it may not turn a D-Bus
 timeout into a synchronous pause while constructing a context menu.
 

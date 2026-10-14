@@ -2,11 +2,11 @@
 
 > **Objetivo:** desarrollar para la comunidad Linux una integración gráfica de Git inspirada en la experiencia de TortoiseGit, comenzando por **KDE Plasma 6 + Dolphin** en **Manjaro/Arch Linux**, con la mayor cantidad posible de operaciones Git accesibles mediante interfaz gráfica, menú contextual, iconos de estado, historial visual, diff, resolución de conflictos, ramas, rebase, stash, reflog, submódulos, worktrees y configuración completa.
 
-> **Estado al 2026-09-13:** Fases 0 y 1 completadas; `v0.1.0` publicada. La Fase 2 está en curso y
-> ya incluye el primer plugin KF6 de Dolphin para abrir una selección local en la aplicación externa.
-> El contexto de repositorio no bloqueante está diseñado en
-> [`docs/repository-context-cache.md`](docs/repository-context-cache.md) y su implementación se sigue
-> en [#12](https://github.com/luks95/linuxgitshell/issues/12). `STATUS.md` y
+> **Estado documental al 2026-10-13:** Fases 0 y 1 completadas; `v0.1.0` publicada. El `main` local
+> incluye el plugin mínimo, cache de contexto, servicio experimental y cliente asíncrono. El menú
+> según repositorio está implementado y verificado en la rama de #16, pendiente de integración
+> según el último handoff; esta revisión no revalidó el estado remoto. El
+> [diseño de overlays](docs/overlay-status-design.md) es una propuesta sin implementación. `STATUS.md` y
 > `roadmap-checklist.md` son las fuentes de verdad para el progreso, mientras este documento conserva
 > el alcance completo del producto.
 
@@ -1306,6 +1306,9 @@ Mostrar conflictos y errores de forma entendible.
 
 # 31. Clone y Create Repository
 
+Planificación: Create Repository y su acción de Dolphin pertenecen a Fase 5 (`v0.4.0`);
+Clone y su acción pertenecen a Fase 10 (`v0.8.0`), junto a progreso y autenticación de red.
+
 ## Clone
 
 Wizard gráfico:
@@ -2220,24 +2223,18 @@ Criterios:
 
 ## Fase 2 — Dolphin Context Menu MVP (en curso)
 
-Primer incremento completado: plugin KF6 pequeño, una acción traducible para una selección local,
-lanzamiento externo sin shell, instalación de desarrollo y 11 tests totales. Pendiente: resolver el
-contexto por snapshots/cache sin bloquear Dolphin y habilitar las acciones específicas siguientes.
+Integrado en `main`: plugin mínimo con lanzamiento externo sin shell, cache de snapshots,
+servicio de contexto experimental y cliente asíncrono; 17 tests registrados. El menú según
+repositorio y su verificación nativa están en la rama de #16, pendientes de integración según
+el último handoff. Ver `STATUS.md` para los commits y límites de esa evidencia.
 
-Implementar:
+Alcance de cierre: `LinuxGitShell > Show Status`, reglas de selección y multiselección,
+repositorios bare, avisos de operaciones en curso y fallback conservador. Las acciones deben
+abrir el inspector externo conectado al Git Core.
 
-```text
-Git Clone...
-Git Create repository here...
-Git > Show Status
-Git > Commit...
-Git > Pull...
-Git > Push...
-Git > Show Log
-Git > Settings
-```
-
-Al principio las acciones pueden abrir ventanas simples, pero deben estar conectadas al Git Core.
+Las demás acciones se entregan con su funcionalidad: Create Repository y Commit en Fase 5,
+Show Log en Fase 7, Clone/Pull/Push en Fase 10 y Settings en Fase 14. No bloquean el cierre
+de Fase 2. El roadmap contiene sus tareas y criterios de seguimiento.
 
 Criterio:
 
@@ -2259,7 +2256,9 @@ Conflict
 Untracked
 ```
 
-Primero cache simple.
+Primero un índice de estado acotado sin Git ni IPC; luego proveedor en el daemon experimental y
+cliente local de overlays. El [contrato propuesto](docs/overlay-status-design.md) define cobertura,
+frescura, respuestas iniciales y retirada de iconos obsoletos. Polling en Fase 3; watchers en Fase 4.
 
 Criterio:
 
@@ -2271,7 +2270,8 @@ Criterio:
 
 ## Fase 4 — Daemon + D-Bus
 
-Mover estado a daemon.
+Consolidar el daemon experimental introducido en Fase 2 y el proveedor de overlays de Fase 3;
+migrar sus contratos a la API estable sin bloquear los callbacks de Dolphin.
 
 Implementar:
 
