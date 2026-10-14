@@ -20,6 +20,7 @@ int main(int argc, char* argv[])
     const QDir executableDirectory(QCoreApplication::applicationDirPath());
     KLocalizedString::addDomainLocaleDir(
         translationDomain, executableDirectory.absoluteFilePath(QStringLiteral("../share/locale")));
+    KLocalizedString::setLanguages({QStringLiteral("en")});
     KLocalizedString::setApplicationDomain(translationDomain);
 
     QCoreApplication::setApplicationName(QStringLiteral("linuxgitshell"));

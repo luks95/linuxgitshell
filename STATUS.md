@@ -4,6 +4,115 @@
 
 Phase 2 — Dolphin context menu.
 
+## Resuming work
+
+Last updated 2026-10-06. The repository-context work for
+[issue #12](https://github.com/luks95/linuxgitshell/issues/12) was split into four stacked pull
+requests. The cache, service, and client are merged into `main`. The visible repository-aware menu
+remains in #16, now targeting `main`, with native performance verification in progress.
+
+| Order | Pull request | Branch | Content |
+| --- | --- | --- | --- |
+| 1 | [#13](https://github.com/luks95/linuxgitshell/pull/13) | `feature/repository-context-cache` | Merged: snapshot model and bounded cache in `libs/repositorycontext/` |
+| 2 | [#14](https://github.com/luks95/linuxgitshell/pull/14) | `feature/context-service` | Merged: `linuxgitshell-daemon` with `org.linuxgitshell.Experimental.Context1` |
+| 3 | [#15](https://github.com/luks95/linuxgitshell/pull/15) | `feature/plugin-context-client` | Merged: non-blocking context client in the Dolphin plugin |
+| 4 | [#16](https://github.com/luks95/linuxgitshell/pull/16) | `feature/repository-aware-actions` | Native menu checklist and latency review completed; PR screenshot and merge remain |
+
+Decisions already taken:
+
+- The context service lives in `daemon/` as the first increment of the Phase 4 daemon and uses the
+  experimental bus name `org.linuxgitshell.Experimental.Context1`, not the stable `Daemon1` name.
+- The menu offers only actions the application implements. Today that is `Show Status`, which opens
+  the read-only inspector. Other roadmap actions are added when their application features land.
+
+Remaining Phase 2 work:
+
+1. Attach the existing menu screenshot to #16 and review the completed verification before merge.
+2. After #16 merges, plan the `v0.2.0` overlays work (Phase 3).
+
+Verification on 2026-09-28:
+
+- Debug configure/build and development-prefix installation pass with the installed Qt/KF6 toolchain.
+- All 17 development-build CTest tests pass outside the sandbox; private D-Bus tests need socket
+  access unavailable inside it. Formatting and common-secret checks also pass.
+- The real plugin test passes all 11 Qt Test cases with `QT_QPA_PLATFORM=wayland`, on a private
+  session bus: `actions()` p50 0.034 ms, p95 0.046 ms, max 1.327 ms over 200 cold-cache calls.
+  This is a native-backend test executable measurement, not a measurement inside Dolphin.
+- A separate Dolphin process was started on Plasma Wayland with the development plugin prefix,
+  private D-Bus/XDG state, and disposable repositories. Its accessibility tree could be inspected,
+  but synthetic keyboard input did not open the context menu. No interactive checklist items,
+  context-menu screenshots, or native Dolphin latency measurements were obtained. The test
+  processes were stopped afterwards; the manual gate remains open.
+- Follow-up: the plugin now exposes opt-in `linuxgitshell.dolphin.timing` diagnostics, disabled by
+  default, to measure `actions()` inside Dolphin without logging paths. The development build,
+  all 17 CTest tests, the real-module test with timing enabled, formatting, secret checks, and the
+  Clang/clang-tidy plugin build pass. A temporary desktop-portal keyboard session was granted,
+  but input did not reliably open the selected-item context menu. The native checklist and latency
+  samples remain pending. The portal session and isolated test processes were closed, the temporary
+  compositor script was unloaded, and accessibility preferences were restored to their original
+  values. No native Dolphin menu samples have been claimed.
+
+### Checkpoint on 2026-09-29
+
+- Branch: `feature/repository-aware-actions`; published implementation commit: `eaa48cc`
+  (`Add opt-in Dolphin menu timing diagnostics`, with DCO sign-off).
+- [CI run 36503897725](https://github.com/luks95/linuxgitshell/actions/runs/36503897725)
+  passes build/tests, Clang/clang-tidy, formatting, secret checks, and dependency review for that
+  commit. PR #16 remains open against `main`; #13, #14, and #15 are already merged.
+- Final local verification passed all 17 CTest tests. The real-module test also passed both with
+  default logging (no timing lines) and with timing enabled (234 lines: 10 no-entry, 219 generic,
+  and 5 repository decisions). Every timing line contained only kind, selection count, and elapsed
+  nanoseconds. These are test-process diagnostics, not native Dolphin latency samples.
+- After closing the automated-input attempt, a new isolated Dolphin window was prepared with the
+  disposable `repo` directory selected and timing enabled, awaiting physical right-click checks.
+  This preparation does not prove menu loading or behavior; no completed manual check has been
+  confirmed.
+- Resume with a first right-click, close the menu, wait for asynchronous discovery, then right-click
+  the same selection again. Record the cold fallback and warm submenu before continuing the full
+  checklist. Do not assume the temporary window or fixture survives; recreate an isolated test
+  session if needed using the documented development installation.
+- Do not merge #16 or close Phase 2 until the interactive checklist, context-menu screenshots,
+  and separate cold/warm native latency measurements are recorded.
+
+### Checkpoint on 2026-10-05
+
+- Physical checks in disposable repositories on Plasma Wayland confirmed cold generic and warm
+  `Show Status` menus for a root, subdirectory, file, and bare repository; an inspector launch for
+  the selected repository; a disabled merge notice; no entry outside Git or across two
+  repositories; and the repository root for two selected files. The user supplied a screenshot of
+  the bare inspector. Dolphin stayed responsive without the daemon and showed a handled launch
+  error when the development binary was absent from `PATH`; the user supplied an error screenshot.
+- Native timing from the original development module: generic single-item decisions with the
+  daemon available, n=9, p50 1.680 ms, p95/max 4.427 ms; warm single-item repository menus,
+  n=24, p50 0.235 ms, p95 0.703 ms, max 0.910 ms. The cold p95 exceeds the design target of 2 ms.
+  Samples include first calls and use nearest-rank percentiles. Details and limits are in
+  [`docs/dolphin-context-menu.md`](docs/dolphin-context-menu.md#native-checkpoint-on-2026-10-05).
+- The user requested English as LinuxGitShell's default language. Local changes select English in
+  the inspector and only for the plugin's own labels, preserving Dolphin's locale. The rebuilt
+  real-module test runs with a Spanish host locale and confirms English action labels. Configure,
+  build, all 17 CTest tests, formatting, and common-secret checks pass locally.
+- With the new build, a fresh Dolphin process remained responsive while an external Git wrapper
+  delayed discovery by one second per call in a temporary repository with 2,000 tracked files.
+  The user confirmed that the menu reached `Show Status` in English and supplied a
+  [menu screenshot](docs/images/dolphin-repository-menu.png). Generic single-item decisions had
+  n=3, p50 0.211 ms, p95/max 1.787 ms; warm repository menus had n=29, p50 0.173 ms, p95
+  0.465 ms, max 0.593 ms. The new cold sample is small, so the earlier cold p95 overrun remains
+  open. The real-module test covers a remote URL automatically.
+
+### Checkpoint on 2026-10-06
+
+- The user confirmed that the cold generic action opens the inspector and that an item in Dolphin's
+  non-local `trash:/` location shows no LinuxGitShell action. The manual checklist is complete.
+- Native `actions()` timing in a development Dolphin process: 22 single-item generic decisions,
+  p50 0.129 ms, p95 0.589 ms, max 2.028 ms. Twenty decisions came from 20 new files in a
+  disposable repository: p50 0.125 ms, p95 0.276 ms, max 0.589 ms. The user repeated one click;
+  the log contains one additional warm submenu during that sequence. The 22-sample cold p95 meets
+  the 2 ms target. Its first-call maximum and the older nine-sample overrun remain recorded for
+  context. See [`docs/dolphin-context-menu.md`](docs/dolphin-context-menu.md#native-checkpoint-on-2026-10-05).
+- Four warm menus in this process had p50 0.247 ms, p95/max 0.582 ms; the larger 2026-10-05 warm
+  series had p95 0.465 ms over 29 samples. The menu screenshot is in `docs/images/` and still
+  needs to be attached to #16.
+
 ## Working
 
 - Manjaro/Arch development environment inventoried.
@@ -78,31 +187,38 @@ Phase 2 — Dolphin context menu.
 - Non-blocking context client in the Dolphin plugin: `actions()` only reads a process-wide
   in-memory cache and queues cold or stale paths; requests leave from the event loop through
   asynchronous D-Bus calls that activate the service, and replies warm the cache for later menus.
-  The visible menu is unchanged. Seventeen local tests pass; the plugin test loads the real module,
+  Seventeen local tests pass; the plugin test loads the real module,
   proves that building menus neither runs Git nor contacts the service before returning, and
   measured `actions()` at p50 0.015 ms, p95 0.03 ms, and max 1.8 ms offscreen in a Debug build.
+- Repository-aware Dolphin menus for the application's current features: a warm snapshot inside a
+  repository, bare repositories included, shows `LinuxGitShell` ▸ `Show Status` with disabled
+  notices for operations in progress; a directory outside a repository shows nothing; several items
+  in the same repository open the repository root; cold, failed, remote, mixed, or cross-repository
+  selections degrade conservatively. Menu entries and notices are translated into Spanish.
 - Repository-local development installation verified with the expected binary, plugin, and Spanish
   catalog, followed by an isolated offscreen Dolphin startup with temporary D-Bus/XDG state.
 
 ## In progress
 
-- Complete interactive Dolphin verification and add repository-aware actions on top of the context
-  client, tracked by [issue #12](https://github.com/luks95/linuxgitshell/issues/12).
+- Review and merge the verified repository-aware menu in [#16](https://github.com/luks95/linuxgitshell/pull/16).
 
 ## Known issues
 
 - Mutating user-facing Git operations are not implemented yet.
-- Repository-aware Dolphin actions, overlays, watchers, and the stable `Daemon1` D-Bus API are not
-  implemented; the context interface is experimental.
+- `Commit`, `Pull`, `Push`, `Show Log`, `Settings`, `Git Clone`, and `Create repository here` are
+  not offered because the application does not implement them yet.
+- Overlays, watchers, and the stable `Daemon1` D-Bus API are not implemented; the context interface
+  is experimental.
+- The first right-click on a new path shows the generic action; repository entries appear once the
+  asynchronous reply has arrived.
 - A repository root whose path contains a newline is reported as a discovery error, because
   `RepositoryDiscovery` reads Git's line-based path output.
-- The plugin has automated factory/loading coverage and an isolated Dolphin startup, but its manual
-  right-click checklist has not yet been completed in a native interactive session.
+- The first measured native menu in the latest process took 2.028 ms, above the 2 ms p95 target
+  on its own; p95 across 22 generic menus was 0.589 ms. An earlier nine-sample series had p95
+  4.427 ms. First-call variation remains visible, though no synchronous Git or IPC runs in
+  `actions()`.
 
 ## Next steps
 
-1. Run the documented checklist with the development plugin loaded by Dolphin on Plasma Wayland.
-2. Use the warm context to add repository-aware actions incrementally, including outside-repository,
-   bare-repository, operation-in-progress, and multi-selection rules.
-3. Record native p50/p95/max `actions()` latency in Dolphin before enabling repository-aware actions
-   by default.
+1. Attach the menu screenshot and verification summary to #16, then merge after review.
+2. Plan Phase 3 overlays. Add further menu actions as their application features land.

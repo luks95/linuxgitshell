@@ -240,18 +240,18 @@ set_tests_properties(
     PROPERTIES ENVIRONMENT "LC_ALL=es_PY.UTF-8;LANGUAGE=es"
 )
 
-add_executable(DolphinContextMenuSelectionTest DolphinContextMenuSelectionTest.cpp)
+add_executable(DolphinContextMenuPolicyTest DolphinContextMenuPolicyTest.cpp)
 
 target_link_libraries(
-    DolphinContextMenuSelectionTest
+    DolphinContextMenuPolicyTest
     PRIVATE
         LinuxGitShell::DolphinContext
         Qt6::Test
 )
 
-linuxgitshell_set_compiler_warnings(DolphinContextMenuSelectionTest)
+linuxgitshell_set_compiler_warnings(DolphinContextMenuPolicyTest)
 
-add_test(NAME dolphin.context_selection COMMAND DolphinContextMenuSelectionTest)
+add_test(NAME dolphin.context_policy COMMAND DolphinContextMenuPolicyTest)
 
 add_executable(DolphinPluginLaunchHelper DolphinPluginLaunchHelper.cpp)
 target_link_libraries(DolphinPluginLaunchHelper PRIVATE Qt6::Core)
@@ -265,6 +265,7 @@ target_compile_definitions(
         DOLPHIN_CONTEXT_PLUGIN_PATH="$<TARGET_FILE:linuxgitshell_fileitemaction>"
         DOLPHIN_PLUGIN_LAUNCH_HELPER_PATH="$<TARGET_FILE:DolphinPluginLaunchHelper>"
         GIT_EXECUTABLE_PATH="${GIT_EXECUTABLE}"
+        TRANSLATION_LOCALE_DIR="${CMAKE_BINARY_DIR}/po"
 )
 
 target_link_libraries(
@@ -274,6 +275,7 @@ target_link_libraries(
         Qt6::DBus
         Qt6::Test
         KF6::CoreAddons
+        KF6::I18n
         KF6::KIOWidgets
 )
 
@@ -282,6 +284,7 @@ add_dependencies(
     linuxgitshell_fileitemaction
     DolphinPluginLaunchHelper
     linuxgitshell-daemon
+    linuxgitshell_translations
 )
 linuxgitshell_set_compiler_warnings(DolphinContextMenuPluginTest)
 
@@ -294,7 +297,7 @@ set_tests_properties(
     dolphin.context_plugin
     PROPERTIES
         ENVIRONMENT
-            "QT_QPA_PLATFORM=offscreen;LANGUAGE=C;LC_ALL=C;XDG_DATA_DIRS=${LINUXGITSHELL_TEST_ACTIVATION_DATA_DIRS}"
+            "QT_QPA_PLATFORM=offscreen;LANGUAGE=es;LC_ALL=es_AR.UTF-8;XDG_DATA_DIRS=${LINUXGITSHELL_TEST_ACTIVATION_DATA_DIRS}"
 )
 
 add_executable(

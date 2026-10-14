@@ -19,9 +19,28 @@ Este roadmap deriva de la [especificación maestra](LinuxGitShell-Codex.md). La 
 [#9](https://github.com/luks95/linuxgitshell/pull/9); diseño del contexto no bloqueante en
 [`docs/repository-context-cache.md`](docs/repository-context-cache.md), seguido por
 [#10](https://github.com/luks95/linuxgitshell/issues/10); modelo de snapshots y cache acotado sin Git
-en `libs/repositorycontext/`, servicio de contexto experimental en `daemon/` y cliente no bloqueante
-en el plugin, seguidos por
+en `libs/repositorycontext/`, servicio de contexto experimental en `daemon/`, cliente no bloqueante
+y menú según el repositorio (`Show Status`), seguidos por
 [#12](https://github.com/luks95/linuxgitshell/issues/12).
+
+**Integración al 2026-09-29:** cache, servicio y cliente integrados en `main` mediante
+[#13](https://github.com/luks95/linuxgitshell/pull/13),
+[#14](https://github.com/luks95/linuxgitshell/pull/14) y
+[#15](https://github.com/luks95/linuxgitshell/pull/15).
+El menú visible en [#16](https://github.com/luks95/linuxgitshell/pull/16) apunta ahora a `main`.
+La verificación interactiva y la evaluación de latencia nativa están completas; queda documentar
+los resultados en #16 y completar la revisión antes del merge.
+
+**Checkpoint (2026-10-05):** se confirmaron físicamente los menús frío/cálido, bare,
+operación de merge, multiselección y degradación sin daemon. El plugin se midió dentro de Dolphin:
+p95 cálido 0,703 ms (24 muestras), p95 de acción genérica fría 4,427 ms (9 muestras), por encima
+del objetivo local de 2 ms. Una compilación nueva fija inglés para los textos propios de
+LinuxGitShell y pasa 17 tests; Dolphin siguió responsivo con 2.000 archivos y Git lento. La nueva
+medición cálida dio p95 0,465 ms (29 muestras) y se añadió una captura del menú. El 2026-10-06
+se confirmó que la acción genérica abre el inspector y que `trash:/` no muestra acciones del
+plugin. Una nueva serie dentro de Dolphin dio p95 frío 0,589 ms con 22 muestras
+(máximo 2,028 ms); 20 selecciones de archivos nuevos dieron p95 0,276 ms. El p95 ya cumple el
+objetivo local, aunque permanece registrado el pico de la primera llamada. Ver `STATUS.md`.
 
 ## Cómo utilizar este documento
 
@@ -215,11 +234,13 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 
 - [x] Investigar y documentar la API KF6 vigente para plugins de Dolphin.
 - [x] Crear un plugin pequeño que delegue acciones al core o a procesos externos de LinuxGitShell.
-- [ ] Detectar selección de archivo/carpeta, raíz y pertenencia a repositorio.
-- [ ] Limitar acciones cuando la selección atraviesa repositorios diferentes.
+- [x] Detectar selección de archivo/carpeta, raíz y pertenencia a repositorio.
+- [x] Limitar acciones cuando la selección atraviesa repositorios diferentes.
 - [ ] Fuera de un repositorio: mostrar `Git Clone...` y `Git Create repository here...`.
+  Pendiente de que la aplicación implemente clonado y creación; hoy no se muestra ninguna entrada.
 - [ ] Dentro de un repositorio: mostrar `Show Status`, `Commit`, `Pull`, `Push`, `Show Log` y `Settings`.
-- [ ] Adaptar acciones para repositorios bare y operaciones Git en progreso.
+  `Show Status` está disponible; las demás acciones se añadirán cuando la aplicación las implemente.
+- [x] Adaptar acciones para repositorios bare y operaciones Git en progreso.
 - [ ] Abrir Settings y demás ventanas como aplicaciones externas con contexto de repositorio.
 - [x] Evitar cualquier status síncrono pesado en el proceso de Dolphin.
 - [x] Añadir logging diagnóstico para carga del plugin sin registrar rutas sensibles por defecto.
@@ -236,16 +257,16 @@ Las versiones son objetivos de planificación, no fechas prometidas. Un hito pue
 - [x] Documentar instalación de desarrollo y layout de sistema mediante `DESTDIR`; el paquete del
   sistema sigue diferido a la fase de packaging.
 - [x] Documentar desinstalación limpia y recarga/reinicio de Dolphin.
-- [ ] Verificar menú sobre raíz, subcarpeta, archivo, multiselección y fuera de repo.
-- [ ] Verificar que un error o cierre de LinuxGitShell no derriba Dolphin.
+- [x] Verificar menú sobre raíz, subcarpeta, archivo, multiselección y fuera de repo.
+- [x] Verificar que un error o cierre de LinuxGitShell no derriba Dolphin.
 - [x] Crear checklist de prueba manual para versiones soportadas de Dolphin.
 
 ## Criterio de salida de la Fase 2
 
-- [ ] El plugin carga de forma estable en Dolphin.
-- [ ] Las acciones solo aparecen cuando son válidas.
-- [ ] Las acciones abren flujos conectados al Git Core.
-- [ ] Dolphin permanece responsivo en repositorios grandes o lentos.
+- [x] El plugin carga de forma estable en Dolphin.
+- [x] Las acciones solo aparecen cuando son válidas.
+- [x] Las acciones abren flujos conectados al Git Core.
+- [x] Dolphin permanece responsivo en repositorios grandes o lentos.
 
 ---
 
@@ -887,6 +908,7 @@ El orden de estas tareas se decidirá con uso real, métricas e interés comunit
 
 ## Próxima tarea recomendada
 
-Completar el checklist interactivo del plugin en Dolphin/Wayland e implementar el cliente de
-snapshots y servicio de contexto definidos en `docs/repository-context-cache.md`, sin ejecutar Git,
-recorrer el filesystem ni esperar IPC dentro del proceso de Dolphin.
+Adjuntar a #16 la captura del submenú y el resumen de verificación nativa. El checklist manual y
+los cuatro criterios de salida de la Fase 2 están completos; falta revisar y fusionar #16. Las
+acciones `Commit`, `Pull`, `Push`, `Show Log`, `Settings`,
+`Git Clone` y `Create repository here` se añadirán cuando la aplicación las implemente.

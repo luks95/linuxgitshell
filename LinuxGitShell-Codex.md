@@ -2,11 +2,12 @@
 
 > **Objetivo:** desarrollar para la comunidad Linux una integración gráfica de Git inspirada en la experiencia de TortoiseGit, comenzando por **KDE Plasma 6 + Dolphin** en **Manjaro/Arch Linux**, con la mayor cantidad posible de operaciones Git accesibles mediante interfaz gráfica, menú contextual, iconos de estado, historial visual, diff, resolución de conflictos, ramas, rebase, stash, reflog, submódulos, worktrees y configuración completa.
 
-> **Estado al 2026-09-13:** Fases 0 y 1 completadas; `v0.1.0` publicada. La Fase 2 está en curso y
-> ya incluye el primer plugin KF6 de Dolphin para abrir una selección local en la aplicación externa.
-> El contexto de repositorio no bloqueante está diseñado en
-> [`docs/repository-context-cache.md`](docs/repository-context-cache.md) y su implementación se sigue
-> en [#12](https://github.com/luks95/linuxgitshell/issues/12). `STATUS.md` y
+> **Estado al 2026-09-24:** Fases 0 y 1 completadas; `v0.1.0` publicada. La Fase 2 está en curso:
+> el plugin KF6 de Dolphin muestra `LinuxGitShell` ▸ `Show Status` dentro de repositorios a partir de
+> un contexto no bloqueante (cache acotado, servicio de sesión experimental por D-Bus y cliente
+> asíncrono), descrito en [`docs/repository-context-cache.md`](docs/repository-context-cache.md) y
+> seguido en [#12](https://github.com/luks95/linuxgitshell/issues/12). Falta la verificación nativa
+> en Dolphin. `STATUS.md` y
 > `roadmap-checklist.md` son las fuentes de verdad para el progreso, mientras este documento conserva
 > el alcance completo del producto.
 
@@ -2220,9 +2221,11 @@ Criterios:
 
 ## Fase 2 — Dolphin Context Menu MVP (en curso)
 
-Primer incremento completado: plugin KF6 pequeño, una acción traducible para una selección local,
-lanzamiento externo sin shell, instalación de desarrollo y 11 tests totales. Pendiente: resolver el
-contexto por snapshots/cache sin bloquear Dolphin y habilitar las acciones específicas siguientes.
+Completado: plugin KF6 pequeño con lanzamiento externo sin shell; cache de snapshots acotado;
+servicio de sesión experimental `org.linuxgitshell.Experimental.Context1`; cliente asíncrono que no
+ejecuta Git ni espera IPC en `actions()`; y menú según el repositorio con `Show Status`, avisos de
+operaciones en curso y reglas de multiselección. Hay 17 tests en total. Pendiente: verificación nativa
+en Dolphin y las acciones siguientes a medida que la aplicación las implemente.
 
 Implementar:
 

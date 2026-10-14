@@ -1,8 +1,9 @@
 # Dolphin Context-Menu Integration
 
 Implementation status: the minimal single-local-selection plugin is merged on `main` through
-[PR #9](https://github.com/luks95/linuxgitshell/pull/9). Repository-aware menus remain planned work
-under [issue #12](https://github.com/luks95/linuxgitshell/issues/12).
+[PR #9](https://github.com/luks95/linuxgitshell/pull/9). Repository-aware menus are implemented under
+[issue #12](https://github.com/luks95/linuxgitshell/issues/12). Native Dolphin verification is in
+progress; the remaining checks are listed below.
 
 This note records the KF6 extension API and the first implementation boundary for Phase 2. It was
 validated on 2026-09-13 against Dolphin 26.08.0, KIO 6.29.0, the installed KF6 headers, and a current
@@ -89,22 +90,35 @@ by `kcoreaddons_add_plugin`.
 
 ## Process boundary
 
-The first plugin increment is deliberately small:
+The plugin decides its entries in `ContextMenuPolicy`, a UI-independent helper that only reads
+memory-only snapshots, and launches every window as a separate process. The menu offers only actions
+that the application can already perform:
 
-1. Return no actions for an empty selection, a remote URL, or more than one selected item.
-2. For one local item, return one translated `Open with LinuxGitShell` action immediately.
-3. When triggered, start the external `linuxgitshell` application with the local path as a separate
-   process argument. Never use a shell command string.
-4. Let the external application perform repository discovery and display its typed error if the path
-   is not inside a repository.
-5. Keep selection policy in a UI-independent helper so it can be unit tested without Dolphin.
+| Selection | Snapshot | Entries |
+| --- | --- | --- |
+| Empty, remote, mixed, or more than 256 items | — | none |
+| One local item | cold or stale | `Open with LinuxGitShell`, and an asynchronous refresh |
+| One local item | inside a repository, including bare | `LinuxGitShell` ▸ `Show Status` for the selected path |
+| One local item | outside a repository | none |
+| One local item | discovery error or service unavailable | `Open with LinuxGitShell` |
+| Several local items | all warm and in the same repository | `LinuxGitShell` ▸ `Show Status` for the repository root |
+| Several local items | any cold, outside, or in another repository | none; cold items are refreshed |
+
+When a merge, rebase, cherry-pick, revert, or bisect is in progress, the submenu lists it as a
+disabled notice below `Show Status`. `Commit`, `Pull`, `Push`, `Show Log`, `Settings`, `Git Clone`,
+and `Create repository here` will be added when the application implements them, so that the menu
+never offers an action that cannot run.
+
+Triggered actions start the external `linuxgitshell` application with one path as a separate
+process argument. They never use a shell command string, and the application performs its own
+repository discovery.
 
 This increment proves loading, metadata, selection transfer, localization, and process isolation.
-The plugin also warms a non-blocking repository-context cache for later menus, as described in
-[`repository-context-cache.md`](repository-context-cache.md#implemented-client), but it does not yet
-show repository-dependent actions. Dynamic `Show Status`, `Commit`, `Pull`, `Push`,
-`Show Log`, and `Settings` actions require an asynchronous external context resolver or the later
-D-Bus service; they must not be implemented by running Git synchronously inside Dolphin.
+Repository-dependent entries come from the implemented non-blocking context client and experimental
+D-Bus service described in
+[`repository-context-cache.md`](repository-context-cache.md#implemented-client). Future `Commit`,
+`Pull`, `Push`, `Show Log`, and `Settings` entries must use this external context boundary and become
+available only when the application implements their workflows.
 
 Repository detection must also account for `.git` being either a directory or an indirection file,
 and for bare repositories without a conventional worktree marker. The plugin will not inspect these
@@ -141,6 +155,21 @@ The session bus only activates services listed in its own data directories, so t
 prefix's `share/dbus-1/services` file is not used. When testing the experimental context service,
 start `./install/bin/linuxgitshell-daemon` manually and stop it when finished.
 
+Dolphin must be started from the terminal that exported these variables. A Dolphin started from the
+Plasma launcher, a desktop shortcut, or D-Bus activation runs under `systemd --user` without them,
+so it neither loads the development plugin nor finds `linuxgitshell`. Running `dolphin` while
+another Dolphin process exists only opens a window in that older process, so quit it first:
+
+```bash
+./install/bin/linuxgitshell-daemon &
+kquitapp6 dolphin
+dolphin &
+```
+
+To check which environment a running Dolphin uses, compare `pgrep -a dolphin` with
+`tr '\0' '\n' < /proc/<pid>/environ | grep -E '^(PATH|QT_PLUGIN_PATH)='`. The inspector also runs
+without Dolphin: `./install/bin/linuxgitshell /path/to/repository`.
+
 For a staged system-layout check, configure with `-DCMAKE_INSTALL_PREFIX=/usr` and use `DESTDIR`.
 On the validated Arch/Manjaro environment, the resulting module path is
 `usr/lib/qt6/plugins/kf6/kfileitemaction/linuxgitshell_fileitemaction.so` inside the staging root,
@@ -161,29 +190,152 @@ development artifacts into `/usr`. A future package must own installation, upgra
 
 ## Verification status
 
-As of 2026-09-13:
+As of 2026-09-28:
 
-- the complete local and hosted CI suites pass 11/11 tests;
+- the complete local and hosted CI suites pass 17/17 tests, including `clang-tidy`;
 - CTest loads the real module through `KPluginFactory` and validates its metadata and actions;
 - an unusual selected path reaches an external helper unchanged as one argument;
-- clean development-prefix and staged `/usr` layouts contain the expected plugin;
-- Dolphin starts offscreen with the development plugin path in isolated D-Bus/XDG state;
-- interactive right-click behavior on native Wayland remains pending.
+- on a private bus with the activatable context service, the real module shows the generic action
+  while cold, then `Show Status` for repositories, operation notices, no entry outside
+  repositories, the repository root for same-repository selections, and no entry across
+  repositories;
+- building 200 menus neither runs Git nor contacts the service before returning, with an offscreen
+  `actions()` p95 of about 0.03 ms;
+- clean development-prefix and staged `/usr` layouts contain the expected plugin, daemon, and
+  activation file;
+- interactive right-click behavior and native latency on Plasma Wayland remain pending.
+
+The development-prefix build, installation, and 17/17 CTest suite were rechecked on 2026-09-28.
+The real module's Qt Test executable also passed its 11 cases with the Wayland backend and a
+private session bus, measuring cold-cache `actions()` over 200 calls at p50 0.034 ms, p95 0.046 ms,
+and max 1.327 ms. This measures the plugin in the test executable, not inside Dolphin, and does
+not cover warm-cache native latency.
+
+An isolated Dolphin instance started successfully on Plasma Wayland with the development prefix
+and disposable repositories. Accessibility exposed its window and file list, but synthetic
+keyboard input did not open the context menu reliably, even after the desktop portal granted a
+temporary keyboard session. The instance, context service, portal session, and temporary compositor
+script were stopped afterwards, and accessibility preferences were restored. The interactive
+checklist below, context-menu screenshots, theme checks, and native Dolphin
+measurements remain pending before merging the visible menu in #16.
+
+The timing follow-up at `eaa48cc` passed
+[hosted CI](https://github.com/luks95/linuxgitshell/actions/runs/36503897725), including build/tests,
+Clang/clang-tidy, formatting, secret checks, and dependency review. The final local suite passed
+17/17 tests. In the real-module test, default logging produced no timing lines; enabling timing
+produced 234 lines covering all three menu decisions, containing only kind, selection count, and
+elapsed nanoseconds. This verifies the diagnostic format, not latency inside Dolphin.
+
+As recorded on 2026-09-29, a fresh isolated Dolphin window was prepared with a disposable `repo`
+selection for physical right-click checks. No completed interactive check has been confirmed.
+If resuming later, do not rely on the temporary session or fixture still existing.
+
+### Native checkpoint on 2026-10-05
+
+Physical right-clicks in Dolphin on Plasma Wayland confirmed the generic first menu followed by
+`LinuxGitShell` ▸ `Show Status` for a repository root, subdirectory, file, and bare repository.
+`Show Status` opened the inspector on the selected repository, identified the bare repository, and
+opened the repository root for two selected files in one repository. A directory outside Git and a
+selection crossing two repositories produced no entry after discovery. A real merge conflict showed
+the disabled merge notice. With the test daemon stopped, fresh selections retained the generic
+action and Dolphin remained responsive. A separate process without the development binary in
+`PATH` showed a handled launch error and left Dolphin running. All repositories were disposable
+under `/tmp`; no contributor repository was used.
+
+The original development module logged native `actions()` measurements with timing enabled. For
+single-item generic decisions while the daemon was available (`kind=1`, nine samples), p50 was
+1.680 ms, p95 was 4.427 ms, and max was 4.427 ms. For warm repository menus (`kind=2`, 24 samples),
+p50 was 0.235 ms, p95 was 0.703 ms, and max was 0.910 ms. Percentiles use nearest-rank ordering and
+include the first call. The cold p95 exceeds the 2 ms local target in the cache design and needs
+more native samples and investigation before the performance exit criterion is closed. These groups
+combine several disposable paths and Dolphin instances; the log records no path names.
+
+After the English-default change, a fresh Dolphin process on a Spanish desktop locale opened a
+temporary repository with 2,000 tracked files while the external daemon delayed each Git call by
+one second. The user confirmed Dolphin stayed responsive and the menu reached `Show Status` in
+English. For generic single-item decisions (`kind=1`, three samples), p50 was 0.211 ms and
+p95/max was 1.787 ms. For warm repository menus (`kind=2`, 29 samples), p50 was 0.173 ms, p95 was
+0.465 ms, and max was 0.593 ms. This new cold sample is too small to resolve the earlier cold p95
+overrun; additional fresh-path measurements remain open. The user supplied the menu screenshot
+below. Bare-inspector and handled-error screenshots were inspected locally but not published
+because the former includes personal configuration values.
+
+On 2026-10-06, the user confirmed that the cold `Open with LinuxGitShell` action launched the
+inspector and that an item in Dolphin's `trash:/` virtual location showed no LinuxGitShell action.
+The isolated real-module test measured 4.316 ms for its first generic `actions()` call and a
+0.087 ms p95 across 219 generic single-item calls. Ten subsequent test processes each
+measured 0.965–1.632 ms for their first call. Moving context-client construction into the plugin
+constructor in a temporary experiment reduced one first-call measurement to 1.135 ms, but the
+later fresh-process results show that process and system warmup may also explain the difference.
+The experiment was reverted. These test-process measurements are separate from the native
+Dolphin cold-path series below.
+
+The same day, a development Dolphin process on Plasma Wayland recorded 22 single-item generic
+decisions: p50 0.129 ms, p95 0.589 ms, max 2.028 ms. The first call was the maximum. Twenty of
+these calls came from right-clicking 20 new files in a disposable repository; that subset had
+p50 0.125 ms, p95 0.276 ms, max 0.589 ms. The user also clicked one file twice, and the log
+contains one additional warm menu during that sequence, consistent with the repeated click. Four
+warm single-item repository menus in this process had p50 0.247 ms, p95/max 0.582 ms; the larger
+warm series from 2026-10-05 remains the better warm estimate. All percentiles use nearest-rank
+ordering. This fresh-path series brings the observed cold p95 below the 2 ms target, while the
+first-call maximum remains an outlier above it. The older nine-sample cold series still records
+its 4.427 ms maximum.
+
+![Repository-aware LinuxGitShell submenu in Dolphin](images/dolphin-repository-menu.png)
 
 ## Manual test checklist
+
+### Measuring menu latency inside Dolphin
+
+The plugin has an opt-in timing category, disabled by default. Start the development Dolphin
+process with `QT_LOGGING_RULES='linuxgitshell.dolphin.timing.debug=true'` in addition to the
+development `PATH` and `QT_PLUGIN_PATH` above. Each `actions()` call logs only its menu kind,
+selection count, and `elapsed_ns`; paths and repository contents are not included.
+
+| `kind` | Decision |
+| --- | --- |
+| `0` | No LinuxGitShell entry |
+| `1` | Generic `Open with LinuxGitShell` action |
+| `2` | Repository-aware submenu |
+
+The elapsed time covers menu policy evaluation and action construction through scope cleanup;
+writing the timing line is excluded. Collect cold and warm samples separately, including the
+first call, and record sample counts plus p50/p95/max after converting nanoseconds to milliseconds.
+Use fresh selected paths for cold samples; reopening a menu after discovery gives warm samples.
+If a Dolphin started from a terminal writes no timing lines to its redirected output, check
+`journalctl --user -b _PID=<dolphin-pid> -o cat`; Qt may send the lines to the user journal.
+Remove the debug rule for normal use. This instrumentation adds no Git or IPC to menu construction.
+
+### Interactive checks
 
 Use a disposable Git repository and close existing Dolphin windows before changing plugin search
 paths. `kquitapp6 dolphin` requests a clean Dolphin shutdown; starting Dolphin again loads the new
 module.
 
-- [ ] Right-click one repository root, one subdirectory, and one file; each shows
-  `Open with LinuxGitShell`.
-- [ ] Trigger each action and confirm the external application inspects the selected path.
-- [ ] A two-item selection shows no LinuxGitShell action.
-- [ ] A remote KIO URL shows no LinuxGitShell action.
-- [ ] Closing LinuxGitShell leaves Dolphin running and responsive.
-- [ ] Starting Dolphin without the development `PATH` produces a handled launch error and no crash.
-- [ ] Spanish locale displays `Abrir con LinuxGitShell`.
+Start `linuxgitshell-daemon` from the development prefix first, because the session bus does not
+read activation files from it.
+
+For the initial check, right-click the selected repository directory and record the cold generic
+action. Close the menu, allow asynchronous discovery to finish, then right-click the same selection
+again and inspect `LinuxGitShell` ▸ `Show Status`. Keep the second menu open for inspection or a
+screenshot. A prepared window or successful startup alone does not complete this check.
+
+- [x] The first right-click on a repository root, a subdirectory, and a file shows
+  `Open with LinuxGitShell`; a later right-click on each shows `LinuxGitShell` ▸ `Show Status`.
+- [x] Trigger `Open with LinuxGitShell` on a file in a disposable repository and confirm the
+  inspector opens. `Show Status` was confirmed to open the selected repository above.
+- [x] A directory outside any repository shows no LinuxGitShell entry after the first right-click.
+- [x] A bare repository directory shows `Show Status`, and the application reports a bare repository.
+- [x] During a merge or rebase, the submenu shows the operation as a disabled notice.
+- [x] Two files in one repository show `Show Status` for the repository root after the first
+  right-click; items from two repositories show no entry.
+- [x] An item in Dolphin's non-local `trash:/` KIO location shows no LinuxGitShell action. The
+  real-module test also covers an `sftp://` URL.
+- [x] Without a running daemon, menus keep showing `Open with LinuxGitShell` and Dolphin stays
+  responsive.
+- [x] Closing LinuxGitShell leaves Dolphin running and responsive.
+- [x] Starting Dolphin without the development `PATH` produces a handled launch error and no crash.
+- [x] LinuxGitShell's own menu labels remain in English when the desktop locale is Spanish.
 
 To remove the development installation, shut down Dolphin and any manually started
 `linuxgitshell-daemon`, remove only the repository-local `install/` directory, restore `PATH` and `QT_PLUGIN_PATH`, run `kbuildsycoca6`, and start Dolphin
