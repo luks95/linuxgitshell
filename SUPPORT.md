@@ -1,9 +1,9 @@
 # Support
 
 LinuxGitShell is pre-release software. The public `v0.1.0` application provides read-only repository
-inspection. The development branch also provides a minimal Dolphin action for opening one local
-selection in the external application. Repository-aware menus, overlays, and mutating Git workflows
-are not available yet.
+inspection. Development `main` also provides repository-aware Dolphin menus that open the
+external inspector. The status-index model is being added for Phase 3; visible overlays and
+mutating Git workflows are not available yet.
 
 For public, non-sensitive project communication:
 

@@ -112,6 +112,11 @@ linuxgitshell_set_compiler_warnings(RepositoryContextCacheTest)
 
 add_test(NAME repositorycontext.cache COMMAND RepositoryContextCacheTest)
 
+add_executable(RepositoryStatusIndexTest RepositoryStatusIndexTest.cpp)
+target_link_libraries(RepositoryStatusIndexTest PRIVATE LinuxGitShell::RepositoryContext Qt6::Test)
+linuxgitshell_set_compiler_warnings(RepositoryStatusIndexTest)
+add_test(NAME repositorycontext.status_index COMMAND RepositoryStatusIndexTest)
+
 add_executable(RepositoryContextWireTest RepositoryContextWireTest.cpp)
 
 target_link_libraries(

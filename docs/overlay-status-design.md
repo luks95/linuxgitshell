@@ -1,9 +1,9 @@
 # Icon Overlay Status Design
 
-Status: revised proposal for Phase 3 (`v0.2.0`, part 2), 2026-10-13. Nothing described here is
-implemented yet. Builds on [repository-context-cache.md](repository-context-cache.md) and the
-experimental context service. The model contract below is ready for an isolated implementation;
-native repaint and performance checks remain required before shipping the plugin.
+Status: Phase 3 design (`v0.2.0`, part 2), updated 2026-10-13. The pure status-index model is
+implemented on `feature/repository-status-index`; the provider, overlay protocol, and plugin remain
+proposals. Builds on [repository-context-cache.md](repository-context-cache.md) and the experimental
+context service. Native repaint and performance checks remain required before shipping overlays.
 
 ## Problem and constraints
 
@@ -284,9 +284,37 @@ Native gates before closing Phase 3:
 - Benchmark status and inventory with/without existing untracked-cache and fsmonitor on disposable
   fixtures. Do not change contributor repositories. Tune defaults from evidence before `v0.2.0`.
 
+## Implemented model
+
+`RepositoryStatusIndex` in `libs/repositorycontext/` owns one repository's complete snapshot and
+links only Qt Core. The daemon will translate Git records into `RepositoryStatusSnapshot`.
+
+- `replace()` takes a strictly increasing nonzero revision and explicit capture time. It builds a
+  replacement before publication. Invalid or oversized newer input clears the old payload and
+  records `Degraded`; obsolete revisions cannot overwrite newer data.
+- `lookup(relativePath, now)` uses caller-supplied monotonic time and returns Unknown without
+  details for expired or non-Ready snapshots. The empty key is the repository root. Input keys are
+  canonical relative paths; the provider strips porcelain directory terminators before insertion.
+- Options select recursion and untracked/ignored propagation at construction. To change them,
+  the provider rebuilds with a new revision. Clean evidence comes from complete inventory or an
+  explicit entry; ignored directory prefixes never override tracked exceptions.
+- `invalidate()` drops all records at a newer revision. `clear()` evicts the whole snapshot while
+  retaining its revision watermark, preventing late resurrection. Create a new instance when the
+  daemon generation changes. Per-repository record/byte accounting includes ancestors, boundaries,
+  and detailed paths. Global repository LRU eviction remains provider work.
+- Boundaries exclude strict descendants; the boundary entry itself can still carry the parent
+  repository's submodule or untracked-directory state. No ancestry outside that repository is read.
+- Accounted bytes are a conservative storage estimate, not an RSS ceiling. Atomic replacement can
+  temporarily hold old and new maps plus caller-owned input; the provider must budget that peak.
+
+`repositorycontext.status_index` tests the model without Git, filesystem fixtures, IPC, or sleeps.
+It covers classification, combined precedence, rename ancestry replacement, submodules, ignored
+exceptions, ownership boundaries, unusual/deep paths, expiry, revisions, invalid input and limits.
+Provider integration and native gates above remain pending.
+
 ## Proposed increments
 
-1. `RepositoryStatusIndex` model and deterministic unit tests against the contract above.
+1. Implemented: `RepositoryStatusIndex` model and deterministic unit tests against the contract above.
 2. Bounded process capture, inventory collector, daemon provider, experimental XML/activation,
    application refresh hook, and provider/D-Bus integration tests.
 3. Overlay plugin, client cache, KConfig toggles, and first icon set with real-module tests.

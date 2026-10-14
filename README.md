@@ -5,8 +5,7 @@ Plasma 6 and Dolphin on Manjaro/Arch Linux. The public
 [`v0.1.0`](https://github.com/luks95/linuxgitshell/releases/tag/v0.1.0) release provides the tested
 Git Core and a read-only repository inspector. Phase 2 includes a thin Dolphin context-menu
 plugin on `main`, backed by a bounded context cache and an experimental D-Bus service. The
-development branch adds repository-aware `Show Status` menus; native Dolphin verification is in
-progress. Mutating Git workflows are not implemented yet.
+integrated menu offers repository-aware `Show Status` actions with completed native verification. Mutating Git workflows are not implemented yet.
 
 ## Current status
 
@@ -16,7 +15,8 @@ progress. Mutating Git workflows are not implemented yet.
 | Read-only Qt/KF6 repository inspector | Released in `v0.1.0` |
 | Minimal Dolphin action for one local selection | Available on `main`, unreleased |
 | Context cache, experimental D-Bus service, and non-blocking plugin client | Available on `main`, unreleased |
-| Repository-aware menus | Implemented in [#16](https://github.com/luks95/linuxgitshell/pull/16): `Show Status`, operation notices, and same-repository multiple selections; native verification tracked by [#12](https://github.com/luks95/linuxgitshell/issues/12) |
+| Repository-aware menus | Implemented in [#16](https://github.com/luks95/linuxgitshell/pull/16): `Show Status`, operation notices, and same-repository multiple selections; merged after native verification |
+| Pure overlay status index | Implemented on `feature/repository-status-index`; provider and visible overlays are pending |
 | Overlays, stable daemon/D-Bus API, and mutating Git workflows | Not implemented |
 
 The repository-aware menu is integrated through #16 (`ec85d2d`), following native verification
@@ -72,9 +72,9 @@ cmake --build build -j
 ctest --test-dir build --output-on-failure
 ```
 
-The current suite registers 17 tests, including plugin metadata/factory loading, selection policy,
+The current suite registers 18 tests, including plugin metadata/factory loading, selection policy,
 unusual-path process transfer, the bounded repository-context cache and its D-Bus encoding, the
-context service against temporary repositories, the real daemon and D-Bus activation on a private
+pure status-index classification, aggregation and bounds, the context service against temporary repositories, the real daemon and D-Bus activation on a private
 session bus through `dbus-run-session`, the plugin's non-blocking context client and repository-aware menus, and Spanish
 translations.
 

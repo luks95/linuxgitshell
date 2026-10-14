@@ -14,8 +14,8 @@ Last updated 2026-10-13.
 - Branch `feature/repository-status-index` combines the integrated menu with the revised
   [overlay contract](docs/overlay-status-design.md). Documentation corrections are preserved in
   `17252eb`; no overlays/provider are implemented yet.
-- Next implementation: pure `RepositoryStatusIndex` and deterministic tests. Native overlay repaint
-  and large-repository measurements remain release gates for Phase 3.
+- Implemented in this branch: pure `RepositoryStatusIndex` and deterministic tests. Native overlay
+  repaint and large-repository measurements remain release gates for Phase 3.
 
 ## Historical Phase 2 verification
 
@@ -179,7 +179,7 @@ Verification on 2026-09-28:
 - Non-blocking context client in the Dolphin plugin: `actions()` only reads a process-wide
   in-memory cache and queues cold or stale paths; requests leave from the event loop through
   asynchronous D-Bus calls that activate the service, and replies warm the cache for later menus.
-  Seventeen local tests pass; the plugin test loads the real module,
+  At that checkpoint, seventeen local tests passed; the plugin test loads the real module,
   proves that building menus neither runs Git nor contacts the service before returning, and
   measured `actions()` at p50 0.015 ms, p95 0.03 ms, and max 1.8 ms offscreen in a Debug build.
 - Repository-aware Dolphin menus for the application's current features: a warm snapshot inside a
@@ -189,10 +189,27 @@ Verification on 2026-09-28:
   selections degrade conservatively. Menu entries and notices are translated into Spanish.
 - Repository-local development installation verified with the expected binary, plugin, and Spanish
   catalog, followed by an isolated offscreen Dolphin startup with temporary D-Bus/XDG state.
+- Pure `RepositoryStatusIndex` with tracked membership, detailed and combined states, recursive
+  directory summaries, ignored-prefix exceptions, submodule flags, ownership boundaries, explicit
+  freshness, monotonic revisions, whole-snapshot eviction, and record/byte limits. It adds one
+  Qt Core/Qt Test-only CTest target; no provider, IPC, or widget dependency is introduced.
+
+## Verification of the status-index increment
+
+- Debug configure/build passed with the installed Qt/KF6 toolchain; all 18 CTest targets passed,
+  including real-module Dolphin loading and private-bus daemon/client tests.
+- `RepositoryStatusIndexTest` reports 51 passed, zero failed; it also passes in the Clang build.
+  The library and new test target build with configured clang-tidy checks without findings.
+- Formatting, common-secret checks, `git diff --check`, and local Markdown link destinations pass.
+- A disposable Git fixture confirms that untracked-only submodule content is `.M` / `S..U`;
+  the model preserves the detailed M but presents Untracked unless stronger staged changes exist.
+- Post-merge `main` CI for `ec85d2d` passed build and quality; dependency review was skipped on push.
+  Native UI verification was not repeated for this model-only increment.
 
 ## In progress
 
-- `RepositoryStatusIndex`: model, limits, classification, directory summaries and deterministic tests.
+- Review of the status-index increment on `feature/repository-status-index`. The provider,
+  experimental overlay transport, and visible plugin remain subsequent increments.
 
 ## Known issues
 
@@ -212,6 +229,5 @@ Verification on 2026-09-28:
 
 ## Next steps
 
-1. Complete and verify the status-index model against the revised overlay contract.
-2. Implement bounded process capture and tracked inventory, then the daemon status provider.
-3. Implement overlay transport/plugin and native verification before `v0.2.0`.
+1. Implement bounded process capture and tracked inventory, then the daemon status provider.
+2. Implement overlay transport/plugin and native verification before `v0.2.0`.

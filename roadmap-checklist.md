@@ -267,12 +267,14 @@ implementan sus ventanas y operaciones; no bloquean el menú MVP ni se muestran 
 
 # Fase 3 — Overlays MVP (`v0.2.0`, parte 2)
 
-Contrato propuesto: [diseño de overlays](docs/overlay-status-design.md). El primer incremento es
-`RepositoryStatusIndex`, sin Git, filesystem ni IPC. La propuesta define cobertura de snapshots,
+Contrato propuesto: [diseño de overlays](docs/overlay-status-design.md). El primer incremento,
+`RepositoryStatusIndex`, está implementado en esta rama sin Git, filesystem ni IPC. La propuesta define cobertura de snapshots,
 respuestas iniciales y retirada de iconos obsoletos. Repintado nativo y rendimiento deben medirse
 antes de cerrar la fase; los valores de polling y límites son provisionales.
 
 ## Implementación
+
+- [x] Implementar `RepositoryStatusIndex` puro con cobertura, frescura, revisiones, límites y tests deterministas.
 
 - [ ] Crear iconos propios y libres para clean, modified, added, conflict y untracked.
 - [ ] Conservar fuente, licencia y atribución de cada recurso visual.
@@ -925,7 +927,7 @@ El orden de estas tareas se decidirá con uso real, métricas e interés comunit
 
 ## Próxima tarea recomendada
 
-Implementar `RepositoryStatusIndex` con tests conforme al contrato revisado en
-`docs/overlay-status-design.md`, sin Git, filesystem ni IPC. Después, añadir captura de procesos
-acotada e inventario de archivos seguidos para el proveedor del daemon. Las acciones diferidas
+Añadir captura de procesos acotada e inventario de archivos seguidos para el proveedor del daemon,
+reutilizando el `RepositoryStatusIndex` implementado y probado en esta rama. Después, conectar el
+contrato experimental y el plugin conforme a `docs/overlay-status-design.md`. Las acciones diferidas
 conservan sus fases responsables en la tabla de alcance de Fase 2.
