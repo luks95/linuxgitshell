@@ -9,6 +9,8 @@ add_library(
     ContextServiceAdaptor.h
     DaemonLogging.cpp
     DaemonLogging.h
+    OverlayServiceAdaptor.cpp
+    OverlayServiceAdaptor.h
     OverlayStatusProvider.cpp
     OverlayStatusProvider.h
     RepositoryStatusTranslator.cpp
@@ -49,7 +51,14 @@ configure_file(
     "${CMAKE_CURRENT_BINARY_DIR}/org.linuxgitshell.Experimental.Context1.service"
     @ONLY
 )
+configure_file(
+    org.linuxgitshell.Experimental.Overlays1.service.in
+    "${CMAKE_CURRENT_BINARY_DIR}/org.linuxgitshell.Experimental.Overlays1.service"
+    @ONLY
+)
 install(
-    FILES "${CMAKE_CURRENT_BINARY_DIR}/org.linuxgitshell.Experimental.Context1.service"
+    FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/org.linuxgitshell.Experimental.Context1.service"
+        "${CMAKE_CURRENT_BINARY_DIR}/org.linuxgitshell.Experimental.Overlays1.service"
     DESTINATION "${KDE_INSTALL_DBUSSERVICEDIR}"
 )

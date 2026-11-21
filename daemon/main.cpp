@@ -4,8 +4,11 @@
 #include "ContextService.h"
 #include "ContextServiceAdaptor.h"
 #include "DaemonLogging.h"
+#include "OverlayServiceAdaptor.h"
+#include "OverlayStatusProvider.h"
 
 #include "linuxgitshell/gitcore/ProjectInfo.h"
+#include "linuxgitshell/repositorycontext/OverlayWire.h"
 #include "linuxgitshell/repositorycontext/RepositoryContextWire.h"
 
 #include <QCommandLineParser>
@@ -35,15 +38,29 @@ int main(int argc, char* argv[])
     LinuxGitShell::ContextService service;
     new LinuxGitShell::ContextServiceAdaptor(&service);
 
+    LinuxGitShell::OverlayStatusProvider overlays;
+    LinuxGitShell::OverlayServiceObject overlayObject(overlays);
+    new LinuxGitShell::OverlayServiceAdaptor(&overlayObject);
+
     // Register the object before the name so that activated clients never see a missing object.
     if (!bus.registerObject(LinuxGitShell::RepositoryContextObjectPath, &service))
     {
         qCCritical(LinuxGitShell::daemonLog) << "Could not register the context object";
         return 1;
     }
+    if (!bus.registerObject(LinuxGitShell::OverlayObjectPath, &overlayObject))
+    {
+        qCCritical(LinuxGitShell::daemonLog) << "Could not register the overlay object";
+        return 1;
+    }
     if (!bus.registerService(LinuxGitShell::RepositoryContextServiceName))
     {
         qCWarning(LinuxGitShell::daemonLog) << "Context service is already running";
+        return 1;
+    }
+    if (!bus.registerService(LinuxGitShell::OverlayServiceName))
+    {
+        qCWarning(LinuxGitShell::daemonLog) << "Overlay service name is already owned";
         return 1;
     }
 
@@ -52,6 +69,6 @@ int main(int argc, char* argv[])
                 QStringLiteral("org.freedesktop.DBus.Local"), QStringLiteral("Disconnected"),
                 &application, SLOT(quit()));
 
-    qCDebug(LinuxGitShell::daemonLog) << "Context service started";
+    qCDebug(LinuxGitShell::daemonLog) << "Context and overlay services started";
     return QCoreApplication::exec();
 }

@@ -148,6 +148,19 @@ linuxgitshell_set_compiler_warnings(RepositoryContextWireTest)
 
 add_test(NAME repositorycontext.wire COMMAND RepositoryContextWireTest)
 
+add_executable(OverlayWireTest OverlayWireTest.cpp)
+
+target_link_libraries(
+    OverlayWireTest
+    PRIVATE
+        LinuxGitShell::RepositoryContext
+        Qt6::Test
+)
+
+linuxgitshell_set_compiler_warnings(OverlayWireTest)
+
+add_test(NAME repositorycontext.overlay_wire COMMAND OverlayWireTest)
+
 add_executable(ContextServiceTest ContextServiceTest.cpp GitTestSupport.h)
 
 target_compile_definitions(
@@ -212,6 +225,11 @@ file(
     OUTPUT "${LINUXGITSHELL_TEST_ACTIVATION_DIR}/dbus-1/services/org.linuxgitshell.Experimental.Context1.service"
     CONTENT "[D-BUS Service]\nName=org.linuxgitshell.Experimental.Context1\nExec=$<TARGET_FILE:linuxgitshell-daemon>\n"
 )
+file(
+    GENERATE
+    OUTPUT "${LINUXGITSHELL_TEST_ACTIVATION_DIR}/dbus-1/services/org.linuxgitshell.Experimental.Overlays1.service"
+    CONTENT "[D-BUS Service]\nName=org.linuxgitshell.Experimental.Overlays1\nExec=$<TARGET_FILE:linuxgitshell-daemon>\n"
+)
 set(LINUXGITSHELL_TEST_ACTIVATION_DATA_DIRS
     "${LINUXGITSHELL_TEST_ACTIVATION_DIR}:/usr/local/share:/usr/share"
 )
@@ -254,6 +272,50 @@ linuxgitshell_set_compiler_warnings(ContextDBusTest)
 add_test(
     NAME daemon.context_dbus
     COMMAND "${DBUS_RUN_SESSION_EXECUTABLE}" -- "$<TARGET_FILE:ContextDBusTest>"
+)
+
+set(overlay_dbus_interface_sources)
+qt_add_dbus_interface(
+    overlay_dbus_interface_sources
+    "${PROJECT_SOURCE_DIR}/dbus/org.linuxgitshell.Experimental.Overlays1.xml"
+    overlayinterface
+)
+
+add_executable(
+    OverlayDBusTest
+    OverlayDBusTest.cpp
+    DBusTestSupport.h
+    GitTestSupport.h
+    ${overlay_dbus_interface_sources}
+)
+
+target_compile_definitions(
+    OverlayDBusTest
+    PRIVATE
+        GIT_EXECUTABLE_PATH="${GIT_EXECUTABLE}"
+        DAEMON_EXECUTABLE_PATH="$<TARGET_FILE:linuxgitshell-daemon>"
+)
+
+target_include_directories(OverlayDBusTest PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+
+target_link_libraries(
+    OverlayDBusTest
+    PRIVATE
+        LinuxGitShell::RepositoryContext
+        Qt6::DBus
+        Qt6::Test
+)
+
+add_dependencies(OverlayDBusTest linuxgitshell-daemon)
+linuxgitshell_set_compiler_warnings(OverlayDBusTest)
+
+add_test(
+    NAME daemon.overlay_dbus
+    COMMAND "${DBUS_RUN_SESSION_EXECUTABLE}" -- "$<TARGET_FILE:OverlayDBusTest>"
+)
+set_tests_properties(
+    daemon.overlay_dbus
+    PROPERTIES ENVIRONMENT "XDG_DATA_DIRS=${LINUXGITSHELL_TEST_ACTIVATION_DATA_DIRS}"
 )
 
 add_executable(MainWindowTest MainWindowTest.cpp)

@@ -186,6 +186,8 @@ qsizetype OverlayStatusProvider::observationCount() const { return totalObservat
 
 qsizetype OverlayStatusProvider::repositoryCount() const { return repositories.size(); }
 
+qsizetype OverlayStatusProvider::maxRecordsPerMessage() const { return limits.maxRecordsPerBatch; }
+
 OverlayRequestResult OverlayStatusProvider::requestOverlays(const QString& owner,
                                                             const QStringList& paths,
                                                             quint64 requestId)

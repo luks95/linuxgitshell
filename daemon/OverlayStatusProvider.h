@@ -6,6 +6,7 @@
 #include "linuxgitshell/gitcore/GitInventoryReader.h"
 #include "linuxgitshell/gitcore/GitStatusReader.h"
 #include "linuxgitshell/gitcore/RepositoryDiscovery.h"
+#include "linuxgitshell/repositorycontext/OverlayWire.h"
 #include "linuxgitshell/repositorycontext/RepositoryStatusIndex.h"
 
 #include <QElapsedTimer>
@@ -25,18 +26,6 @@
 
 namespace LinuxGitShell
 {
-
-// One answer for one observed path. `path` is the caller's lexical request key.
-struct OverlayRecord
-{
-    QString path;
-    QString repositoryRoot;
-    RepositoryStatusState state = RepositoryStatusState::Unknown;
-    RepositoryStatusValidity validity = RepositoryStatusValidity::Pending;
-    quint64 revision = 0;
-    // Remaining freshness of a Ready record; zero for every other validity.
-    quint32 validForMs = 0;
-};
 
 enum class OverlayRequestError
 {
@@ -123,6 +112,7 @@ class OverlayStatusProvider final : public QObject
     [[nodiscard]] quint64 generation() const;
     [[nodiscard]] qsizetype observationCount() const;
     [[nodiscard]] qsizetype repositoryCount() const;
+    [[nodiscard]] qsizetype maxRecordsPerMessage() const;
 
   Q_SIGNALS:
     void initialResults(const QString& owner, quint64 requestId,
@@ -264,6 +254,3 @@ class OverlayStatusProvider final : public QObject
 };
 
 } // namespace LinuxGitShell
-
-Q_DECLARE_METATYPE(LinuxGitShell::OverlayRecord)
-Q_DECLARE_METATYPE(QList<LinuxGitShell::OverlayRecord>)
