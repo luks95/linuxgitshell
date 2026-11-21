@@ -10,7 +10,20 @@ All notable user-visible changes to LinuxGitShell will be documented here. The f
 - Pure `RepositoryStatusIndex` for the upcoming overlays: separate index/work-tree details,
   tracked membership, directory propagation, ignored-prefix exceptions, submodule flags, bounded
   atomic snapshot replacement, explicit freshness and revision-based invalidation. The daemon
-  provider and visible overlays are not connected yet.
+  provider is built on it; visible overlays and the Dolphin overlay plugin are not implemented yet.
+- Bounded Git process capture: `GitProcessRequest::maxOutputBytes` limits stdout plus stderr while
+  reading, drops the excess, stops the process, and reports `OutputLimitExceeded`.
+- `GitInventoryReader` for the complete tracked-path inventory (`ls-files --cached -z`) with
+  deduplication and no partial results after a timeout, overflow, or failure.
+- Experimental overlay status provider in the daemon: per-repository (never per-icon) collection of
+  status plus inventory under a shared deadline and output cap, bounded concurrency, debounced and
+  polled refresh with backoff, 90-second observation leases, 30-second snapshot freshness, nested
+  repository and submodule ownership, and `Unavailable` answers for bare, sparse-checkout,
+  pseudo-filesystem, and network or unclassified locations.
+- Experimental `org.linuxgitshell.Experimental.Overlays1` D-Bus service served by the same daemon,
+  with its own activation file: `RequestOverlays`, `ReleaseOverlays`, `RefreshRepository`, and
+  unicast `OverlayResults`/`OverlaysChanged` signals, a shared `a{sv}` record encoding that rejects
+  unknown values, and release of a client's observations when it leaves the bus.
 - KF6 Dolphin file-item action plugin that offers a translated external-launch action for one local
   selection while keeping Git execution and application windows outside Dolphin's process.
 - Unit and integration coverage for conservative selection handling, plugin metadata and factory
@@ -41,7 +54,8 @@ All notable user-visible changes to LinuxGitShell will be documented here. The f
 - LinuxGitShell window and action labels default to English while preserving Dolphin's locale.
 - The Dolphin selection helper is now a policy for single and multiple repository selections.
 - Project documentation distinguishes the published release, integrated Phase 2 context service
-  and client, the 18-test suite, and repository-aware menus integrated through #16.
+  and client, the 18-test suite (now 23 with the overlay provider work), and repository-aware
+  menus integrated through #16.
   Deferred menu actions have explicit target phases; the proposed overlay contract specifies
   snapshot coverage, initial replies, invalidation, and bounded background refresh.
 

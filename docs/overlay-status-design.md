@@ -1,9 +1,11 @@
 # Icon Overlay Status Design
 
-Status: Phase 3 design (`v0.2.0`, part 2), updated 2026-10-13. The pure status-index model is
-implemented on `feature/repository-status-index`; the provider, overlay protocol, and plugin remain
-proposals. Builds on [repository-context-cache.md](repository-context-cache.md) and the experimental
-context service. Native repaint and performance checks remain required before shipping overlays.
+Status: Phase 3 design (`v0.2.0`, part 2), updated 2026-11-21. The pure status-index model, the
+daemon-side provider, and the experimental `Overlays1` D-Bus service are implemented on
+`feature/repository-status-index`; the Dolphin plugin, icons, settings, and native verification
+remain proposals. Builds on [repository-context-cache.md](repository-context-cache.md) and the
+experimental context service. Native repaint and performance checks remain required before shipping
+overlays.
 
 ## Problem and constraints
 
@@ -173,9 +175,9 @@ including unchanged states. Emit host repaint notifications only when the render
 
 ## D-Bus contract (experimental)
 
-Proposed separate interface and bus name: `org.linuxgitshell.Experimental.Overlays1`, object
-`/org/linuxgitshell/Overlays`, served by the same daemon. Its activation entry and introspection XML
-will be added with implementation; neither exists now. Keep Context1 unchanged. Follow the
+Separate interface and bus name: `org.linuxgitshell.Experimental.Overlays1`, object
+`/org/linuxgitshell/Overlays`, served by the same daemon with its own activation entry and
+[introspection XML](../dbus/org.linuxgitshell.Experimental.Overlays1.xml). Context1 is unchanged. Follow the
 [compatibility policy](dbus-api-policy.md); this is not the stable `Daemon1` API.
 
 - `RequestOverlays(as paths, t requestId) -> (t generation, as acceptedPaths)` — validate and queue
@@ -310,12 +312,52 @@ links only Qt Core. The daemon will translate Git records into `RepositoryStatus
 `repositorycontext.status_index` tests the model without Git, filesystem fixtures, IPC, or sleeps.
 It covers classification, combined precedence, rename ancestry replacement, submodules, ignored
 exceptions, ownership boundaries, unusual/deep paths, expiry, revisions, invalid input and limits.
-Provider integration and native gates above remain pending.
+Native gates above remain pending.
+
+## Implemented provider and transport
+
+`OverlayStatusProvider` (`daemon/`), `OverlayServiceAdaptor`, and the shared `OverlayRecord` wire
+encoding (`libs/repositorycontext/`, no Git or IPC dependency) implement the provider and protocol
+sections above. Tests: `daemon.overlay_provider` (real temporary repositories and an injectable
+clock), `repositorycontext.overlay_wire`, `daemon.status_translator`, `gitcore.inventory_reader`,
+and `daemon.overlay_dbus` (the real daemon on a private bus, including activation by name).
+
+Decisions made while implementing, or points where the code is narrower than the proposal:
+
+- Initial records are built when they are delivered, on the turn after the method reply, not when
+  the request arrives. An initial record is therefore never older than a publication already sent
+  to that caller; clients still ignore lower revisions per path. Revisions come from one counter
+  per daemon generation and increase for every publication and every initial reply.
+- A path under no known repository root is resolved with the existing `RepositoryDiscovery`, at most
+  two at a time and with a 10-second timeout each. This costs several Git commands per cold
+  directory but not per sibling: later paths under a discovered root resolve in memory, and a
+  directory found not to be a repository is remembered for the freshness period.
+- The root directory of a nested repository or submodule is answered by the parent's index (its
+  untracked-directory or submodule entry); its contents use the nested index. Boundaries are learned
+  from each refresh, so observations attached too early are re-resolved afterwards.
+- Eviction only removes repositories nobody observes. If the 64-repository limit is reached while
+  all are observed, the new repository answers `Degraded` instead of evicting an observed one, and
+  an over-budget index total degrades the newest snapshot. The proposal's "invalidate observers,
+  then evict" is not needed under this rule.
+- `Stale` is detected on lookup (and by the client timer), not published by a provider timer. A
+  failed refresh publishes `Degraded` immediately and retries with the poll interval doubled per
+  consecutive failure, up to three doublings and 120 seconds.
+- Sparse checkouts are detected by the presence of `info/sparse-checkout` in the git directory and
+  publish `Unavailable`. Network and unclassified filesystems are detected from `QStorageInfo` with
+  a type denylist; this is covered by unit tests only for local locations and must still be
+  verified on a real network mount.
+- The daemon watches each caller's bus name and releases its observations when it vanishes; the
+  90-second lease covers a missed notification. QtDBus establishes the call context on the registered
+  object, not on its adaptor, so the registered `OverlayServiceObject` provides sender identity and
+  named error replies. Clients must register `QList<QVariantMap>` with QtDBus.
+- Not yet implemented: the application's `RefreshRepository` call, the KConfig recursion toggle (the
+  provider option exists and defaults on), and the sender/generation/owner handling that belongs to
+  the plugin client.
 
 ## Proposed increments
 
 1. Implemented: `RepositoryStatusIndex` model and deterministic unit tests against the contract above.
-2. Bounded process capture, inventory collector, daemon provider, experimental XML/activation,
-   application refresh hook, and provider/D-Bus integration tests.
+2. Implemented, except the application refresh hook: bounded process capture, inventory collector,
+   daemon provider, experimental XML/activation, and provider/D-Bus integration tests.
 3. Overlay plugin, client cache, KConfig toggles, and first icon set with real-module tests.
 4. Native verification, measured defaults, install/removal documentation, and `v0.2.0`.

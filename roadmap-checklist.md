@@ -268,13 +268,19 @@ implementan sus ventanas y operaciones; no bloquean el menú MVP ni se muestran 
 # Fase 3 — Overlays MVP (`v0.2.0`, parte 2)
 
 Contrato propuesto: [diseño de overlays](docs/overlay-status-design.md). El primer incremento,
-`RepositoryStatusIndex`, está implementado en esta rama sin Git, filesystem ni IPC. La propuesta define cobertura de snapshots,
+`RepositoryStatusIndex`, está implementado en esta rama sin Git, filesystem ni IPC; el proveedor del daemon
+y el servicio `Overlays1` también, y falta el plugin cliente. La propuesta define cobertura de snapshots,
 respuestas iniciales y retirada de iconos obsoletos. Repintado nativo y rendimiento deben medirse
 antes de cerrar la fase; los valores de polling y límites son provisionales.
 
 ## Implementación
 
 - [x] Implementar `RepositoryStatusIndex` puro con cobertura, frescura, revisiones, límites y tests deterministas.
+- [x] Captura acotada del runner de procesos (`maxOutputBytes`) y colector de inventario `ls-files`.
+- [x] Traductor de snapshot, proveedor de overlays en el daemon (leases, refresco, límites,
+  repositorios anidados) y servicio experimental `Overlays1` con tests de integración en bus privado.
+- [ ] Conectar `RefreshRepository` a la aplicación y exponer la opción de recursión vía KConfig.
+- [ ] Plugin de overlays en Dolphin (`KOverlayIconPlugin`) con cache de cliente, temporizadores y tests con el módulo real.
 
 - [ ] Crear iconos propios y libres para clean, modified, added, conflict y untracked.
 - [ ] Conservar fuente, licencia y atribución de cada recurso visual.

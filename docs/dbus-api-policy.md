@@ -3,15 +3,19 @@
 The stable daemon API is not implemented yet. When introduced, its well-known bus name and
 top-level interfaces will carry a major version, initially `org.linuxgitshell.Daemon1`.
 
-The only interface available today is the experimental
-[`org.linuxgitshell.Experimental.Context1`](../dbus/org.linuxgitshell.Experimental.Context1.xml),
-served by `linuxgitshell-daemon` for the Dolphin repository context. It follows the experimental
-rules below and may change or disappear without a compatibility period.
+The interfaces available today are experimental:
+[`org.linuxgitshell.Experimental.Context1`](../dbus/org.linuxgitshell.Experimental.Context1.xml)
+for the Dolphin repository context and
+[`org.linuxgitshell.Experimental.Overlays1`](../dbus/org.linuxgitshell.Experimental.Overlays1.xml)
+for icon-overlay status, both served by `linuxgitshell-daemon` under separate bus names and
+activation files. They follow the experimental rules below and may change or disappear without a
+compatibility period.
 
 The implemented repository-context cache in
 [`repository-context-cache.md`](repository-context-cache.md) is the first consumer boundary.
-The [overlay protocol](overlay-status-design.md#d-bus-contract-experimental) is a proposal only;
-it adds no installed interface or introspection XML at this stage.
+The [overlay protocol](overlay-status-design.md#d-bus-contract-experimental) is implemented by the
+daemon; its client (the Dolphin overlay plugin) is not. Clients must register
+`QList<QVariantMap>` with QtDBus before connecting to its `aa{sv}` signals.
 The Dolphin plugin must use asynchronous requests and a local snapshot; it may not turn a D-Bus
 timeout into a synchronous pause while constructing a context menu.
 

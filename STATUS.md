@@ -6,7 +6,7 @@ Phase 3 — Overlay status model.
 
 ## Resuming work
 
-Last updated 2026-10-13.
+Last updated 2026-11-21.
 
 - PR [#16](https://github.com/luks95/linuxgitshell/pull/16) merged as `ec85d2d` after review of
   `cfd04ff`, passing build/quality/dependency checks, and the attached native verification summary
@@ -14,8 +14,15 @@ Last updated 2026-10-13.
 - Branch `feature/repository-status-index` combines the integrated menu with the revised
   [overlay contract](docs/overlay-status-design.md). Documentation corrections are preserved in
   `17252eb`; no overlays/provider are implemented yet.
-- Implemented in this branch: pure `RepositoryStatusIndex` and deterministic tests. Native overlay
-  repaint and large-repository measurements remain release gates for Phase 3.
+- Implemented in this branch: pure `RepositoryStatusIndex` and deterministic tests; bounded process
+  capture; the tracked-path inventory reader; the Git-to-model snapshot translator; the daemon's
+  `OverlayStatusProvider`; and the experimental `Overlays1` D-Bus service with a private-bus test
+  against the real daemon. The full suite has 23 CTest tests, with formatting and secret checks
+  passing locally.
+- Not implemented yet: the Dolphin overlay plugin and its client cache, the icons, KConfig toggles,
+  the application's `RefreshRepository` hook, and every native gate. Native overlay repaint,
+  large-repository measurements, network-mount exclusion on a real mount, and the 15 s polling
+  and 250 ms debounce defaults remain unverified release gates for Phase 3.
 
 ## Historical Phase 2 verification
 
