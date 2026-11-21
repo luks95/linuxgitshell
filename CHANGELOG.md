@@ -29,6 +29,8 @@ All notable user-visible changes to LinuxGitShell will be documented here. The f
   sender authentication. Paint callbacks only read memory: tests load the real module and show that
   10,000 cold callbacks perform no Git or D-Bus work. Overlays are on by default and can be disabled
   with `Enabled=false` in the `[Overlays]` group of `linuxgitshellrc`; see `docs/dolphin-overlays.md`.
+- `RecursiveFolders` setting (default on) for the daemon's folder-state propagation, read at daemon
+  start-up and independent of whether overlays are enabled in Dolphin.
 - Original MIT-licensed overlay emblems for clean, modified, added, conflict, and untracked items,
   distinguished by shape and legible at 16, 22, and 32 px on light and dark themes.
 - KF6 Dolphin file-item action plugin that offers a translated external-launch action for one local
@@ -61,7 +63,7 @@ All notable user-visible changes to LinuxGitShell will be documented here. The f
 - LinuxGitShell window and action labels default to English while preserving Dolphin's locale.
 - The Dolphin selection helper is now a policy for single and multiple repository selections.
 - Project documentation distinguishes the published release, integrated Phase 2 context service
-  and client, the 18-test suite (now 27 with the overlay provider and plugin work), and repository-aware
+  and client, the 18-test suite (now 28 with the overlay provider and plugin work), and repository-aware
   menus integrated through #16.
   Deferred menu actions have explicit target phases; the proposed overlay contract specifies
   snapshot coverage, initial replies, invalidation, and bounded background refresh.

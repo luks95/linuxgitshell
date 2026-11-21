@@ -197,6 +197,19 @@ linuxgitshell_set_compiler_warnings(RepositoryStatusTranslatorTest)
 
 add_test(NAME daemon.status_translator COMMAND RepositoryStatusTranslatorTest)
 
+add_executable(OverlaySettingsTest OverlaySettingsTest.cpp)
+
+target_link_libraries(
+    OverlaySettingsTest
+    PRIVATE
+        LinuxGitShell::DaemonCore
+        Qt6::Test
+)
+
+linuxgitshell_set_compiler_warnings(OverlaySettingsTest)
+
+add_test(NAME daemon.overlay_settings COMMAND OverlaySettingsTest)
+
 add_executable(OverlayStatusProviderTest OverlayStatusProviderTest.cpp GitTestSupport.h)
 
 target_compile_definitions(
@@ -243,6 +256,20 @@ file(
     OUTPUT "${LINUXGITSHELL_TEST_ACTIVATION_DIR}/dbus-1/services/org.linuxgitshell.Experimental.Overlays1.service"
     CONTENT "[D-BUS Service]\nName=org.linuxgitshell.Experimental.Overlays1\nExec=$<TARGET_FILE:linuxgitshell-daemon>\n"
 )
+# Isolated KConfig directories, so the plugin tests never read a contributor's own settings.
+set(LINUXGITSHELL_TEST_OVERLAYS_ENABLED_CONFIG "${CMAKE_CURRENT_BINARY_DIR}/overlays-enabled-config")
+set(LINUXGITSHELL_TEST_OVERLAYS_DISABLED_CONFIG "${CMAKE_CURRENT_BINARY_DIR}/overlays-disabled-config")
+file(
+    GENERATE
+    OUTPUT "${LINUXGITSHELL_TEST_OVERLAYS_ENABLED_CONFIG}/linuxgitshellrc"
+    CONTENT "[Overlays]\nEnabled=true\n"
+)
+file(
+    GENERATE
+    OUTPUT "${LINUXGITSHELL_TEST_OVERLAYS_DISABLED_CONFIG}/linuxgitshellrc"
+    CONTENT "[Overlays]\nEnabled=false\n"
+)
+
 set(LINUXGITSHELL_TEST_ACTIVATION_DATA_DIRS
     "${LINUXGITSHELL_TEST_ACTIVATION_DIR}:/usr/local/share:/usr/share"
 )
@@ -328,7 +355,9 @@ add_test(
 )
 set_tests_properties(
     daemon.overlay_dbus
-    PROPERTIES ENVIRONMENT "XDG_DATA_DIRS=${LINUXGITSHELL_TEST_ACTIVATION_DATA_DIRS}"
+    PROPERTIES
+        ENVIRONMENT
+            "XDG_CONFIG_HOME=${LINUXGITSHELL_TEST_OVERLAYS_ENABLED_CONFIG};XDG_DATA_DIRS=${LINUXGITSHELL_TEST_ACTIVATION_DATA_DIRS}"
 )
 
 add_executable(MainWindowTest MainWindowTest.cpp)
@@ -464,21 +493,9 @@ add_test(
 )
 set_tests_properties(
     dolphin.overlay_client_dbus
-    PROPERTIES ENVIRONMENT "XDG_DATA_DIRS=${LINUXGITSHELL_TEST_ACTIVATION_DATA_DIRS}"
-)
-
-# Isolated KConfig directories, so the plugin tests never read a contributor's own settings.
-set(LINUXGITSHELL_TEST_OVERLAYS_ENABLED_CONFIG "${CMAKE_CURRENT_BINARY_DIR}/overlays-enabled-config")
-set(LINUXGITSHELL_TEST_OVERLAYS_DISABLED_CONFIG "${CMAKE_CURRENT_BINARY_DIR}/overlays-disabled-config")
-file(
-    GENERATE
-    OUTPUT "${LINUXGITSHELL_TEST_OVERLAYS_ENABLED_CONFIG}/linuxgitshellrc"
-    CONTENT "[Overlays]\nEnabled=true\n"
-)
-file(
-    GENERATE
-    OUTPUT "${LINUXGITSHELL_TEST_OVERLAYS_DISABLED_CONFIG}/linuxgitshellrc"
-    CONTENT "[Overlays]\nEnabled=false\n"
+    PROPERTIES
+        ENVIRONMENT
+            "XDG_CONFIG_HOME=${LINUXGITSHELL_TEST_OVERLAYS_ENABLED_CONFIG};XDG_DATA_DIRS=${LINUXGITSHELL_TEST_ACTIVATION_DATA_DIRS}"
 )
 
 add_executable(

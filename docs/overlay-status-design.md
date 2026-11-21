@@ -351,8 +351,11 @@ Decisions made while implementing, or points where the code is narrower than the
   90-second lease covers a missed notification. QtDBus establishes the call context on the registered
   object, not on its adaptor, so the registered `OverlayServiceObject` provides sender identity and
   named error replies. Clients must register `QList<QVariantMap>` with QtDBus.
-- Not yet implemented: the application's `RefreshRepository` call and the KConfig recursion toggle
-  (the provider option exists and defaults on).
+- The recursion toggle is the daemon-side `[Overlays] RecursiveFolders` KConfig entry (default on,
+  read at daemon start-up).
+- Not yet implemented: the application's `RefreshRepository` call. The method accepts only
+  repositories the caller itself observes, so the GUI application (which observes nothing) cannot
+  use it as specified; a different mechanism, or a relaxed contract, is an open design question.
 
 The plugin client (`integrations/dolphin/overlays/`) follows the plugin section above, with these
 choices: its transport learns the service owner with an asynchronous `GetNameOwner` after each
@@ -368,6 +371,6 @@ when the plugin loads; a disabled start-up never touches the bus.
 1. Implemented: `RepositoryStatusIndex` model and deterministic unit tests against the contract above.
 2. Implemented, except the application refresh hook: bounded process capture, inventory collector,
    daemon provider, experimental XML/activation, and provider/D-Bus integration tests.
-3. Implemented, except the recursion toggle: overlay plugin, client cache, `Enabled` KConfig toggle
+3. Implemented: overlay plugin, client cache, `Enabled` and `RecursiveFolders` KConfig toggles
    (read at start-up), and first icon set with real-module tests.
 4. Native verification, measured defaults, install/removal documentation, and `v0.2.0`.

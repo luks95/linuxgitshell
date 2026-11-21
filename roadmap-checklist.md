@@ -279,7 +279,8 @@ antes de cerrar la fase; los valores de polling y límites son provisionales.
 - [x] Captura acotada del runner de procesos (`maxOutputBytes`) y colector de inventario `ls-files`.
 - [x] Traductor de snapshot, proveedor de overlays en el daemon (leases, refresco, límites,
   repositorios anidados) y servicio experimental `Overlays1` con tests de integración en bus privado.
-- [ ] Conectar `RefreshRepository` a la aplicación y exponer la opción de recursión vía KConfig.
+- [x] Exponer la opción de recursión vía KConfig (`[Overlays] RecursiveFolders`, leída al arrancar el daemon).
+- [ ] Conectar `RefreshRepository` a la aplicación: el contrato solo admite repositorios observados por el llamante, así que la GUI necesita otro mecanismo (decisión de diseño pendiente; Fase 4 aporta watchers).
 - [x] Plugin de overlays en Dolphin (`KOverlayIconPlugin`) con cache de cliente, temporizadores y tests con el módulo real; falta verificarlo dentro de Dolphin.
 
 - [x] Crear iconos propios y libres para clean, modified, added, conflict y untracked.

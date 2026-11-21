@@ -136,6 +136,7 @@ class OverlayStatusProviderTest final : public QObject
     void warmRequestIsReadyWithRemainingFreshness();
     void rejectsInvalidRequestsAndDeduplicates();
     void reportsPartialCapacityExplicitly();
+    void disabledRecursionKeepsFileStatesButNoFolderSummary();
     void outsideRepositoryIsUnavailable();
     void excludedLocationsAreUnavailable();
     void bareRepositoryIsUnavailable();
@@ -289,6 +290,34 @@ void OverlayStatusProviderTest::reportsPartialCapacityExplicitly()
     // Renewing a retained key never needs new capacity.
     QCOMPARE(provider.requestOverlays(Alice, {QStringLiteral("/proc/a")}, 2).acceptedPaths.size(),
              1);
+}
+
+void OverlayStatusProviderTest::disabledRecursionKeepsFileStatesButNoFolderSummary()
+{
+    Fixture fixture;
+    QVERIFY(createFixture(fixture));
+    QVERIFY(QDir().mkpath(child(fixture.root, QStringLiteral("dir"))));
+    QVERIFY(
+        GitTestSupport::writeTextFile(child(fixture.root, QStringLiteral("dir/inner.txt")), "i\n"));
+    QVERIFY(GitTestSupport::runGit(fixture.root, {QStringLiteral("add"), QStringLiteral("dir")}));
+    QVERIFY(GitTestSupport::runGit(
+        fixture.root, {QStringLiteral("commit"), QStringLiteral("-m"), QStringLiteral("dir")}));
+    QVERIFY(GitTestSupport::writeTextFile(child(fixture.root, QStringLiteral("dir/inner.txt")),
+                                          "changed\n"));
+
+    OverlayProviderOptions options;
+    options.recursive = false;
+    OverlayStatusProvider provider(fastLimits(), options);
+    Recorder alice(provider, Alice);
+    const QString file = child(fixture.root, QStringLiteral("dir/inner.txt"));
+    const QString folder = child(fixture.root, QStringLiteral("dir"));
+
+    QCOMPARE(provider.requestOverlays(Alice, {file, folder, fixture.root}, 1).acceptedPaths.size(),
+             3);
+    QTRY_VERIFY_WITH_TIMEOUT(alice.is(file, State::Modified), WaitMilliseconds);
+    // Without recursion an ordinary folder carries no summary: evidence is complete, state unknown.
+    QTRY_VERIFY_WITH_TIMEOUT(alice.is(folder, State::Unknown), WaitMilliseconds);
+    QTRY_VERIFY_WITH_TIMEOUT(alice.is(fixture.root, State::Unknown), WaitMilliseconds);
 }
 
 void OverlayStatusProviderTest::outsideRepositoryIsUnavailable()

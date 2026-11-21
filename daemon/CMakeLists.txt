@@ -9,6 +9,8 @@ add_library(
     ContextServiceAdaptor.h
     DaemonLogging.cpp
     DaemonLogging.h
+    OverlaySettings.cpp
+    OverlaySettings.h
     OverlayServiceAdaptor.cpp
     OverlayServiceAdaptor.h
     OverlayStatusProvider.cpp
@@ -26,6 +28,7 @@ target_link_libraries(
     PUBLIC
         LinuxGitShell::GitCore
         LinuxGitShell::RepositoryContext
+        KF6::ConfigCore
         Qt6::DBus
 )
 

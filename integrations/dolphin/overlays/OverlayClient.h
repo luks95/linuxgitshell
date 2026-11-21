@@ -93,6 +93,12 @@ class OverlayClient final : public QObject
         std::list<QString>::iterator lruPosition;
     };
 
+    struct EarlyInitial
+    {
+        QList<QVariantMap> records;
+        quint64 generation = 0;
+    };
+
     struct Request
     {
         QStringList keys;
@@ -100,6 +106,10 @@ class OverlayClient final : public QObject
         Clock::time_point sentAt;
         Clock::time_point deadline;
         bool accepted = false;
+        // Initial records may overtake the acceptance of their own request when several are in
+        // flight; they are kept (bounded) and applied once the request is accepted.
+        QList<EarlyInitial> early;
+        qsizetype earlyRecords = 0;
     };
 
     [[nodiscard]] Clock::time_point now() const;
@@ -118,6 +128,7 @@ class OverlayClient final : public QObject
     void applyRecord(const QVariantMap& map, Clock::time_point base);
     void acceptRequest(quint64 requestId, quint64 generation, const QStringList& acceptedPaths);
     void receiveInitial(quint64 requestId, const QList<QVariantMap>& records, quint64 generation);
+    void applyInitial(quint64 requestId, const QList<QVariantMap>& records, quint64 generation);
     void receiveChanges(const QList<QVariantMap>& records, quint64 generation);
     void completeRequest(quint64 requestId);
     void failRequest(quint64 requestId);

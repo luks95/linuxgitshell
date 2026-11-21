@@ -5,6 +5,7 @@
 #include "ContextServiceAdaptor.h"
 #include "DaemonLogging.h"
 #include "OverlayServiceAdaptor.h"
+#include "OverlaySettings.h"
 #include "OverlayStatusProvider.h"
 
 #include "linuxgitshell/gitcore/ProjectInfo.h"
@@ -38,7 +39,10 @@ int main(int argc, char* argv[])
     LinuxGitShell::ContextService service;
     new LinuxGitShell::ContextServiceAdaptor(&service);
 
-    LinuxGitShell::OverlayStatusProvider overlays;
+    LinuxGitShell::OverlayStatusProvider overlays(
+        LinuxGitShell::OverlayProviderLimits{},
+        LinuxGitShell::overlayProviderOptions(
+            KSharedConfig::openConfig(QStringLiteral("linuxgitshellrc"))));
     LinuxGitShell::OverlayServiceObject overlayObject(overlays);
     new LinuxGitShell::OverlayServiceAdaptor(&overlayObject);
 

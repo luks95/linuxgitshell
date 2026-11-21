@@ -107,6 +107,7 @@ class OverlayClientTest final : public QObject
     void nonReadyAndMalformedRecordsClearIcons();
     void ignoresLowerRevisionsAndOtherGenerations();
     void generationChangeResetsRevisionsAndKeepsKeys();
+    void initialRecordsMayOvertakeTheirOwnAcceptance();
     void initialFreshnessIsAgedFromRequestTime();
     void expiryClearsIconsAndRequestsRenewal();
     void failedRequestsClearIconsAndRetryWithBackoff();
@@ -287,6 +288,33 @@ void OverlayClientTest::generationChangeResetsRevisionsAndKeepsKeys()
     QCOMPARE(harness.client->lookup(path), icon(QStringLiteral("clean")));
     // The retained key was not asked for twice: it was already part of the accepted request.
     QCOMPARE(harness.transport->requests.size(), 2);
+}
+
+void OverlayClientTest::initialRecordsMayOvertakeTheirOwnAcceptance()
+{
+    OverlayClientLimits limits;
+    limits.maxBatch = 1; // two requests in flight at once
+    Harness harness(limits);
+    const QString first = QStringLiteral("/repo/first");
+    const QString second = QStringLiteral("/repo/second");
+    QCOMPARE(harness.client->lookup(first), QStringList());
+    QCOMPARE(harness.client->lookup(second), QStringList());
+    QTRY_COMPARE_WITH_TIMEOUT(harness.transport->requests.size(), 2, WaitMilliseconds);
+    const quint64 firstId = harness.transport->requests.at(0).first;
+    const quint64 secondId = harness.transport->requests.at(1).first;
+
+    // The transport frees held messages when the first request is accepted, so the second
+    // request's records arrive before its own acceptance. They must not be lost.
+    Q_EMIT harness.transport->requestAccepted(firstId, Generation, {first});
+    Q_EMIT harness.transport->initialResults(firstId, {record(first, State::Clean, 1)}, Generation);
+    Q_EMIT harness.transport->initialResults(secondId, {record(second, State::Modified, 1)},
+                                             Generation);
+    QCOMPARE(harness.client->inFlightCount(), 1);
+    Q_EMIT harness.transport->requestAccepted(secondId, Generation, {second});
+
+    QTRY_COMPARE_WITH_TIMEOUT(harness.client->inFlightCount(), 0, WaitMilliseconds);
+    QCOMPARE(harness.client->lookup(second), icon(QStringLiteral("modified")));
+    QCOMPARE(harness.client->lookup(first), icon(QStringLiteral("clean")));
 }
 
 void OverlayClientTest::initialFreshnessIsAgedFromRequestTime()

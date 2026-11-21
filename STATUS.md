@@ -18,9 +18,10 @@ Last updated 2026-11-21.
   capture; the tracked-path inventory reader; the Git-to-model snapshot translator; the daemon's
   `OverlayStatusProvider`; and the experimental `Overlays1` D-Bus service with a private-bus test
   against the real daemon; the Dolphin overlay plugin with its client cache, D-Bus transport, and
-  `Enabled` KConfig toggle; and the first five emblems. The full suite has 27 CTest tests, with
+  `Enabled` KConfig toggle; and the first five emblems. The full suite has 28 CTest tests, with
   formatting, secret, and clang-tidy checks passing locally.
-- Not implemented yet: the application's `RefreshRepository` hook, the recursion toggle, deleted
+- Not implemented yet: the application's `RefreshRepository` hook (the contract only accepts
+  repositories the caller observes, so the GUI cannot use it as is), deleted
   and ignored glyphs, and every native gate (nothing has run inside a real Dolphin). Native overlay repaint,
   large-repository measurements, network-mount exclusion on a real mount, and the 15 s polling
   and 250 ms debounce defaults remain unverified release gates for Phase 3.

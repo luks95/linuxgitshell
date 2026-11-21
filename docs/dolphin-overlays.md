@@ -56,8 +56,19 @@ Enabled=false
 Overlays are on by default when the plugin is installed. The setting is read when Dolphin loads the
 plugin, so restart Dolphin after changing it. A disabled start-up sends no request, starts no
 timer, and never activates the daemon. Live reload and a settings interface belong to the Settings
-GUI phase; the recursive-folder toggle is not wired to configuration yet (the daemon defaults to
-recursive propagation).
+GUI phase.
+
+Folder propagation is a separate daemon-side setting, independent of `Enabled`:
+
+```ini
+[Overlays]
+RecursiveFolders=false
+```
+
+It defaults to `true`: a folder shows the highest-ranking state below it. With `false`, ordinary
+folders show nothing, while explicit untracked or ignored directories and submodule entries keep
+their own state. The daemon reads it once at start-up, so stop the running daemon (for example
+`pkill linuxgitshell-daemon`) and let the next overlay request activate a new one.
 
 ## Trying it
 
@@ -80,4 +91,4 @@ uninstall` if your build generates it, or delete the installed `linuxgitshell_ov
 | `dolphin.overlay_client` | cache, deferred requests, batching, generations, revisions, freshness, backoff, eviction, disabling |
 | `dolphin.overlay_client_dbus` | the real daemon by activation: real states, spoofed senders, service loss and recovery, absent service, release |
 | `dolphin.overlay_plugin` / `_disabled` | the built module loaded like KIO does, 10,000 cold callbacks with no Git or bus work, disabled-by-settings run |
-| `daemon.overlay_provider`, `daemon.overlay_dbus` | provider and service side |
+| `daemon.overlay_provider`, `daemon.overlay_dbus`, `daemon.overlay_settings` | provider, service, and settings side |

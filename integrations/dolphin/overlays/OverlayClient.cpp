@@ -530,6 +530,12 @@ void OverlayClient::acceptRequest(quint64 requestId, quint64 generation,
     if (request.awaiting.isEmpty())
     {
         completeRequest(requestId);
+        return;
+    }
+    const QList<EarlyInitial> early = std::exchange(request.early, {});
+    for (const EarlyInitial& held : early)
+    {
+        applyInitial(requestId, held.records, held.generation);
     }
 }
 
@@ -584,7 +590,28 @@ void OverlayClient::receiveInitial(quint64 requestId, const QList<QVariantMap>& 
                                    quint64 generation)
 {
     const auto it = inFlight.find(requestId);
-    if (it == inFlight.end() || generation != currentGeneration || !it->accepted)
+    if (it == inFlight.end())
+    {
+        return; // unknown or already completed: a replay or a late duplicate
+    }
+    if (!it->accepted)
+    {
+        // Keep what overtook the acceptance, within what this request can legitimately carry.
+        if (it->earlyRecords + records.size() <= it->keys.size() * 2)
+        {
+            it->earlyRecords += records.size();
+            it->early.append({records, generation});
+        }
+        return;
+    }
+    applyInitial(requestId, records, generation);
+}
+
+void OverlayClient::applyInitial(quint64 requestId, const QList<QVariantMap>& records,
+                                 quint64 generation)
+{
+    const auto it = inFlight.find(requestId);
+    if (it == inFlight.end() || generation != currentGeneration)
     {
         return;
     }
