@@ -81,6 +81,24 @@ linuxgitshell_set_compiler_warnings(GitStatusReaderTest)
 
 add_test(NAME gitcore.status_reader COMMAND GitStatusReaderTest)
 
+add_executable(GitInventoryReaderTest GitInventoryReaderTest.cpp)
+
+target_compile_definitions(
+    GitInventoryReaderTest
+    PRIVATE GIT_EXECUTABLE_PATH="${GIT_EXECUTABLE}"
+)
+
+target_link_libraries(
+    GitInventoryReaderTest
+    PRIVATE
+        LinuxGitShell::GitCore
+        Qt6::Test
+)
+
+linuxgitshell_set_compiler_warnings(GitInventoryReaderTest)
+
+add_test(NAME gitcore.inventory_reader COMMAND GitInventoryReaderTest)
+
 add_executable(GitConfigTest GitConfigTest.cpp)
 
 target_compile_definitions(

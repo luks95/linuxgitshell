@@ -6,6 +6,7 @@ add_library(
     include/linuxgitshell/gitcore/GitConfig.h
     include/linuxgitshell/gitcore/GitConfigReader.h
     include/linuxgitshell/gitcore/GitCommandSanitizer.h
+    include/linuxgitshell/gitcore/GitInventoryReader.h
     include/linuxgitshell/gitcore/GitProcessRunner.h
     include/linuxgitshell/gitcore/GitStatus.h
     include/linuxgitshell/gitcore/GitStatusReader.h
@@ -13,6 +14,7 @@ add_library(
     src/GitConfig.cpp
     src/GitConfigReader.cpp
     src/GitCommandSanitizer.cpp
+    src/GitInventoryReader.cpp
     src/GitProcessRunner.cpp
     src/GitStatus.cpp
     src/GitStatusReader.cpp
