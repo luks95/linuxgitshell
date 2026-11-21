@@ -24,6 +24,13 @@ All notable user-visible changes to LinuxGitShell will be documented here. The f
   with its own activation file: `RequestOverlays`, `ReleaseOverlays`, `RefreshRepository`, and
   unicast `OverlayResults`/`OverlaysChanged` signals, a shared `a{sv}` record encoding that rejects
   unknown values, and release of a client's observations when it leaves the bus.
+- Dolphin icon-overlay plugin (`KOverlayIconPlugin`) with a bounded process-wide cache, deferred
+  and batched requests, observation renewal, backoff, generation and revision checks, and bus-verified
+  sender authentication. Paint callbacks only read memory: tests load the real module and show that
+  10,000 cold callbacks perform no Git or D-Bus work. Overlays are on by default and can be disabled
+  with `Enabled=false` in the `[Overlays]` group of `linuxgitshellrc`; see `docs/dolphin-overlays.md`.
+- Original MIT-licensed overlay emblems for clean, modified, added, conflict, and untracked items,
+  distinguished by shape and legible at 16, 22, and 32 px on light and dark themes.
 - KF6 Dolphin file-item action plugin that offers a translated external-launch action for one local
   selection while keeping Git execution and application windows outside Dolphin's process.
 - Unit and integration coverage for conservative selection handling, plugin metadata and factory
@@ -54,7 +61,7 @@ All notable user-visible changes to LinuxGitShell will be documented here. The f
 - LinuxGitShell window and action labels default to English while preserving Dolphin's locale.
 - The Dolphin selection helper is now a policy for single and multiple repository selections.
 - Project documentation distinguishes the published release, integrated Phase 2 context service
-  and client, the 18-test suite (now 23 with the overlay provider work), and repository-aware
+  and client, the 18-test suite (now 27 with the overlay provider and plugin work), and repository-aware
   menus integrated through #16.
   Deferred menu actions have explicit target phases; the proposed overlay contract specifies
   snapshot coverage, initial replies, invalidation, and bounded background refresh.

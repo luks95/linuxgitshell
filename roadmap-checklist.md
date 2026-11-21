@@ -280,13 +280,13 @@ antes de cerrar la fase; los valores de polling y límites son provisionales.
 - [x] Traductor de snapshot, proveedor de overlays en el daemon (leases, refresco, límites,
   repositorios anidados) y servicio experimental `Overlays1` con tests de integración en bus privado.
 - [ ] Conectar `RefreshRepository` a la aplicación y exponer la opción de recursión vía KConfig.
-- [ ] Plugin de overlays en Dolphin (`KOverlayIconPlugin`) con cache de cliente, temporizadores y tests con el módulo real.
+- [x] Plugin de overlays en Dolphin (`KOverlayIconPlugin`) con cache de cliente, temporizadores y tests con el módulo real; falta verificarlo dentro de Dolphin.
 
-- [ ] Crear iconos propios y libres para clean, modified, added, conflict y untracked.
-- [ ] Conservar fuente, licencia y atribución de cada recurso visual.
-- [ ] Diseñar iconos legibles en tamaños pequeños, HiDPI, tema claro y oscuro.
+- [x] Crear iconos propios y libres para clean, modified, added, conflict y untracked.
+- [x] Conservar fuente, licencia y atribución de cada recurso visual (`docs/licensing.md`).
+- [x] Diseñar iconos legibles en tamaños pequeños, HiDPI, tema claro y oscuro (revisados en 16/22/32/64 px; falta verlos en Dolphin).
 - [ ] Implementar proveedor de overlays con cache local acotado.
-- [ ] Evitar ejecutar `git status` por cada solicitud de icono.
+- [x] Evitar ejecutar `git status` por cada solicitud de icono (un status + un inventario por repositorio y refresco; 10 000 callbacks en frío sin Git ni D-Bus).
 - [ ] Invalidar el cache después de cambios Git conocidos.
 - [ ] Añadir deleted e ignored cuando el modelo base sea estable.
 - [ ] Diseñar propagación recursiva de estado de carpetas como opción desactivable/configurable.

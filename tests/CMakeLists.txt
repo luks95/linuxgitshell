@@ -215,6 +215,19 @@ linuxgitshell_set_compiler_warnings(OverlayStatusProviderTest)
 
 add_test(NAME daemon.overlay_provider COMMAND OverlayStatusProviderTest)
 
+add_executable(OverlayClientTest OverlayClientTest.cpp)
+
+target_link_libraries(
+    OverlayClientTest
+    PRIVATE
+        LinuxGitShell::DolphinOverlays
+        Qt6::Test
+)
+
+linuxgitshell_set_compiler_warnings(OverlayClientTest)
+
+add_test(NAME dolphin.overlay_client COMMAND OverlayClientTest)
+
 find_program(DBUS_RUN_SESSION_EXECUTABLE NAMES dbus-run-session REQUIRED)
 
 # Lets dbus-run-session activate the built daemon; system data directories stay available for
@@ -419,6 +432,101 @@ set_tests_properties(
     PROPERTIES
         ENVIRONMENT
             "QT_QPA_PLATFORM=offscreen;LANGUAGE=es;LC_ALL=es_AR.UTF-8;XDG_DATA_DIRS=${LINUXGITSHELL_TEST_ACTIVATION_DATA_DIRS}"
+)
+
+add_executable(
+    DolphinOverlayClientDBusTest
+    DolphinOverlayClientDBusTest.cpp
+    DBusTestSupport.h
+    GitTestSupport.h
+)
+
+target_compile_definitions(
+    DolphinOverlayClientDBusTest
+    PRIVATE GIT_EXECUTABLE_PATH="${GIT_EXECUTABLE}"
+)
+
+target_link_libraries(
+    DolphinOverlayClientDBusTest
+    PRIVATE
+        LinuxGitShell::DolphinOverlays
+        Qt6::DBus
+        Qt6::Test
+)
+
+add_dependencies(DolphinOverlayClientDBusTest linuxgitshell-daemon)
+linuxgitshell_set_compiler_warnings(DolphinOverlayClientDBusTest)
+
+add_test(
+    NAME dolphin.overlay_client_dbus
+    COMMAND
+        "${DBUS_RUN_SESSION_EXECUTABLE}" -- "$<TARGET_FILE:DolphinOverlayClientDBusTest>"
+)
+set_tests_properties(
+    dolphin.overlay_client_dbus
+    PROPERTIES ENVIRONMENT "XDG_DATA_DIRS=${LINUXGITSHELL_TEST_ACTIVATION_DATA_DIRS}"
+)
+
+# Isolated KConfig directories, so the plugin tests never read a contributor's own settings.
+set(LINUXGITSHELL_TEST_OVERLAYS_ENABLED_CONFIG "${CMAKE_CURRENT_BINARY_DIR}/overlays-enabled-config")
+set(LINUXGITSHELL_TEST_OVERLAYS_DISABLED_CONFIG "${CMAKE_CURRENT_BINARY_DIR}/overlays-disabled-config")
+file(
+    GENERATE
+    OUTPUT "${LINUXGITSHELL_TEST_OVERLAYS_ENABLED_CONFIG}/linuxgitshellrc"
+    CONTENT "[Overlays]\nEnabled=true\n"
+)
+file(
+    GENERATE
+    OUTPUT "${LINUXGITSHELL_TEST_OVERLAYS_DISABLED_CONFIG}/linuxgitshellrc"
+    CONTENT "[Overlays]\nEnabled=false\n"
+)
+
+add_executable(
+    DolphinOverlayPluginTest
+    DolphinOverlayPluginTest.cpp
+    DBusTestSupport.h
+    GitTestSupport.h
+)
+
+target_compile_definitions(
+    DolphinOverlayPluginTest
+    PRIVATE
+        OVERLAY_PLUGIN_PATH="$<TARGET_FILE:linuxgitshell_overlayicon>"
+        GIT_EXECUTABLE_PATH="${GIT_EXECUTABLE}"
+)
+
+target_link_libraries(
+    DolphinOverlayPluginTest
+    PRIVATE
+        LinuxGitShell::RepositoryContext
+        Qt6::DBus
+        Qt6::Test
+        KF6::KIOCore
+)
+
+add_dependencies(DolphinOverlayPluginTest linuxgitshell_overlayicon linuxgitshell-daemon)
+linuxgitshell_set_compiler_warnings(DolphinOverlayPluginTest)
+
+add_test(
+    NAME dolphin.overlay_plugin
+    COMMAND "${DBUS_RUN_SESSION_EXECUTABLE}" -- "$<TARGET_FILE:DolphinOverlayPluginTest>"
+)
+set_tests_properties(
+    dolphin.overlay_plugin
+    PROPERTIES
+        ENVIRONMENT
+            "QT_QPA_PLATFORM=offscreen;XDG_CONFIG_HOME=${LINUXGITSHELL_TEST_OVERLAYS_ENABLED_CONFIG};XDG_DATA_DIRS=${LINUXGITSHELL_TEST_ACTIVATION_DATA_DIRS}"
+)
+
+add_test(
+    NAME dolphin.overlay_plugin_disabled
+    COMMAND "${DBUS_RUN_SESSION_EXECUTABLE}" -- "$<TARGET_FILE:DolphinOverlayPluginTest>"
+)
+set_tests_properties(
+    dolphin.overlay_plugin_disabled
+    PROPERTIES
+        ENVIRONMENT
+            "QT_QPA_PLATFORM=offscreen;LINUXGITSHELL_TEST_OVERLAYS_DISABLED=1;XDG_CONFIG_HOME=${LINUXGITSHELL_TEST_OVERLAYS_DISABLED_CONFIG};XDG_DATA_DIRS=${LINUXGITSHELL_TEST_ACTIVATION_DATA_DIRS}"
 )
 
 add_executable(

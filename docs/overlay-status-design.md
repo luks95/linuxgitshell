@@ -1,9 +1,10 @@
 # Icon Overlay Status Design
 
 Status: Phase 3 design (`v0.2.0`, part 2), updated 2026-11-21. The pure status-index model, the
-daemon-side provider, and the experimental `Overlays1` D-Bus service are implemented on
-`feature/repository-status-index`; the Dolphin plugin, icons, settings, and native verification
-remain proposals. Builds on [repository-context-cache.md](repository-context-cache.md) and the
+daemon-side provider, the experimental `Overlays1` D-Bus service, the Dolphin plugin with its
+client cache, and the first icon set are implemented on `feature/repository-status-index`; the
+Settings GUI, the application refresh hook, and native verification remain open. Usage is in
+[dolphin-overlays.md](dolphin-overlays.md). Builds on [repository-context-cache.md](repository-context-cache.md) and the
 experimental context service. Native repaint and performance checks remain required before shipping
 overlays.
 
@@ -350,14 +351,23 @@ Decisions made while implementing, or points where the code is narrower than the
   90-second lease covers a missed notification. QtDBus establishes the call context on the registered
   object, not on its adaptor, so the registered `OverlayServiceObject` provides sender identity and
   named error replies. Clients must register `QList<QVariantMap>` with QtDBus.
-- Not yet implemented: the application's `RefreshRepository` call, the KConfig recursion toggle (the
-  provider option exists and defaults on), and the sender/generation/owner handling that belongs to
-  the plugin client.
+- Not yet implemented: the application's `RefreshRepository` call and the KConfig recursion toggle
+  (the provider option exists and defaults on).
+
+The plugin client (`integrations/dolphin/overlays/`) follows the plugin section above, with these
+choices: its transport learns the service owner with an asynchronous `GetNameOwner` after each
+valid method reply, because QtDBus method replies carry no sender, and accepts signals only from
+that owner (a test forges a believable `OverlaysChanged` from another connection); signals that
+arrive before the owner is known are held, at most 32. Notifications to the host are always
+deferred to the next event-loop turn, including evictions, so `getOverlays()` never emits. Initial
+freshness is aged from the time the request was sent, updates from receipt. Settings are read once
+when the plugin loads; a disabled start-up never touches the bus.
 
 ## Proposed increments
 
 1. Implemented: `RepositoryStatusIndex` model and deterministic unit tests against the contract above.
 2. Implemented, except the application refresh hook: bounded process capture, inventory collector,
    daemon provider, experimental XML/activation, and provider/D-Bus integration tests.
-3. Overlay plugin, client cache, KConfig toggles, and first icon set with real-module tests.
+3. Implemented, except the recursion toggle: overlay plugin, client cache, `Enabled` KConfig toggle
+   (read at start-up), and first icon set with real-module tests.
 4. Native verification, measured defaults, install/removal documentation, and `v0.2.0`.

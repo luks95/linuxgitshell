@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 LinuxGitShell contributors
+SPDX-License-Identifier: MIT
+
+Original artwork by the LinuxGitShell contributors. Shape and glyph carry the meaning, so the
+badge stays legible without relying on color alone. Themes may override the icon name.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <title>Untracked</title>
+  <circle cx="8" cy="8" r="6.6" fill="#f3f0fc" stroke="#6a52c4" stroke-width="1.6" stroke-dasharray="2.4 1.6"/>
+  <circle cx="8" cy="8" r="2" fill="#6a52c4"/>
+</svg>
