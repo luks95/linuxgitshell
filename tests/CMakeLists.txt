@@ -184,6 +184,24 @@ linuxgitshell_set_compiler_warnings(RepositoryStatusTranslatorTest)
 
 add_test(NAME daemon.status_translator COMMAND RepositoryStatusTranslatorTest)
 
+add_executable(OverlayStatusProviderTest OverlayStatusProviderTest.cpp GitTestSupport.h)
+
+target_compile_definitions(
+    OverlayStatusProviderTest
+    PRIVATE GIT_EXECUTABLE_PATH="${GIT_EXECUTABLE}"
+)
+
+target_link_libraries(
+    OverlayStatusProviderTest
+    PRIVATE
+        LinuxGitShell::DaemonCore
+        Qt6::Test
+)
+
+linuxgitshell_set_compiler_warnings(OverlayStatusProviderTest)
+
+add_test(NAME daemon.overlay_provider COMMAND OverlayStatusProviderTest)
+
 find_program(DBUS_RUN_SESSION_EXECUTABLE NAMES dbus-run-session REQUIRED)
 
 # Lets dbus-run-session activate the built daemon; system data directories stay available for

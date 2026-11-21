@@ -9,6 +9,8 @@ add_library(
     ContextServiceAdaptor.h
     DaemonLogging.cpp
     DaemonLogging.h
+    OverlayStatusProvider.cpp
+    OverlayStatusProvider.h
     RepositoryStatusTranslator.cpp
     RepositoryStatusTranslator.h
 )
