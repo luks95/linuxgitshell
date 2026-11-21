@@ -30,6 +30,8 @@ class GitProcessRunnerTest final : public QObject
     void reportsStartupFailure();
     void cancelsAnActiveProcess();
     void distinguishesTimeoutFromCancellation();
+    void stopsAndTruncatesWhenOutputLimitIsExceeded();
+    void keepsOutputWithinLimitAsCompleted();
     void rejectsInvalidAndConcurrentRequestsAndCanBeReused();
     void sanitizesCredentialBearingArguments();
 
@@ -188,6 +190,42 @@ void GitProcessRunnerTest::distinguishesTimeoutFromCancellation()
     QTRY_COMPARE_WITH_TIMEOUT(finishedSpy.count(), 1, 5000);
     QCOMPARE(takeResult(finishedSpy).completionReason,
              LinuxGitShell::GitProcessCompletionReason::TimedOut);
+}
+
+void GitProcessRunnerTest::stopsAndTruncatesWhenOutputLimitIsExceeded()
+{
+    LinuxGitShell::GitProcessRunner runner;
+    QSignalSpy finishedSpy(&runner, &LinuxGitShell::GitProcessRunner::finished);
+    LinuxGitShell::GitProcessRequest request;
+    request.program = helperPath();
+    request.arguments = {QStringLiteral("--flood"), QStringLiteral("10000000")};
+    request.maxOutputBytes = 10000;
+
+    QCOMPARE(runner.start(request), LinuxGitShell::GitProcessStartResult::Accepted);
+    QTRY_COMPARE_WITH_TIMEOUT(finishedSpy.count(), 1, 10000);
+    const LinuxGitShell::GitProcessResult result = takeResult(finishedSpy);
+    QCOMPARE(result.completionReason,
+             LinuxGitShell::GitProcessCompletionReason::OutputLimitExceeded);
+    QCOMPARE(result.standardOutput.size() + result.standardError.size(), 10000);
+}
+
+void GitProcessRunnerTest::keepsOutputWithinLimitAsCompleted()
+{
+    LinuxGitShell::GitProcessRunner runner;
+    QSignalSpy finishedSpy(&runner, &LinuxGitShell::GitProcessRunner::finished);
+    LinuxGitShell::GitProcessRequest request;
+    request.program = helperPath();
+    request.arguments = {QStringLiteral("--streams")};
+    request.maxOutputBytes = 22; // exactly "stdout-data" + "stderr-data"
+
+    QCOMPARE(runner.start(request), LinuxGitShell::GitProcessStartResult::Accepted);
+    QTRY_COMPARE_WITH_TIMEOUT(finishedSpy.count(), 1, 5000);
+    const LinuxGitShell::GitProcessResult result = takeResult(finishedSpy);
+    QCOMPARE(result.completionReason, LinuxGitShell::GitProcessCompletionReason::Completed);
+    QCOMPARE(result.standardOutput, QByteArrayLiteral("stdout-data"));
+
+    request.maxOutputBytes = 0;
+    QCOMPARE(runner.start(request), LinuxGitShell::GitProcessStartResult::InvalidOutputLimit);
 }
 
 void GitProcessRunnerTest::rejectsInvalidAndConcurrentRequestsAndCanBeReused()

@@ -54,6 +54,25 @@ int waitForTermination()
     return 0;
 }
 
+int flood(const QString& countArgument)
+{
+    bool valid = false;
+    const qint64 count = countArgument.toLongLong(&valid);
+    if (!valid || count < 0)
+    {
+        return 2;
+    }
+#ifdef Q_OS_UNIX
+    std::signal(SIGPIPE, SIG_IGN);
+#endif
+    const QByteArray chunk(4096, 'x');
+    for (qint64 written = 0; written < count; written += chunk.size())
+    {
+        writeBytes(stdout, chunk);
+    }
+    return 0;
+}
+
 } // namespace
 
 int main(int argc, char* argv[])
@@ -81,6 +100,10 @@ int main(int argc, char* argv[])
         bool valid = false;
         const int exitCode = arguments.at(2).toInt(&valid);
         return valid ? exitCode : 2;
+    }
+    if (mode == QStringLiteral("--flood") && arguments.size() == 3)
+    {
+        return flood(arguments.at(2));
     }
     if (mode == QStringLiteral("--wait"))
     {
