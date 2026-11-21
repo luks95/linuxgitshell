@@ -166,6 +166,24 @@ linuxgitshell_set_compiler_warnings(ContextServiceTest)
 
 add_test(NAME daemon.context_service COMMAND ContextServiceTest)
 
+add_executable(RepositoryStatusTranslatorTest RepositoryStatusTranslatorTest.cpp GitTestSupport.h)
+
+target_compile_definitions(
+    RepositoryStatusTranslatorTest
+    PRIVATE GIT_EXECUTABLE_PATH="${GIT_EXECUTABLE}"
+)
+
+target_link_libraries(
+    RepositoryStatusTranslatorTest
+    PRIVATE
+        LinuxGitShell::DaemonCore
+        Qt6::Test
+)
+
+linuxgitshell_set_compiler_warnings(RepositoryStatusTranslatorTest)
+
+add_test(NAME daemon.status_translator COMMAND RepositoryStatusTranslatorTest)
+
 find_program(DBUS_RUN_SESSION_EXECUTABLE NAMES dbus-run-session REQUIRED)
 
 # Lets dbus-run-session activate the built daemon; system data directories stay available for

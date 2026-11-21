@@ -9,6 +9,8 @@ add_library(
     ContextServiceAdaptor.h
     DaemonLogging.cpp
     DaemonLogging.h
+    RepositoryStatusTranslator.cpp
+    RepositoryStatusTranslator.h
 )
 
 add_library(LinuxGitShell::DaemonCore ALIAS linuxgitshell_daemon_core)
