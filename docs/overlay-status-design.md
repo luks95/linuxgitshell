@@ -352,8 +352,12 @@ Decisions made while implementing, or points where the code is narrower than the
   index: the inventory reader skips parsing on a matching digest and the index only renews its
   freshness (`RepositoryStatusIndex::renew`, which keeps content and revision). Records are still
   republished so clients extend their own freshness. Any difference, invalidation, or lost snapshot
-  takes the full path. Git itself still runs once per poll; a cheaper change check or an adaptive
-  interval is open work.
+  takes the full path. Git itself still runs once per poll. To bound that cost, the poll interval is
+  at least the last refresh's wall time times `pollCostFactor` (50, a duty cycle of about 2%),
+  capped at `maxAdaptivePoll` (60 s) and never below `pollInterval`. On the 100k-file fixture a
+  refresh takes about 0.3 s, so the factor yields about 15 s and changes nothing there; it only
+  slows repositories whose refresh takes longer than about 0.3 s (up to 60 s when it takes 1.2 s or
+  more). A cheaper change check remains open work.
 - Sparse checkouts are detected by the presence of `info/sparse-checkout` in the git directory and
   publish `Unavailable`. Network and unclassified filesystems are detected from `QStorageInfo` with
   a type denylist; this is covered by unit tests only for local locations and must still be

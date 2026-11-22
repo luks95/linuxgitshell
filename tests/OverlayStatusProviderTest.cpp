@@ -145,6 +145,7 @@ class OverlayStatusProviderTest final : public QObject
     void refreshRepositoryRequiresAnObservedRepository();
     void pollPicksUpExternalChanges();
     void unchangedPollsRenewFreshnessAndLaterChangesAreStillSeen();
+    void expensiveRefreshesPollLessOften();
     void releaseStopsPublishingAndPolling();
     void leasesExpireAndRenewalExtendsThem();
     void staleSnapshotYieldsUnknownThenRefreshes();
@@ -492,6 +493,44 @@ void OverlayStatusProviderTest::unchangedPollsRenewFreshnessAndLaterChangesAreSt
     QCOMPARE(provider.requestOverlays(Alice, {untracked}, 2).acceptedPaths.size(), 1);
     QTRY_VERIFY_WITH_TIMEOUT(alice.is(untracked, State::Added), WaitMilliseconds);
     QVERIFY(!alice.revisionViolation);
+}
+
+void OverlayStatusProviderTest::expensiveRefreshesPollLessOften()
+{
+    const auto countBatches = [](int factor)
+    {
+        Fixture fixture;
+        if (!createFixture(fixture))
+        {
+            return -1;
+        }
+        OverlayProviderLimits limits = fastLimits();
+        limits.pollInterval = 20ms;
+        limits.pollCostFactor = factor;
+        limits.maxAdaptivePoll = 400ms;
+        OverlayStatusProvider provider(limits);
+        Recorder alice(provider, Alice);
+        const QString file = child(fixture.root, QStringLiteral("clean.txt"));
+        if (provider.requestOverlays(Alice, {file}, 1).acceptedPaths.size() != 1)
+        {
+            return -1;
+        }
+        if (!QTest::qWaitFor([&] { return alice.is(file, State::Clean); }, WaitMilliseconds))
+        {
+            return -1;
+        }
+        const int before = alice.changedBatches;
+        QTest::qWait(1500);
+        return alice.changedBatches - before;
+    };
+
+    const int plain = countBatches(0);
+    const int adaptive = countBatches(1000);
+    QVERIFY(plain > 0);
+    QVERIFY(adaptive >= 0);
+    // A refresh takes several milliseconds, so factor 1000 pushes the interval to its 400 ms cap.
+    QVERIFY2(adaptive * 2 < plain,
+             qPrintable(QStringLiteral("plain %1, adaptive %2").arg(plain).arg(adaptive)));
 }
 
 void OverlayStatusProviderTest::releaseStopsPublishingAndPolling()

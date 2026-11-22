@@ -981,6 +981,11 @@ void OverlayStatusProvider::flushInitial()
 std::chrono::milliseconds OverlayStatusProvider::pollDelay(const Repository& repo) const
 {
     std::chrono::milliseconds delay = limits.pollInterval;
+    if (limits.pollCostFactor > 0)
+    {
+        delay = std::max(
+            delay, std::min(limits.maxAdaptivePoll, repo.lastRefreshCost * limits.pollCostFactor));
+    }
     for (int step = 0; step < std::min(repo.failures, limits.backoffShiftLimit); ++step)
     {
         delay *= 2;
@@ -1217,6 +1222,7 @@ void OverlayStatusProvider::completeRefresh(Repository& repo, const GitInventory
     {
         // Nothing Git reports changed: keep the index, only extend its freshness.
         qCDebug(daemonLog) << "Overlay refresh unchanged after" << elapsed << "ms";
+        repo.lastRefreshCost = std::chrono::milliseconds(elapsed);
         repo.capturedAt = input.capturedAt;
         repo.failures = 0;
         publishRepository(repo);
@@ -1233,6 +1239,7 @@ void OverlayStatusProvider::completeRefresh(Repository& repo, const GitInventory
     {
         repo.excludedRoots = std::move(boundaries);
         reevaluateBoundaries(repo);
+        repo.lastRefreshCost = std::chrono::milliseconds(elapsed);
         repo.capturedAt = input.capturedAt;
         repo.statusDigest = statusDigest;
         repo.inventoryDigest = result.outputDigest;

@@ -249,8 +249,9 @@ Verification on 2026-09-28:
 
 1. Run the remaining Phase 3 native gates (two Dolphin windows, folder scaling, external and network
    mounts, paint-callback latency, the Plasma Wayland session) and tune the poll default from them.
-2. Reduce Git's own per-poll cost on very large repositories (cheaper change check or adaptive
-   interval) and benchmark with Git's untracked cache and fsmonitor.
+2. Benchmark Git's untracked cache and fsmonitor and look for a cheaper change check than
+   `git status`; the adaptive interval (50 times the refresh time, up to 60 s) already bounds the
+   duty cycle but does not lower the cost of a single poll.
 3. Decide how the application refreshes overlays (`RefreshRepository` only accepts observed
    repositories); Phase 4 watchers are the planned mechanism.
 4. Publish `v0.2.0` with a tested install and uninstall procedure once the gates are closed.

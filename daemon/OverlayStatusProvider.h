@@ -60,6 +60,10 @@ struct OverlayProviderLimits
     std::chrono::milliseconds lease = std::chrono::seconds(90);
     std::chrono::milliseconds freshness = std::chrono::seconds(30);
     std::chrono::milliseconds pollInterval = std::chrono::seconds(15);
+    // Expensive repositories poll less often: the interval is at least the last refresh's wall time
+    // times this factor (a duty cycle of about 1/factor), up to maxAdaptivePoll. 0 disables it.
+    int pollCostFactor = 50;
+    std::chrono::milliseconds maxAdaptivePoll = std::chrono::seconds(60);
     std::chrono::milliseconds debounce = std::chrono::milliseconds(250);
     std::chrono::milliseconds housekeepingInterval = std::chrono::seconds(10);
     // Failed refreshes poll at pollInterval << min(failures, backoffShiftLimit), capped.
@@ -175,6 +179,7 @@ class OverlayStatusProvider final : public QObject
         bool refreshing = false;
         bool followUp = false;
         int failures = 0;
+        std::chrono::milliseconds lastRefreshCost{0};
         quint64 invalidations = 0;
         // Digests of the Git status output (with boundaries) and of the tracked inventory behind
         // the stored snapshot. An identical refresh only renews freshness instead of re-reading

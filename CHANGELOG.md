@@ -66,6 +66,9 @@ All notable user-visible changes to LinuxGitShell will be documented here. The f
 
 ### Changed
 
+- The overlay poll interval adapts to repository cost: at least 50 times the last refresh's wall
+  time, up to 60 s, never below the 15 s default, so very large repositories cannot keep the
+  daemon and Git busy more than about 2% of the time.
 - Overlay polling no longer rebuilds the repository index when Git reports exactly what it reported
   before: identical status and inventory output only renew freshness. On a 100k-file fixture the
   daemon's idle CPU dropped from 3.2 s to 0.17 s per minute (Git's own cost is not included).
