@@ -150,6 +150,17 @@ an adaptive poll interval is still open. Only one fixture size
 was run, there was no external or network mount, no p50/p95 of callback time, no comparison with
 Git's untracked cache or fsmonitor, and no run on the Plasma session.
 
+### Git configuration (untracked cache, fsmonitor)
+
+On a disposable copy of the same fixture (Git 2.56.0, tmpfs, warm cache), `git status
+--porcelain=v2 -z --untracked-files=normal --ignored` took 0.17-0.20 s by default (the first run
+after copying took 1.07 s), 0.18-0.21 s with `core.untrackedCache`, and 0.10-0.11 s with the
+untracked cache plus the built-in `core.fsmonitor` daemon. So the built-in fsmonitor roughly halves
+a poll here and the untracked cache adds nothing on tmpfs; three runs each, on one machine, so
+treat them as indicative. The daemon never changes a repository's Git configuration; it simply
+benefits from whatever the user has enabled. Not measured: disk-backed or cold-cache trees, or
+fsmonitor's own background cost.
+
 ## Automated coverage
 
 | Test | Covers |

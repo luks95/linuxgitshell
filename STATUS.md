@@ -249,8 +249,8 @@ Verification on 2026-09-28:
 
 1. Run the remaining Phase 3 native gates (two Dolphin windows, folder scaling, external and network
    mounts, paint-callback latency, the Plasma Wayland session) and tune the poll default from them.
-2. Benchmark Git's untracked cache and fsmonitor and look for a cheaper change check than
-   `git status`; the adaptive interval (50 times the refresh time, up to 60 s) already bounds the
+2. Look for a cheaper change check than `git status` (the untracked cache gave no gain and the
+   built-in fsmonitor about 2x on the 100k fixture, see `docs/dolphin-overlays.md`); the adaptive interval (50 times the refresh time, up to 60 s) already bounds the
    duty cycle but does not lower the cost of a single poll.
 3. Decide how the application refreshes overlays (`RefreshRepository` only accepts observed
    repositories); Phase 4 watchers are the planned mechanism.
