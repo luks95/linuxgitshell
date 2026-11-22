@@ -108,9 +108,41 @@ is absent.
 ![Enabled=false (left) and RecursiveFolders=false (right)](images/overlays-toggles.png)
 
 Not verified yet: two Dolphin windows, folder scaling, a local external mount, network-mount
-exclusion on a real mount, p50/p95 callback and refresh latency, large (100k-file) trees, and
-anything on the real Plasma Wayland session. The `RefreshRepository` hook is not wired to the
+exclusion on a real mount, Dolphin paint-callback latency, and anything on the real Plasma Wayland
+session. Daemon-level latency on a 100k-file tree is measured below. The `RefreshRepository` hook is not wired to the
 application.
+
+## Measurements on a 100k-file fixture
+
+Measured on 2026-11-21 against the real daemon, activated on a private session bus, by a scripted
+D-Bus client that renews its lease every 30 s like the plugin. Fixture: a disposable repository of
+100,152 tracked files in 1,000 directories plus a 40-level-deep path, with 200 modified, 100
+untracked, and 50 ignored files, on tmpfs with a warm page cache (4 CPU threads, default limits:
+15 s poll, 250 ms debounce). Raw Git on the same tree: `git status --porcelain=v2 -z` 0.23 s wall
+(1.9 MB output), `git ls-files -z` 0.02 s.
+
+| Measurement | Result |
+| --- | --- |
+| `RequestOverlays` call returns (cold, 100 paths) | 20 ms |
+| Cold: request to the first and only batch of Ready records (resolution, status, inventory, index build) | 1.4 s (two runs: 1.40 s, 1.44 s) |
+| Warm: `RequestOverlays` call returns (20 requests, 100 paths each) | p50 7 ms, max 10 ms |
+| Warm: request to all initial records | p50 34-36 ms, p95 44-53 ms, max 51-59 ms (two runs) |
+| Edit of an observed file to `OverlaysChanged` (5 samples, spread across the poll phase) | 3.0 to 12.6 s, median 7.9 s (bounded by the 15 s poll plus one refresh) |
+| Daemon RSS | 53 MB after the cold load, 82 MB after one minute of polling |
+| Daemon CPU while idle, one observed directory | 3.2 s of CPU in 60 s (about 5% of one core), excluding Git children |
+
+Observations: the states returned for the sampled paths matched the fixture (modified, untracked,
+ignored, clean, a parent directory reporting a modified child, and the deep path). With the
+renewal removed, observations expired after the 90 s lease as designed (an early run without it
+stopped receiving changes), so renewal matters for long-lived views.
+
+Caveats: this measures the daemon and the D-Bus path, not Dolphin's paint callback (the plugin
+returns from the cache without Git or bus work; its cold-callback bound is covered by
+`dolphin.overlay_plugin`). tmpfs hides disk latency and a warm cache hides cold-cache Git cost.
+The idle cost is real: each poll of a 100k-file repository rebuilds its index, so
+the 15 s default is a candidate for tuning or for a cheaper change check. Only one fixture size
+was run, there was no external or network mount, no p50/p95 of callback time, no comparison with
+Git's untracked cache or fsmonitor, and no run on the Plasma session.
 
 ## Automated coverage
 

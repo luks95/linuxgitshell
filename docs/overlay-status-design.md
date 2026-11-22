@@ -279,7 +279,8 @@ Provider and transport acceptance:
 Native gates before closing Phase 3 (partly met on 2026-11-21 with Dolphin on Qt's `vnc` platform;
 see [dolphin-overlays.md](dolphin-overlays.md#native-verification). The states, the three views,
 live update, expiry, daemon restart, and both settings are confirmed there; two windows, folder
-scaling, external and network mounts, the 100k-file fixture, and all latency/RSS numbers are not):
+scaling, external and network mounts, and paint-callback timing are not; daemon latency, RSS and idle CPU on a
+100k-file fixture are in [dolphin-overlays.md](dolphin-overlays.md#measurements-on-a-100k-file-fixture)):
 
 - Five MVP states and clearing repaint correctly in icons, details, and compact views, including
   folder scaling, idle views, daemon restart, settings changes, and two Dolphin windows.

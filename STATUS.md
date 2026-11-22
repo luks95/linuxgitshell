@@ -27,9 +27,13 @@ Last updated 2026-11-21.
   Wayland session.
 - Not implemented yet: the application's `RefreshRepository` hook (the contract only accepts
   repositories the caller observes, so the GUI cannot use it as is) and deleted and ignored glyphs.
-  Still unverified Phase 3 gates: two Dolphin windows, folder scaling, local external and network
-  mounts, latency and RSS measurements on large trees, the Plasma Wayland session, and the 15 s
-  polling and 250 ms debounce defaults.
+  Daemon measurements on a 100k-file tmpfs fixture (details and caveats in
+  [`docs/dolphin-overlays.md`](docs/dolphin-overlays.md#measurements-on-a-100k-file-fixture)): cold
+  first answer 1.4 s, warm initial records p50 about 35 ms, edit-to-update 3.0-12.6 s under the 15 s
+  poll, RSS 53-82 MB, and about 5% of one core while idle. Still unverified Phase 3 gates: two
+  Dolphin windows, folder scaling, local external and network mounts, paint-callback latency,
+  Git's untracked cache and fsmonitor, the Plasma Wayland session, and tuning the poll default
+  (idle CPU on very large repositories is its main cost).
 
 ## Historical Phase 2 verification
 

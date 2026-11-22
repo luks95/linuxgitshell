@@ -7,6 +7,9 @@ All notable user-visible changes to LinuxGitShell will be documented here. The f
 
 ### Added
 
+- Latency measurements of the overlay daemon on a 100k-file fixture (cold answer 1.4 s, warm initial
+  records about 35 ms, edit-to-update 3.0-12.6 s, about 5% of one core idle), recorded with their
+  caveats in `docs/dolphin-overlays.md`.
 - Native verification record for the Dolphin overlays (isolated Dolphin on Qt's `vnc` platform): five
   states in three views, live updates, expiry, daemon restart recovery, and the `Enabled` and
   `RecursiveFolders` settings, with screenshots under `docs/images/`.

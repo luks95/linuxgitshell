@@ -296,8 +296,8 @@ antes de cerrar la fase; los valores de polling y límites son provisionales.
 ## Pruebas y rendimiento
 
 - [ ] Verificar actualización tras editar, crear, borrar, stagear y resolver un archivo (parcial: rondas de cambios sobre el repositorio de prueba en Dolphin real, plataforma `vnc`, 2026-11-21; faltan la sesión Plasma Wayland y verificar cada operación por separado).
-- [ ] Medir latencia de paint/request sin cache y con cache caliente.
-- [ ] Probar árbol profundo y repositorio con gran cantidad de archivos.
+- [ ] Medir latencia de paint/request sin cache y con cache caliente (parcial: latencia del daemon medida en un fixture de 100k archivos, ver `docs/dolphin-overlays.md`; falta el callback de paint en Dolphin).
+- [x] Probar árbol profundo y repositorio con gran cantidad de archivos (fixture de 100k archivos y ruta de 40 niveles; mediciones y límites en `docs/dolphin-overlays.md`).
 - [ ] Probar montaje externo y documentar limitaciones de montaje de red.
 - [x] Confirmar que desactivar overlays elimina su coste adicional (con `Enabled=false` no hay emblemas y el daemon no se activa; comprobado en Dolphin real, plataforma `vnc`).
 
