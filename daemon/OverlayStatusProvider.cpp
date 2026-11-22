@@ -8,6 +8,7 @@
 
 #include "linuxgitshell/repositorycontext/RepositoryContextSnapshot.h"
 
+#include <QCryptographicHash>
 #include <QDir>
 #include <QFileInfo>
 #include <QRandomGenerator>
@@ -1106,51 +1107,10 @@ void OverlayStatusProvider::statusFinished(Repository& repo, const GitStatusResu
     }
     repo.collector->status = result.status;
 
-    GitInventoryRequest request;
-    request.repositoryRoot = repo.root;
-    request.timeout = limits.collectionDeadline;
-    request.maxOutputBytes = limits.maxOutputBytes;
-    if (repo.collector->inventoryReader.start(request) != GitInventoryStartResult::Accepted)
-    {
-        failRefresh(repo);
-    }
-}
-
-void OverlayStatusProvider::inventoryFinished(Repository& repo, const GitInventoryResult& result)
-{
-    if (!repo.refreshing || !repo.collector)
-    {
-        return;
-    }
-    if (result.error != GitInventoryReadError::None || !result.paths.has_value() ||
-        !repo.collector->status.has_value() || repo.collector->timedOut)
-    {
-        failRefresh(repo);
-        return;
-    }
-    completeRefresh(repo, result);
-}
-
-void OverlayStatusProvider::completeRefresh(Repository& repo, const GitInventoryResult& result)
-{
-    const qint64 elapsed = repo.collector->elapsed.elapsed();
-    if (!repo.collector->status.has_value() || !result.paths.has_value())
-    {
-        failRefresh(repo);
-        return;
-    }
-    const bool invalidated = repo.collector->invalidationsAtStart != repo.invalidations;
-
-    RepositoryStatusTranslationInput input;
-    input.revision = nextRevision();
-    input.capturedAt = now();
-    input.status = *repo.collector->status;
-    input.trackedPaths = *result.paths;
-
     // Nested repositories and submodules own their contents. Only entries Git reports as a
     // directory or submodule can be boundaries, so filesystem checks stay bounded by the status.
     QSet<QString> boundaries;
-    for (const GitStatusEntry& entry : std::as_const(input.status.entries))
+    for (const GitStatusEntry& entry : std::as_const(repo.collector->status->entries))
     {
         QString path = entry.path;
         if (path.size() > 1 && path.endsWith(QLatin1Char('/')))
@@ -1167,17 +1127,99 @@ void OverlayStatusProvider::completeRefresh(Repository& repo, const GitInventory
             boundaries.insert(path);
         }
     }
+    QStringList sortedBoundaries = boundaries.values();
+    sortedBoundaries.sort();
+    QCryptographicHash digest(QCryptographicHash::Sha256);
+    digest.addData(result.gitResult.standardOutput);
+    digest.addData(QByteArrayView("\0", 1));
+    digest.addData(sortedBoundaries.join(QLatin1Char('\n')).toUtf8());
+    repo.collector->boundaries = std::move(boundaries);
+    repo.collector->statusDigest = digest.result();
+
+    GitInventoryRequest request;
+    request.repositoryRoot = repo.root;
+    request.timeout = limits.collectionDeadline;
+    request.maxOutputBytes = limits.maxOutputBytes;
+    if (repo.hasSnapshot && repo.collector->statusDigest == repo.statusDigest)
+    {
+        request.unchangedOutputDigest = repo.inventoryDigest;
+    }
+    if (repo.collector->inventoryReader.start(request) != GitInventoryStartResult::Accepted)
+    {
+        failRefresh(repo);
+    }
+}
+
+void OverlayStatusProvider::inventoryFinished(Repository& repo, const GitInventoryResult& result)
+{
+    if (!repo.refreshing || !repo.collector)
+    {
+        return;
+    }
+    if (result.error != GitInventoryReadError::None ||
+        (!result.paths.has_value() && !result.unchanged) || !repo.collector->status.has_value() ||
+        repo.collector->timedOut)
+    {
+        failRefresh(repo);
+        return;
+    }
+    completeRefresh(repo, result);
+}
+
+void OverlayStatusProvider::completeRefresh(Repository& repo, const GitInventoryResult& result)
+{
+    const qint64 elapsed = repo.collector->elapsed.elapsed();
+    if (!repo.collector->status.has_value() || (!result.paths.has_value() && !result.unchanged))
+    {
+        failRefresh(repo);
+        return;
+    }
+    const bool invalidated = repo.collector->invalidationsAtStart != repo.invalidations;
+
+    RepositoryStatusTranslationInput input;
+    input.revision = nextRevision();
+    input.capturedAt = now();
+    input.status = *repo.collector->status;
+    if (result.paths.has_value())
+    {
+        input.trackedPaths = *result.paths;
+    }
+    QSet<QString> boundaries = std::move(repo.collector->boundaries);
     input.excludedRoots = boundaries.values();
+    const QByteArray statusDigest = repo.collector->statusDigest;
 
     disposeCollector(repo);
     repo.refreshing = false;
     --activeRefreshes;
 
-    if (invalidated)
+    // An unchanged inventory carries no paths, so it can only renew a snapshot that is still
+    // stored exactly as it was when the digests were taken.
+    const bool renewed =
+        result.unchanged && !invalidated && repo.hasSnapshot && repo.statusDigest == statusDigest &&
+        repo.inventoryDigest == result.outputDigest && repo.index.renew(input.capturedAt);
+    if (invalidated || (result.unchanged && !renewed))
     {
-        // Invalidation during collection discards its result and schedules another refresh.
-        qCDebug(daemonLog) << "Overlay refresh discarded after invalidation" << elapsed << "ms";
+        // Invalidation during collection discards its result and schedules another refresh. A
+        // snapshot lost under an unchanged inventory is rebuilt from scratch by the next one.
+        qCDebug(daemonLog) << "Overlay refresh discarded after" << elapsed << "ms";
+        if (!invalidated)
+        {
+            repo.statusDigest.clear();
+            repo.inventoryDigest.clear();
+        }
         repo.followUp = true;
+        finishRefreshBookkeeping(repo);
+        startRefreshes();
+        return;
+    }
+
+    if (renewed)
+    {
+        // Nothing Git reports changed: keep the index, only extend its freshness.
+        qCDebug(daemonLog) << "Overlay refresh unchanged after" << elapsed << "ms";
+        repo.capturedAt = input.capturedAt;
+        repo.failures = 0;
+        publishRepository(repo);
         finishRefreshBookkeeping(repo);
         startRefreshes();
         return;
@@ -1192,6 +1234,8 @@ void OverlayStatusProvider::completeRefresh(Repository& repo, const GitInventory
         repo.excludedRoots = std::move(boundaries);
         reevaluateBoundaries(repo);
         repo.capturedAt = input.capturedAt;
+        repo.statusDigest = statusDigest;
+        repo.inventoryDigest = result.outputDigest;
         repo.hasSnapshot = true;
         repo.failures = 0;
         enforceIndexBudget(repo);

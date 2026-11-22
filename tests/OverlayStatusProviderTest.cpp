@@ -144,6 +144,7 @@ class OverlayStatusProviderTest final : public QObject
     void refreshRepositoryInvalidatesThenRepublishes();
     void refreshRepositoryRequiresAnObservedRepository();
     void pollPicksUpExternalChanges();
+    void unchangedPollsRenewFreshnessAndLaterChangesAreStillSeen();
     void releaseStopsPublishingAndPolling();
     void leasesExpireAndRenewalExtendsThem();
     void staleSnapshotYieldsUnknownThenRefreshes();
@@ -453,6 +454,43 @@ void OverlayStatusProviderTest::pollPicksUpExternalChanges()
     const int batches = alice.changedBatches;
     QTRY_VERIFY_WITH_TIMEOUT(alice.changedBatches > batches, WaitMilliseconds);
     QVERIFY(alice.is(file, State::Modified));
+    QVERIFY(!alice.revisionViolation);
+}
+
+void OverlayStatusProviderTest::unchangedPollsRenewFreshnessAndLaterChangesAreStillSeen()
+{
+    Fixture fixture;
+    QVERIFY(createFixture(fixture));
+    OverlayProviderLimits limits = fastLimits();
+    limits.pollInterval = 50ms;
+    limits.freshness = 400ms;
+    OverlayStatusProvider provider(limits);
+    Recorder alice(provider, Alice);
+    const QString clean = child(fixture.root, QStringLiteral("clean.txt"));
+    const QString modified = child(fixture.root, QStringLiteral("modified.txt"));
+
+    QCOMPARE(provider.requestOverlays(Alice, {clean, modified}, 1).acceptedPaths.size(), 2);
+    QTRY_VERIFY_WITH_TIMEOUT(alice.is(modified, State::Modified), WaitMilliseconds);
+
+    // Several unchanged polls span more than the freshness window: if they only republished and
+    // never renewed the snapshot, the records would turn Stale.
+    const int batches = alice.changedBatches;
+    QTRY_VERIFY_WITH_TIMEOUT(alice.changedBatches >= batches + 12, WaitMilliseconds);
+    QVERIFY(alice.is(clean, State::Clean));
+    QVERIFY(alice.is(modified, State::Modified));
+    QVERIFY(alice.record(modified).validForMs > 0);
+    QVERIFY(!alice.revisionViolation);
+
+    // Changes after skipped rebuilds are still picked up, in both directions.
+    QVERIFY(GitTestSupport::writeTextFile(clean, "edited\n"));
+    QTRY_VERIFY_WITH_TIMEOUT(alice.is(clean, State::Modified), WaitMilliseconds);
+    QVERIFY(GitTestSupport::writeTextFile(clean, "c\n"));
+    QTRY_VERIFY_WITH_TIMEOUT(alice.is(clean, State::Clean), WaitMilliseconds);
+    QVERIFY(GitTestSupport::runGit(fixture.root,
+                                   {QStringLiteral("add"), QStringLiteral("untracked.txt")}));
+    const QString untracked = child(fixture.root, QStringLiteral("untracked.txt"));
+    QCOMPARE(provider.requestOverlays(Alice, {untracked}, 2).acceptedPaths.size(), 1);
+    QTRY_VERIFY_WITH_TIMEOUT(alice.is(untracked, State::Added), WaitMilliseconds);
     QVERIFY(!alice.revisionViolation);
 }
 

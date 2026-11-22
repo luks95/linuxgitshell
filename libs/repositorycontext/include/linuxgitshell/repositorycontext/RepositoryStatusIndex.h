@@ -124,6 +124,9 @@ class RepositoryStatusIndex final
     [[nodiscard]] RepositoryStatusLookup lookup(const QString& relativePath,
                                                 Clock::time_point now) const;
     [[nodiscard]] bool invalidate(RepositoryStatusValidity validity, quint64 revision);
+    // Extends the freshness of a Ready snapshot whose source data is known to be unchanged, without
+    // rebuilding it. Keeps the revision; refuses any other validity or a non-newer capture time.
+    [[nodiscard]] bool renew(Clock::time_point newCapturedAt);
     // Evict the whole snapshot, never individual records of a supposedly complete index.
     // Preserve the revision watermark so late replies cannot restore an evicted snapshot.
     void clear();

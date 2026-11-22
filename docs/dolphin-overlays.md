@@ -129,7 +129,7 @@ untracked, and 50 ignored files, on tmpfs with a warm page cache (4 CPU threads,
 | Warm: request to all initial records | p50 34-36 ms, p95 44-53 ms, max 51-59 ms (two runs) |
 | Edit of an observed file to `OverlaysChanged` (5 samples, spread across the poll phase) | 3.0 to 12.6 s, median 7.9 s (bounded by the 15 s poll plus one refresh) |
 | Daemon RSS | 53 MB after the cold load, 82 MB after one minute of polling |
-| Daemon CPU while idle, one observed directory | 3.2 s of CPU in 60 s (about 5% of one core), excluding Git children |
+| Daemon CPU while idle, one observed directory | 3.2 s of CPU in 60 s (about 5% of one core) before the unchanged-poll fast path; 0.17 s (0.3%) after it. Excludes the Git children |
 
 Observations: the states returned for the sampled paths matched the fixture (modified, untracked,
 ignored, clean, a parent directory reporting a modified child, and the deep path). With the
@@ -139,8 +139,14 @@ stopped receiving changes), so renewal matters for long-lived views.
 Caveats: this measures the daemon and the D-Bus path, not Dolphin's paint callback (the plugin
 returns from the cache without Git or bus work; its cold-callback bound is covered by
 `dolphin.overlay_plugin`). tmpfs hides disk latency and a warm cache hides cold-cache Git cost.
-The idle cost is real: each poll of a 100k-file repository rebuilds its index, so
-the 15 s default is a candidate for tuning or for a cheaper change check. Only one fixture size
+The idle cost was real: every poll of a 100k-file repository re-parsed the 1.9 MB inventory and
+rebuilt the index. A poll whose Git status output (plus nested-repository boundaries) and tracked
+inventory hash identically to the stored snapshot now skips the inventory parse and the rebuild
+and only renews freshness (0.96 s of daemon CPU per minute with the index fast path alone, 0.17 s
+with the inventory parse skipped too). The remaining idle cost is Git itself: a `git status` of this
+tree costs about 0.37 CPU-seconds per poll (about 1.5 CPU-seconds per minute at the default interval,
+estimated from the raw run above and not measured through the daemon), so a cheaper change check or
+an adaptive poll interval is still open. Only one fixture size
 was run, there was no external or network mount, no p50/p95 of callback time, no comparison with
 Git's untracked cache or fsmonitor, and no run on the Plasma session.
 

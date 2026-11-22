@@ -66,6 +66,12 @@ All notable user-visible changes to LinuxGitShell will be documented here. The f
 
 ### Changed
 
+- Overlay polling no longer rebuilds the repository index when Git reports exactly what it reported
+  before: identical status and inventory output only renew freshness. On a 100k-file fixture the
+  daemon's idle CPU dropped from 3.2 s to 0.17 s per minute (Git's own cost is not included).
+  `GitInventoryRequest::unchangedOutputDigest` lets the reader skip parsing an identical inventory,
+  and `RepositoryStatusIndex::renew()` extends a Ready snapshot without rebuilding it.
+
 - LinuxGitShell window and action labels default to English while preserving Dolphin's locale.
 - The Dolphin selection helper is now a policy for single and multiple repository selections.
 - Project documentation distinguishes the published release, integrated Phase 2 context service

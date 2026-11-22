@@ -427,6 +427,16 @@ void RepositoryStatusIndex::discard(Validity validity)
     currentValidity = validity;
 }
 
+bool RepositoryStatusIndex::renew(Clock::time_point newCapturedAt)
+{
+    if (currentValidity != Validity::Ready || newCapturedAt <= capturedAt)
+    {
+        return false;
+    }
+    capturedAt = newCapturedAt;
+    return true;
+}
+
 void RepositoryStatusIndex::clear() { discard(Validity::Unavailable); }
 
 QString RepositoryStatusIndex::repositoryRoot() const { return root; }

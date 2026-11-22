@@ -9,6 +9,7 @@
 #include "linuxgitshell/repositorycontext/OverlayWire.h"
 #include "linuxgitshell/repositorycontext/RepositoryStatusIndex.h"
 
+#include <QByteArray>
 #include <QElapsedTimer>
 #include <QHash>
 #include <QList>
@@ -147,6 +148,8 @@ class OverlayStatusProvider final : public QObject
         QTimer deadline;
         QElapsedTimer elapsed;
         std::optional<GitStatusSnapshot> status;
+        QSet<QString> boundaries;
+        QByteArray statusDigest;
         quint64 invalidationsAtStart = 0;
         bool timedOut = false;
     };
@@ -173,6 +176,11 @@ class OverlayStatusProvider final : public QObject
         bool followUp = false;
         int failures = 0;
         quint64 invalidations = 0;
+        // Digests of the Git status output (with boundaries) and of the tracked inventory behind
+        // the stored snapshot. An identical refresh only renews freshness instead of re-reading
+        // the inventory and rebuilding the index.
+        QByteArray statusDigest;
+        QByteArray inventoryDigest;
         QTimer poll;
         QTimer debounce;
         std::unique_ptr<Collector> collector;

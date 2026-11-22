@@ -30,10 +30,10 @@ Last updated 2026-11-21.
   Daemon measurements on a 100k-file tmpfs fixture (details and caveats in
   [`docs/dolphin-overlays.md`](docs/dolphin-overlays.md#measurements-on-a-100k-file-fixture)): cold
   first answer 1.4 s, warm initial records p50 about 35 ms, edit-to-update 3.0-12.6 s under the 15 s
-  poll, RSS 53-82 MB, and about 5% of one core while idle. Still unverified Phase 3 gates: two
+  poll, RSS 53-83 MB, and about 5% of one core while idle before the unchanged-poll fast path (0.3% of daemon CPU after it; Git's own CPU is not included). Still unverified Phase 3 gates: two
   Dolphin windows, folder scaling, local external and network mounts, paint-callback latency,
   Git's untracked cache and fsmonitor, the Plasma Wayland session, and tuning the poll default
-  (idle CPU on very large repositories is its main cost).
+  (Git's own per-poll cost on very large repositories is now its main cost).
 
 ## Historical Phase 2 verification
 

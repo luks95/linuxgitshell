@@ -42,6 +42,7 @@ class GitInventoryReaderTest final : public QObject
     void rejectsMalformedOutput();
     void listsTrackedPathsOfRealRepository();
     void emptyRepositoryHasEmptyInventory();
+    void skipsParsingWhenOutputDigestMatches();
     void keepsUnusualFilenamesVerbatim();
     void reportsNotRepository();
     void overflowYieldsNoPartialInventory();
@@ -101,6 +102,41 @@ void GitInventoryReaderTest::listsTrackedPathsOfRealRepository()
     QStringList paths = *result.paths;
     paths.sort();
     QCOMPARE(paths, (QStringList{QStringLiteral("file.txt"), QStringLiteral("sub/deeper/x.txt")}));
+}
+
+void GitInventoryReaderTest::skipsParsingWhenOutputDigestMatches()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString root = directory.filePath(QStringLiteral("repo"));
+    QVERIFY(GitTestSupport::createRepository(root));
+
+    LinuxGitShell::GitInventoryReader reader;
+    LinuxGitShell::GitInventoryRequest request;
+    request.repositoryRoot = root;
+    request.timeout = 10s;
+    const auto first = readInventory(reader, request);
+    QCOMPARE(first.error, LinuxGitShell::GitInventoryReadError::None);
+    QVERIFY(first.paths.has_value());
+    QVERIFY(!first.unchanged);
+    QVERIFY(!first.outputDigest.isEmpty());
+
+    request.unchangedOutputDigest = first.outputDigest;
+    const auto same = readInventory(reader, request);
+    QCOMPARE(same.error, LinuxGitShell::GitInventoryReadError::None);
+    QVERIFY(same.unchanged);
+    QVERIFY(!same.paths.has_value());
+    QCOMPARE(same.outputDigest, first.outputDigest);
+
+    // Any change to the tracked set yields a different digest and a full parse again.
+    QVERIFY(
+        GitTestSupport::writeTextFile(QDir(root).filePath(QStringLiteral("another.txt")), "a\n"));
+    QVERIFY(GitTestSupport::runGit(root, {QStringLiteral("add"), QStringLiteral("another.txt")}));
+    const auto changed = readInventory(reader, request);
+    QVERIFY(!changed.unchanged);
+    QVERIFY(changed.paths.has_value());
+    QVERIFY(changed.outputDigest != first.outputDigest);
+    QVERIFY(changed.paths->contains(QStringLiteral("another.txt")));
 }
 
 void GitInventoryReaderTest::emptyRepositoryHasEmptyInventory()

@@ -43,6 +43,9 @@ struct GitInventoryRequest
     QString repositoryRoot;
     std::optional<std::chrono::milliseconds> timeout;
     std::optional<qint64> maxOutputBytes;
+    // SHA-256 of an earlier output. When the new output hashes the same, the result is marked
+    // `unchanged` and the (large) output is not parsed again.
+    QByteArray unchangedOutputDigest;
 };
 
 enum class GitInventoryStartResult
@@ -72,6 +75,10 @@ struct GitInventoryResult
 {
     QString repositoryRoot;
     std::optional<QStringList> paths;
+    // SHA-256 of the raw output; set whenever Git completed successfully.
+    QByteArray outputDigest;
+    // The output matched `unchangedOutputDigest`: `paths` is intentionally absent.
+    bool unchanged = false;
     GitInventoryReadError error = GitInventoryReadError::None;
     GitInventoryParseError parseError = GitInventoryParseError::None;
     GitProcessResult gitResult;
@@ -105,6 +112,7 @@ class GitInventoryReader final : public QObject
 
     GitProcessRunner runner;
     QString repositoryRoot;
+    QByteArray unchangedDigest;
 };
 
 } // namespace LinuxGitShell

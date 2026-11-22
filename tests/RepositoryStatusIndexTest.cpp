@@ -70,6 +70,7 @@ class RepositoryStatusIndexTest final : public QObject
     void rejectsInvalidPaths();
     void rejectsMalformedEntries();
     void freshnessIsDeterministic();
+    void renewExtendsFreshnessWithoutRebuilding();
     void nonReadySnapshotsClearDetails_data();
     void nonReadySnapshotsClearDetails();
     void revisionsPreventLateResurrection();
@@ -454,6 +455,38 @@ void RepositoryStatusIndexTest::freshnessIsDeterministic()
     RepositoryStatusIndex noFreshness(QStringLiteral("/repo"), limits);
     QCOMPARE(noFreshness.replace(complete()), StoreResult::Accepted);
     QCOMPARE(noFreshness.lookup(QString(), Start).validity, Validity::Stale);
+}
+
+void RepositoryStatusIndexTest::renewExtendsFreshnessWithoutRebuilding()
+{
+    RepositoryStatusIndexLimits limits;
+    limits.freshness = 10s;
+    RepositoryStatusIndex index(QStringLiteral("/repo"), limits);
+    QVERIFY(!index.renew(Start + 1s));
+    auto snapshot = complete();
+    snapshot.entries = {entry(QStringLiteral("file"), FileState::Modified)};
+    QCOMPARE(index.replace(snapshot), StoreResult::Accepted);
+    const quint64 revision = index.revision();
+    const qsizetype records = index.recordCount();
+
+    // An expired snapshot is Stale until it is renewed, and renewal keeps its content and revision.
+    QCOMPARE(index.lookup(QStringLiteral("file"), Start + 12s).validity, Validity::Stale);
+    QVERIFY(!index.renew(Start));
+    QVERIFY(!index.renew(Start - 1s));
+    QVERIFY(index.renew(Start + 12s));
+    const auto renewed = index.lookup(QStringLiteral("file"), Start + 12s);
+    QCOMPARE(renewed.validity, Validity::Ready);
+    QCOMPARE(renewed.state, State::Modified);
+    QCOMPARE(index.revision(), revision);
+    QCOMPARE(index.recordCount(), records);
+    QCOMPARE(index.lookup(QStringLiteral("file"), Start + 21s).validity, Validity::Ready);
+    QCOMPARE(index.lookup(QStringLiteral("file"), Start + 22s).validity, Validity::Stale);
+
+    // Only a Ready snapshot can be renewed.
+    QVERIFY(index.invalidate(Validity::Degraded, revision + 1));
+    QVERIFY(!index.renew(Start + 30s));
+    index.clear();
+    QVERIFY(!index.renew(Start + 40s));
 }
 
 void RepositoryStatusIndexTest::nonReadySnapshotsClearDetails_data()

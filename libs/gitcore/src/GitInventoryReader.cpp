@@ -3,6 +3,7 @@
 
 #include "linuxgitshell/gitcore/GitInventoryReader.h"
 
+#include <QCryptographicHash>
 #include <QDir>
 #include <QFileInfo>
 #include <QSet>
@@ -70,6 +71,7 @@ GitInventoryStartResult GitInventoryReader::start(const GitInventoryRequest& req
     }
 
     repositoryRoot = QDir::cleanPath(rootInfo.absoluteFilePath());
+    unchangedDigest = request.unchangedOutputDigest;
 
     GitProcessRequest processRequest;
     processRequest.arguments = {
@@ -112,6 +114,14 @@ void GitInventoryReader::processFinished(const GitProcessResult& processResult)
     result.error = errorFor(processResult);
     if (result.error == GitInventoryReadError::None)
     {
+        result.outputDigest =
+            QCryptographicHash::hash(processResult.standardOutput, QCryptographicHash::Sha256);
+        if (!unchangedDigest.isEmpty() && result.outputDigest == unchangedDigest)
+        {
+            result.unchanged = true;
+            Q_EMIT finished(result);
+            return;
+        }
         const GitInventoryParseResult parsed =
             GitInventoryParser::parse(processResult.standardOutput);
         result.parseError = parsed.error;
