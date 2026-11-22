@@ -268,8 +268,8 @@ implementan sus ventanas y operaciones; no bloquean el menú MVP ni se muestran 
 # Fase 3 — Overlays MVP (`v0.2.0`, parte 2)
 
 Contrato propuesto: [diseño de overlays](docs/overlay-status-design.md). El primer incremento,
-`RepositoryStatusIndex`, está implementado en esta rama sin Git, filesystem ni IPC; el proveedor del daemon
-y el servicio `Overlays1` también, y falta el plugin cliente. La propuesta define cobertura de snapshots,
+`RepositoryStatusIndex`, está implementado sin Git, filesystem ni IPC; el proveedor del daemon,
+el servicio `Overlays1` y el plugin de Dolphin también (PR #17), y faltan las puertas nativas abiertas. La propuesta define cobertura de snapshots,
 respuestas iniciales y retirada de iconos obsoletos. Repintado nativo y rendimiento deben medirse
 antes de cerrar la fase; los valores de polling y límites son provisionales.
 
@@ -286,7 +286,7 @@ antes de cerrar la fase; los valores de polling y límites son provisionales.
 - [x] Crear iconos propios y libres para clean, modified, added, conflict y untracked.
 - [x] Conservar fuente, licencia y atribución de cada recurso visual (`docs/licensing.md`).
 - [x] Diseñar iconos legibles en tamaños pequeños, HiDPI, tema claro y oscuro (revisados en 16/22/32/64 px; falta verlos en Dolphin).
-- [ ] Implementar proveedor de overlays con cache local acotado.
+- [x] Implementar proveedor de overlays con cache local acotado (el sondeo sin cambios solo renueva la frescura, sin reconstruir el índice).
 - [x] Evitar ejecutar `git status` por cada solicitud de icono (un status + un inventario por repositorio y refresco; 10 000 callbacks en frío sin Git ni D-Bus).
 - [ ] Invalidar el cache después de cambios Git conocidos.
 - [ ] Añadir deleted e ignored cuando el modelo base sea estable.

@@ -347,6 +347,13 @@ Decisions made while implementing, or points where the code is narrower than the
 - `Stale` is detected on lookup (and by the client timer), not published by a provider timer. A
   failed refresh publishes `Degraded` immediately and retries with the poll interval doubled per
   consecutive failure, up to three doublings and 120 seconds.
+- A poll whose status output (with the learned nested-repository boundaries) and tracked-inventory
+  output hash the same as the stored snapshot's does not re-parse the inventory or rebuild the
+  index: the inventory reader skips parsing on a matching digest and the index only renews its
+  freshness (`RepositoryStatusIndex::renew`, which keeps content and revision). Records are still
+  republished so clients extend their own freshness. Any difference, invalidation, or lost snapshot
+  takes the full path. Git itself still runs once per poll; a cheaper change check or an adaptive
+  interval is open work.
 - Sparse checkouts are detected by the presence of `info/sparse-checkout` in the git directory and
   publish `Unavailable`. Network and unclassified filesystems are detected from `QStorageInfo` with
   a type denylist; this is covered by unit tests only for local locations and must still be
