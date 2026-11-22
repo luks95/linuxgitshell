@@ -53,5 +53,6 @@ pacman -Q gettext cmake git gcc ninja clang
 ```
 
 No system packages were installed or modified during the initial bootstrap. Phase 2 added only the
-verified `extra-cmake-modules` build dependency. The current suite builds and passes 11 CTest tests,
-including two Dolphin plugin tests, on this environment and in the hosted Arch Linux CI container.
+verified `extra-cmake-modules` build dependency. At the 2026-09-13 checkpoint, the suite built and
+passed 11 CTest tests, including two Dolphin plugin tests, on this environment and in hosted CI.
+Later increments register 17 tests; see `STATUS.md` for their recorded verification evidence.

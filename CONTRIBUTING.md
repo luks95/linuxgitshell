@@ -1,7 +1,7 @@
 # Contributing to LinuxGitShell
 
-LinuxGitShell is in Phase 2: the `v0.1.0` Git foundation is released and the first Dolphin plugin is
-on `main`. Small, focused changes that preserve the separation between Git services, models, IPC,
+LinuxGitShell is in Phase 3: the `v0.1.0` Git foundation is released, and the verified
+repository-aware Dolphin menu is on `main`. Small, focused changes that preserve the separation between Git services, models, IPC,
 user interfaces, and Dolphin plugins are welcome.
 
 ## Development setup

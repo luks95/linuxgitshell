@@ -55,6 +55,7 @@ GitStatusStartResult GitStatusReader::start(const GitStatusRequest& request)
     }
     processRequest.environment.insert(QStringLiteral("LC_ALL"), QStringLiteral("C"));
     processRequest.timeout = request.timeout;
+    processRequest.maxOutputBytes = request.maxOutputBytes;
 
     switch (runner.start(processRequest))
     {
@@ -64,6 +65,8 @@ GitStatusStartResult GitStatusReader::start(const GitStatusRequest& request)
         return GitStatusStartResult::Busy;
     case GitProcessStartResult::InvalidTimeout:
         return GitStatusStartResult::InvalidTimeout;
+    case GitProcessStartResult::InvalidOutputLimit:
+        return GitStatusStartResult::InvalidOutputLimit;
     case GitProcessStartResult::InvalidProgram:
         break;
     }
@@ -106,6 +109,8 @@ GitStatusReadError GitStatusReader::errorFor(const GitProcessResult& processResu
         return GitStatusReadError::Cancelled;
     case GitProcessCompletionReason::TimedOut:
         return GitStatusReadError::TimedOut;
+    case GitProcessCompletionReason::OutputLimitExceeded:
+        return GitStatusReadError::OutputLimitExceeded;
     case GitProcessCompletionReason::Crashed:
         return GitStatusReadError::GitFailure;
     case GitProcessCompletionReason::Completed:

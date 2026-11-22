@@ -70,6 +70,12 @@ jobs:
             test -f \
               stage/usr/lib/qt6/plugins/kf6/kfileitemaction/linuxgitshell_fileitemaction.so
           fi
+          if test -d integrations/dolphin/overlays; then
+            test -f \
+              stage/usr/lib/qt6/plugins/kf6/overlayicon/linuxgitshell_overlayicon.so
+            test -f \
+              stage/usr/share/icons/hicolor/scalable/emblems/emblem-linuxgitshell-clean.svg
+          fi
       - name: Verify application version
         run: |
           set -eu

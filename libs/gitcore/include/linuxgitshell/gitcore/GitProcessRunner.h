@@ -24,6 +24,7 @@ enum class GitProcessCompletionReason
     Crashed,
     Cancelled,
     TimedOut,
+    OutputLimitExceeded,
 };
 
 enum class GitProcessStartResult
@@ -32,6 +33,7 @@ enum class GitProcessStartResult
     Busy,
     InvalidProgram,
     InvalidTimeout,
+    InvalidOutputLimit,
 };
 
 struct GitProcessRequest
@@ -41,6 +43,9 @@ struct GitProcessRequest
     QString workingDirectory;
     QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
     std::optional<std::chrono::milliseconds> timeout;
+    // Combined stdout + stderr ceiling enforced while reading; excess bytes are dropped and the
+    // process is stopped with OutputLimitExceeded.
+    std::optional<qint64> maxOutputBytes;
 };
 
 struct GitProcessResult
@@ -82,6 +87,7 @@ class GitProcessRunner final : public QObject
     void readStandardError();
     void processErrorOccurred(QProcess::ProcessError error);
     void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void appendBounded(QByteArray& target, const QByteArray& bytes, bool standardOutputStream);
     void requestStop(GitProcessCompletionReason reason);
     void complete(GitProcessCompletionReason reason, std::optional<int> exitCode,
                   std::optional<QProcess::ExitStatus> exitStatus);
@@ -95,6 +101,7 @@ class GitProcessRunner final : public QObject
     QByteArray standardError;
     std::optional<QProcess::ProcessError> processError;
     std::optional<GitProcessCompletionReason> requestedCompletionReason;
+    std::optional<qint64> outputLimit;
     bool active = false;
 };
 

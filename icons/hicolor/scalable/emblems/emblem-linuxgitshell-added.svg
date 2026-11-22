@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 LinuxGitShell contributors
+SPDX-License-Identifier: MIT
+
+Original artwork by the LinuxGitShell contributors. Shape and glyph carry the meaning, so the
+badge stays legible without relying on color alone. Themes may override the icon name.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <title>Added</title>
+  <circle cx="8" cy="8" r="7" fill="#2a7de1" stroke="#1a4f96" stroke-width="1"/>
+  <path d="M8 4.2v7.6M4.2 8h7.6" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/>
+</svg>

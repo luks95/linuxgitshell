@@ -65,6 +65,7 @@ namespace
         return i18n("Status inspection was cancelled.");
     case GitStatusReadError::TimedOut:
         return i18n("Status inspection timed out.");
+    case GitStatusReadError::OutputLimitExceeded:
     case GitStatusReadError::GitFailure:
         return i18n("Git failed while reading status.");
     case GitStatusReadError::ParseFailure:

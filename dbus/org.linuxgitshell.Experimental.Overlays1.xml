@@ -1,0 +1,75 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<!--
+SPDX-FileCopyrightText: 2026 LinuxGitShell contributors
+SPDX-License-Identifier: MIT
+
+EXPERIMENTAL: this interface may change without a compatibility period. It is not the stable
+org.linuxgitshell.Daemon1 API; see docs/dbus-api-policy.md and docs/overlay-status-design.md.
+
+Well-known name: org.linuxgitshell.Experimental.Overlays1 (served by the same daemon as Context1)
+Object path:     /org/linuxgitshell/Overlays
+
+Observations belong to the caller's unique bus name and the requested path. Both signals are sent
+only to the observing caller (never broadcast).
+-->
+<node>
+  <interface name="org.linuxgitshell.Experimental.Overlays1">
+    <!--
+    Validates and queues observations for absolute local paths without waiting for Git. requestId
+    must be nonzero and unique among the caller's requests whose initial records are still queued.
+    At most 256 paths per call; relative, empty, duplicate, and longer-than-4096-character paths are
+    dropped, and paths beyond service capacity are omitted from acceptedPaths. Every accepted path
+    receives exactly one record in OverlayResults. Calling again with a retained path renews its
+    90-second lease. A violated bound answers with the named error
+    org.linuxgitshell.Experimental.Overlays1.Error.InvalidRequest.
+    -->
+    <method name="RequestOverlays">
+      <arg name="paths" type="as" direction="in"/>
+      <arg name="requestId" type="t" direction="in"/>
+      <arg name="generation" type="t" direction="out"/>
+      <arg name="acceptedPaths" type="as" direction="out"/>
+    </method>
+
+    <!-- Removes only the caller's observations of the given paths. -->
+    <method name="ReleaseOverlays">
+      <arg name="paths" type="as" direction="in"/>
+    </method>
+
+    <!--
+    Invalidates the answers of a repository the caller observes and queues a debounced refresh.
+    Returns false, without effect, for any other root.
+    -->
+    <method name="RefreshRepository">
+      <arg name="root" type="s" direction="in"/>
+      <arg name="accepted" type="b" direction="out"/>
+    </method>
+
+    <!--
+    Initial records for one RequestOverlays call, possibly split into several messages and always
+    sent after the method reply. Each record has path (s, the lexical request key), repositoryRoot
+    (s, empty when unknown), state (s: unknown, clean, ignored, untracked, deleted, added,
+    modified, conflict), validity (s: ready, pending, stale, degraded, unavailable), revision (t),
+    and validForMs (u). Only a Ready record carries a state icon and remaining freshness; every
+    other validity means Unknown. Clients must ignore unknown keys and treat records with unknown
+    values as removing any cached icon.
+    -->
+    <signal name="OverlayResults">
+      <arg name="requestId" type="t"/>
+      <arg name="records" type="aa{sv}"/>
+      <arg name="generation" type="t"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QList&lt;QVariantMap&gt;"/>
+    </signal>
+
+    <!--
+    Later records for observed paths: invalidations, state changes, and freshness renewal after a
+    successful poll, even when the presentation did not change. Same record format. The revision
+    increases for every publication within one generation.
+    -->
+    <signal name="OverlaysChanged">
+      <arg name="records" type="aa{sv}"/>
+      <arg name="generation" type="t"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QList&lt;QVariantMap&gt;"/>
+    </signal>
+  </interface>
+</node>

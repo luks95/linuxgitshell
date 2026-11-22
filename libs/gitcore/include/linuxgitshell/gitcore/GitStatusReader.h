@@ -21,6 +21,7 @@ struct GitStatusRequest
     bool includeIgnored = false;
     bool detectRenames = true;
     std::optional<std::chrono::milliseconds> timeout;
+    std::optional<qint64> maxOutputBytes;
 };
 
 enum class GitStatusStartResult
@@ -29,6 +30,7 @@ enum class GitStatusStartResult
     Busy,
     InvalidPath,
     InvalidTimeout,
+    InvalidOutputLimit,
     RunnerRejected,
 };
 
@@ -41,6 +43,7 @@ enum class GitStatusReadError
     PermissionDenied,
     Cancelled,
     TimedOut,
+    OutputLimitExceeded,
     GitFailure,
     ParseFailure,
 };

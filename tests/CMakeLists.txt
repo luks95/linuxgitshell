@@ -81,6 +81,24 @@ linuxgitshell_set_compiler_warnings(GitStatusReaderTest)
 
 add_test(NAME gitcore.status_reader COMMAND GitStatusReaderTest)
 
+add_executable(GitInventoryReaderTest GitInventoryReaderTest.cpp)
+
+target_compile_definitions(
+    GitInventoryReaderTest
+    PRIVATE GIT_EXECUTABLE_PATH="${GIT_EXECUTABLE}"
+)
+
+target_link_libraries(
+    GitInventoryReaderTest
+    PRIVATE
+        LinuxGitShell::GitCore
+        Qt6::Test
+)
+
+linuxgitshell_set_compiler_warnings(GitInventoryReaderTest)
+
+add_test(NAME gitcore.inventory_reader COMMAND GitInventoryReaderTest)
+
 add_executable(GitConfigTest GitConfigTest.cpp)
 
 target_compile_definitions(
@@ -112,6 +130,11 @@ linuxgitshell_set_compiler_warnings(RepositoryContextCacheTest)
 
 add_test(NAME repositorycontext.cache COMMAND RepositoryContextCacheTest)
 
+add_executable(RepositoryStatusIndexTest RepositoryStatusIndexTest.cpp)
+target_link_libraries(RepositoryStatusIndexTest PRIVATE LinuxGitShell::RepositoryContext Qt6::Test)
+linuxgitshell_set_compiler_warnings(RepositoryStatusIndexTest)
+add_test(NAME repositorycontext.status_index COMMAND RepositoryStatusIndexTest)
+
 add_executable(RepositoryContextWireTest RepositoryContextWireTest.cpp)
 
 target_link_libraries(
@@ -124,6 +147,19 @@ target_link_libraries(
 linuxgitshell_set_compiler_warnings(RepositoryContextWireTest)
 
 add_test(NAME repositorycontext.wire COMMAND RepositoryContextWireTest)
+
+add_executable(OverlayWireTest OverlayWireTest.cpp)
+
+target_link_libraries(
+    OverlayWireTest
+    PRIVATE
+        LinuxGitShell::RepositoryContext
+        Qt6::Test
+)
+
+linuxgitshell_set_compiler_warnings(OverlayWireTest)
+
+add_test(NAME repositorycontext.overlay_wire COMMAND OverlayWireTest)
 
 add_executable(ContextServiceTest ContextServiceTest.cpp GitTestSupport.h)
 
@@ -143,6 +179,68 @@ linuxgitshell_set_compiler_warnings(ContextServiceTest)
 
 add_test(NAME daemon.context_service COMMAND ContextServiceTest)
 
+add_executable(RepositoryStatusTranslatorTest RepositoryStatusTranslatorTest.cpp GitTestSupport.h)
+
+target_compile_definitions(
+    RepositoryStatusTranslatorTest
+    PRIVATE GIT_EXECUTABLE_PATH="${GIT_EXECUTABLE}"
+)
+
+target_link_libraries(
+    RepositoryStatusTranslatorTest
+    PRIVATE
+        LinuxGitShell::DaemonCore
+        Qt6::Test
+)
+
+linuxgitshell_set_compiler_warnings(RepositoryStatusTranslatorTest)
+
+add_test(NAME daemon.status_translator COMMAND RepositoryStatusTranslatorTest)
+
+add_executable(OverlaySettingsTest OverlaySettingsTest.cpp)
+
+target_link_libraries(
+    OverlaySettingsTest
+    PRIVATE
+        LinuxGitShell::DaemonCore
+        Qt6::Test
+)
+
+linuxgitshell_set_compiler_warnings(OverlaySettingsTest)
+
+add_test(NAME daemon.overlay_settings COMMAND OverlaySettingsTest)
+
+add_executable(OverlayStatusProviderTest OverlayStatusProviderTest.cpp GitTestSupport.h)
+
+target_compile_definitions(
+    OverlayStatusProviderTest
+    PRIVATE GIT_EXECUTABLE_PATH="${GIT_EXECUTABLE}"
+)
+
+target_link_libraries(
+    OverlayStatusProviderTest
+    PRIVATE
+        LinuxGitShell::DaemonCore
+        Qt6::Test
+)
+
+linuxgitshell_set_compiler_warnings(OverlayStatusProviderTest)
+
+add_test(NAME daemon.overlay_provider COMMAND OverlayStatusProviderTest)
+
+add_executable(OverlayClientTest OverlayClientTest.cpp)
+
+target_link_libraries(
+    OverlayClientTest
+    PRIVATE
+        LinuxGitShell::DolphinOverlays
+        Qt6::Test
+)
+
+linuxgitshell_set_compiler_warnings(OverlayClientTest)
+
+add_test(NAME dolphin.overlay_client COMMAND OverlayClientTest)
+
 find_program(DBUS_RUN_SESSION_EXECUTABLE NAMES dbus-run-session REQUIRED)
 
 # Lets dbus-run-session activate the built daemon; system data directories stay available for
@@ -153,6 +251,25 @@ file(
     OUTPUT "${LINUXGITSHELL_TEST_ACTIVATION_DIR}/dbus-1/services/org.linuxgitshell.Experimental.Context1.service"
     CONTENT "[D-BUS Service]\nName=org.linuxgitshell.Experimental.Context1\nExec=$<TARGET_FILE:linuxgitshell-daemon>\n"
 )
+file(
+    GENERATE
+    OUTPUT "${LINUXGITSHELL_TEST_ACTIVATION_DIR}/dbus-1/services/org.linuxgitshell.Experimental.Overlays1.service"
+    CONTENT "[D-BUS Service]\nName=org.linuxgitshell.Experimental.Overlays1\nExec=$<TARGET_FILE:linuxgitshell-daemon>\n"
+)
+# Isolated KConfig directories, so the plugin tests never read a contributor's own settings.
+set(LINUXGITSHELL_TEST_OVERLAYS_ENABLED_CONFIG "${CMAKE_CURRENT_BINARY_DIR}/overlays-enabled-config")
+set(LINUXGITSHELL_TEST_OVERLAYS_DISABLED_CONFIG "${CMAKE_CURRENT_BINARY_DIR}/overlays-disabled-config")
+file(
+    GENERATE
+    OUTPUT "${LINUXGITSHELL_TEST_OVERLAYS_ENABLED_CONFIG}/linuxgitshellrc"
+    CONTENT "[Overlays]\nEnabled=true\n"
+)
+file(
+    GENERATE
+    OUTPUT "${LINUXGITSHELL_TEST_OVERLAYS_DISABLED_CONFIG}/linuxgitshellrc"
+    CONTENT "[Overlays]\nEnabled=false\n"
+)
+
 set(LINUXGITSHELL_TEST_ACTIVATION_DATA_DIRS
     "${LINUXGITSHELL_TEST_ACTIVATION_DIR}:/usr/local/share:/usr/share"
 )
@@ -195,6 +312,52 @@ linuxgitshell_set_compiler_warnings(ContextDBusTest)
 add_test(
     NAME daemon.context_dbus
     COMMAND "${DBUS_RUN_SESSION_EXECUTABLE}" -- "$<TARGET_FILE:ContextDBusTest>"
+)
+
+set(overlay_dbus_interface_sources)
+qt_add_dbus_interface(
+    overlay_dbus_interface_sources
+    "${PROJECT_SOURCE_DIR}/dbus/org.linuxgitshell.Experimental.Overlays1.xml"
+    overlayinterface
+)
+
+add_executable(
+    OverlayDBusTest
+    OverlayDBusTest.cpp
+    DBusTestSupport.h
+    GitTestSupport.h
+    ${overlay_dbus_interface_sources}
+)
+
+target_compile_definitions(
+    OverlayDBusTest
+    PRIVATE
+        GIT_EXECUTABLE_PATH="${GIT_EXECUTABLE}"
+        DAEMON_EXECUTABLE_PATH="$<TARGET_FILE:linuxgitshell-daemon>"
+)
+
+target_include_directories(OverlayDBusTest PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+
+target_link_libraries(
+    OverlayDBusTest
+    PRIVATE
+        LinuxGitShell::RepositoryContext
+        Qt6::DBus
+        Qt6::Test
+)
+
+add_dependencies(OverlayDBusTest linuxgitshell-daemon)
+linuxgitshell_set_compiler_warnings(OverlayDBusTest)
+
+add_test(
+    NAME daemon.overlay_dbus
+    COMMAND "${DBUS_RUN_SESSION_EXECUTABLE}" -- "$<TARGET_FILE:OverlayDBusTest>"
+)
+set_tests_properties(
+    daemon.overlay_dbus
+    PROPERTIES
+        ENVIRONMENT
+            "XDG_CONFIG_HOME=${LINUXGITSHELL_TEST_OVERLAYS_ENABLED_CONFIG};XDG_DATA_DIRS=${LINUXGITSHELL_TEST_ACTIVATION_DATA_DIRS}"
 )
 
 add_executable(MainWindowTest MainWindowTest.cpp)
@@ -298,6 +461,89 @@ set_tests_properties(
     PROPERTIES
         ENVIRONMENT
             "QT_QPA_PLATFORM=offscreen;LANGUAGE=es;LC_ALL=es_AR.UTF-8;XDG_DATA_DIRS=${LINUXGITSHELL_TEST_ACTIVATION_DATA_DIRS}"
+)
+
+add_executable(
+    DolphinOverlayClientDBusTest
+    DolphinOverlayClientDBusTest.cpp
+    DBusTestSupport.h
+    GitTestSupport.h
+)
+
+target_compile_definitions(
+    DolphinOverlayClientDBusTest
+    PRIVATE GIT_EXECUTABLE_PATH="${GIT_EXECUTABLE}"
+)
+
+target_link_libraries(
+    DolphinOverlayClientDBusTest
+    PRIVATE
+        LinuxGitShell::DolphinOverlays
+        Qt6::DBus
+        Qt6::Test
+)
+
+add_dependencies(DolphinOverlayClientDBusTest linuxgitshell-daemon)
+linuxgitshell_set_compiler_warnings(DolphinOverlayClientDBusTest)
+
+add_test(
+    NAME dolphin.overlay_client_dbus
+    COMMAND
+        "${DBUS_RUN_SESSION_EXECUTABLE}" -- "$<TARGET_FILE:DolphinOverlayClientDBusTest>"
+)
+set_tests_properties(
+    dolphin.overlay_client_dbus
+    PROPERTIES
+        ENVIRONMENT
+            "XDG_CONFIG_HOME=${LINUXGITSHELL_TEST_OVERLAYS_ENABLED_CONFIG};XDG_DATA_DIRS=${LINUXGITSHELL_TEST_ACTIVATION_DATA_DIRS}"
+)
+
+add_executable(
+    DolphinOverlayPluginTest
+    DolphinOverlayPluginTest.cpp
+    DBusTestSupport.h
+    GitTestSupport.h
+)
+
+target_compile_definitions(
+    DolphinOverlayPluginTest
+    PRIVATE
+        OVERLAY_PLUGIN_PATH="$<TARGET_FILE:linuxgitshell_overlayicon>"
+        GIT_EXECUTABLE_PATH="${GIT_EXECUTABLE}"
+)
+
+target_link_libraries(
+    DolphinOverlayPluginTest
+    PRIVATE
+        LinuxGitShell::RepositoryContext
+        Qt6::DBus
+        Qt6::Test
+        KF6::KIOCore
+)
+
+add_dependencies(DolphinOverlayPluginTest linuxgitshell_overlayicon linuxgitshell-daemon)
+linuxgitshell_set_compiler_warnings(DolphinOverlayPluginTest)
+
+add_test(
+    NAME dolphin.overlay_plugin
+    COMMAND "${DBUS_RUN_SESSION_EXECUTABLE}" -- "$<TARGET_FILE:DolphinOverlayPluginTest>"
+)
+set_tests_properties(
+    dolphin.overlay_plugin
+    PROPERTIES
+        ENVIRONMENT
+            "QT_QPA_PLATFORM=offscreen;XDG_CONFIG_HOME=${LINUXGITSHELL_TEST_OVERLAYS_ENABLED_CONFIG};XDG_DATA_DIRS=${LINUXGITSHELL_TEST_ACTIVATION_DATA_DIRS}"
+)
+
+add_test(
+    NAME dolphin.overlay_plugin_disabled
+    COMMAND "${DBUS_RUN_SESSION_EXECUTABLE}" -- "$<TARGET_FILE:DolphinOverlayPluginTest>"
+)
+set_tests_properties(
+    dolphin.overlay_plugin_disabled
+    PROPERTIES
+        ENVIRONMENT
+            "QT_QPA_PLATFORM=offscreen;LINUXGITSHELL_TEST_OVERLAYS_DISABLED=1;XDG_CONFIG_HOME=${LINUXGITSHELL_TEST_OVERLAYS_DISABLED_CONFIG};XDG_DATA_DIRS=${LINUXGITSHELL_TEST_ACTIVATION_DATA_DIRS}"
 )
 
 add_executable(

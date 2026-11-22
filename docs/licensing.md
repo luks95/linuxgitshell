@@ -12,6 +12,17 @@ Use the comment syntax appropriate to the file. Documentation is covered by the 
 SPDX headers are optional where they would harm readability. Third-party assets must retain their
 original copyright, license, source, and attribution instead of receiving the project header.
 
+## Icons
+
+The five overlay emblems under `icons/hicolor/scalable/emblems/` (`emblem-linuxgitshell-clean`,
+`-modified`, `-added`, `-conflict`, `-untracked`) are original SVG artwork written by the
+LinuxGitShell contributors for this project and licensed under the MIT License. They are simple
+geometric shapes drawn from scratch; no third-party artwork, icon-theme file, font, or trace was
+used, so there is no external source or attribution to retain. Each file carries the SPDX header.
+Shape and glyph, not color alone, distinguish the states. The deleted and ignored glyphs are not
+authored yet. Any future asset taken from another source must be recorded here with its source,
+license, and attribution before merge.
+
 ## Dependency review
 
 LinuxGitShell dynamically uses Qt 6 (`GPL-3.0-only`, `LGPL-3.0-only`, commercial alternatives and

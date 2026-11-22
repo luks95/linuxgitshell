@@ -56,11 +56,16 @@ GitProcessStartResult GitProcessRunner::start(const GitProcessRequest& request)
     {
         return GitProcessStartResult::InvalidTimeout;
     }
+    if (request.maxOutputBytes.has_value() && *request.maxOutputBytes <= 0)
+    {
+        return GitProcessStartResult::InvalidOutputLimit;
+    }
 
     standardOutput.clear();
     standardError.clear();
     processError.reset();
     requestedCompletionReason.reset();
+    outputLimit = request.maxOutputBytes;
     active = true;
 
     process.setProgram(request.program);
@@ -90,8 +95,7 @@ void GitProcessRunner::readStandardOutput()
         return;
     }
 
-    standardOutput.append(bytes);
-    Q_EMIT standardOutputReceived(bytes);
+    appendBounded(standardOutput, bytes, true);
 }
 
 void GitProcessRunner::readStandardError()
@@ -102,8 +106,41 @@ void GitProcessRunner::readStandardError()
         return;
     }
 
-    standardError.append(bytes);
-    Q_EMIT standardErrorReceived(bytes);
+    appendBounded(standardError, bytes, false);
+}
+
+void GitProcessRunner::appendBounded(QByteArray& target, const QByteArray& bytes,
+                                     bool standardOutputStream)
+{
+    QByteArray accepted = bytes;
+    bool exceeded = false;
+    if (outputLimit.has_value())
+    {
+        const qint64 used = standardOutput.size() + standardError.size();
+        const qint64 remaining = qMax<qint64>(0, *outputLimit - used);
+        if (bytes.size() > remaining)
+        {
+            accepted = bytes.left(remaining);
+            exceeded = true;
+        }
+    }
+
+    if (!accepted.isEmpty())
+    {
+        target.append(accepted);
+        if (standardOutputStream)
+        {
+            Q_EMIT standardOutputReceived(accepted);
+        }
+        else
+        {
+            Q_EMIT standardErrorReceived(accepted);
+        }
+    }
+    if (exceeded)
+    {
+        requestStop(GitProcessCompletionReason::OutputLimitExceeded);
+    }
 }
 
 void GitProcessRunner::processErrorOccurred(QProcess::ProcessError error)

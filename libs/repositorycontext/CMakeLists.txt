@@ -5,12 +5,16 @@
 # It must stay free of Git execution, filesystem discovery, and IPC.
 add_library(
     linuxgitshell_repositorycontext STATIC
+    include/linuxgitshell/repositorycontext/OverlayWire.h
     include/linuxgitshell/repositorycontext/RepositoryContextCache.h
     include/linuxgitshell/repositorycontext/RepositoryContextSnapshot.h
     include/linuxgitshell/repositorycontext/RepositoryContextWire.h
+    include/linuxgitshell/repositorycontext/RepositoryStatusIndex.h
+    src/OverlayWire.cpp
     src/RepositoryContextCache.cpp
     src/RepositoryContextSnapshot.cpp
     src/RepositoryContextWire.cpp
+    src/RepositoryStatusIndex.cpp
 )
 add_library(LinuxGitShell::RepositoryContext ALIAS linuxgitshell_repositorycontext)
 

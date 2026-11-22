@@ -5,8 +5,7 @@ Plasma 6 and Dolphin on Manjaro/Arch Linux. The public
 [`v0.1.0`](https://github.com/luks95/linuxgitshell/releases/tag/v0.1.0) release provides the tested
 Git Core and a read-only repository inspector. Phase 2 includes a thin Dolphin context-menu
 plugin on `main`, backed by a bounded context cache and an experimental D-Bus service. The
-development branch adds repository-aware `Show Status` menus; native Dolphin verification is in
-progress. Mutating Git workflows are not implemented yet.
+integrated menu offers repository-aware `Show Status` actions with completed native verification. Mutating Git workflows are not implemented yet.
 
 ## Current status
 
@@ -16,16 +15,19 @@ progress. Mutating Git workflows are not implemented yet.
 | Read-only Qt/KF6 repository inspector | Released in `v0.1.0` |
 | Minimal Dolphin action for one local selection | Available on `main`, unreleased |
 | Context cache, experimental D-Bus service, and non-blocking plugin client | Available on `main`, unreleased |
-| Repository-aware menus | Implemented in [#16](https://github.com/luks95/linuxgitshell/pull/16): `Show Status`, operation notices, and same-repository multiple selections; native verification tracked by [#12](https://github.com/luks95/linuxgitshell/issues/12) |
+| Repository-aware menus | Implemented in [#16](https://github.com/luks95/linuxgitshell/pull/16): `Show Status`, operation notices, and same-repository multiple selections; merged after native verification |
+| Pure overlay status index | Implemented on `feature/repository-status-index`; provider and visible overlays are pending |
 | Overlays, stable daemon/D-Bus API, and mutating Git workflows | Not implemented |
 
-See [`STATUS.md`](STATUS.md) for verification evidence and the exact next steps.
+The repository-aware menu is integrated through #16 (`ec85d2d`), following native verification
+and passing CI. Phase 3 starts with the status-index model; see [`STATUS.md`](STATUS.md).
 
 ## Documentation map
 
 - Development: [environment](docs/development-environment.md),
   [Dolphin plugin](docs/dolphin-context-menu.md),
   [repository-context cache](docs/repository-context-cache.md),
+  [proposed overlay design](docs/overlay-status-design.md),
   [path handling](docs/path-handling.md), and [translations](docs/translations.md).
 - Verification and delivery: [application smoke test](docs/manual-smoke-test.md),
   [release process](docs/release-process.md), and [release notes](docs/releases/v0.1.0.md).
@@ -41,7 +43,7 @@ The current development branch has been validated with:
 
 - C++20 compiler (GCC 16.2.1)
 - CMake 4.4.3
-- Qt 6.11.2 (`Core`, `Widgets`, and `Test`)
+- Qt 6.11.2 (`Core`, `DBus`, `Widgets`, and `Test`)
 - KDE Frameworks 6.29.0 (`CoreAddons`, `I18n`, and `KIO`)
 - Extra CMake Modules 6.29.0
 - Gettext 1.0 (translation catalog compilation)
@@ -54,8 +56,9 @@ On Manjaro/Arch, verify installed packages before changing the system:
 pacman -Q qt6-base extra-cmake-modules kcoreaddons ki18n kio gettext cmake gcc ninja
 ```
 
-`extra-cmake-modules` 6.29.0 is required by the Phase 2 Dolphin plugin for standard KDE build and
-installation paths. See
+These are validated versions, not minimum requirements. CMake declares minimums of CMake 3.25,
+Qt 6.8, and ECM/KDE Frameworks 6.0; older supported configurations still need validation.
+`extra-cmake-modules` supplies the Phase 2 plugin's standard KDE build and installation paths. See
 [docs/dolphin-context-menu.md](docs/dolphin-context-menu.md) for the verified API and dependency
 plan.
 
@@ -69,9 +72,9 @@ cmake --build build -j
 ctest --test-dir build --output-on-failure
 ```
 
-The current suite registers 17 tests, including plugin metadata/factory loading, selection policy,
+The current suite registers 18 tests, including plugin metadata/factory loading, selection policy,
 unusual-path process transfer, the bounded repository-context cache and its D-Bus encoding, the
-context service against temporary repositories, the real daemon and D-Bus activation on a private
+pure status-index classification, aggregation and bounds, the context service against temporary repositories, the real daemon and D-Bus activation on a private
 session bus through `dbus-run-session`, the plugin's non-blocking context client and repository-aware menus, and Spanish
 translations.
 

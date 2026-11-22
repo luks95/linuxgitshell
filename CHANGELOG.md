@@ -7,6 +7,38 @@ All notable user-visible changes to LinuxGitShell will be documented here. The f
 
 ### Added
 
+- Latency measurements of the overlay daemon on a 100k-file fixture (cold answer 1.4 s, warm initial
+  records about 35 ms, edit-to-update 3.0-12.6 s, about 5% of one core idle), recorded with their
+  caveats in `docs/dolphin-overlays.md`.
+- Native verification record for the Dolphin overlays (isolated Dolphin on Qt's `vnc` platform): five
+  states in three views, live updates, expiry, daemon restart recovery, and the `Enabled` and
+  `RecursiveFolders` settings, with screenshots under `docs/images/`.
+- Pure `RepositoryStatusIndex` for the upcoming overlays: separate index/work-tree details,
+  tracked membership, directory propagation, ignored-prefix exceptions, submodule flags, bounded
+  atomic snapshot replacement, explicit freshness and revision-based invalidation. The daemon
+  provider is built on it; visible overlays and the Dolphin overlay plugin are not implemented yet.
+- Bounded Git process capture: `GitProcessRequest::maxOutputBytes` limits stdout plus stderr while
+  reading, drops the excess, stops the process, and reports `OutputLimitExceeded`.
+- `GitInventoryReader` for the complete tracked-path inventory (`ls-files --cached -z`) with
+  deduplication and no partial results after a timeout, overflow, or failure.
+- Experimental overlay status provider in the daemon: per-repository (never per-icon) collection of
+  status plus inventory under a shared deadline and output cap, bounded concurrency, debounced and
+  polled refresh with backoff, 90-second observation leases, 30-second snapshot freshness, nested
+  repository and submodule ownership, and `Unavailable` answers for bare, sparse-checkout,
+  pseudo-filesystem, and network or unclassified locations.
+- Experimental `org.linuxgitshell.Experimental.Overlays1` D-Bus service served by the same daemon,
+  with its own activation file: `RequestOverlays`, `ReleaseOverlays`, `RefreshRepository`, and
+  unicast `OverlayResults`/`OverlaysChanged` signals, a shared `a{sv}` record encoding that rejects
+  unknown values, and release of a client's observations when it leaves the bus.
+- Dolphin icon-overlay plugin (`KOverlayIconPlugin`) with a bounded process-wide cache, deferred
+  and batched requests, observation renewal, backoff, generation and revision checks, and bus-verified
+  sender authentication. Paint callbacks only read memory: tests load the real module and show that
+  10,000 cold callbacks perform no Git or D-Bus work. Overlays are on by default and can be disabled
+  with `Enabled=false` in the `[Overlays]` group of `linuxgitshellrc`; see `docs/dolphin-overlays.md`.
+- `RecursiveFolders` setting (default on) for the daemon's folder-state propagation, read at daemon
+  start-up and independent of whether overlays are enabled in Dolphin.
+- Original MIT-licensed overlay emblems for clean, modified, added, conflict, and untracked items,
+  distinguished by shape and legible at 16, 22, and 32 px on light and dark themes.
 - KF6 Dolphin file-item action plugin that offers a translated external-launch action for one local
   selection while keeping Git execution and application windows outside Dolphin's process.
 - Unit and integration coverage for conservative selection handling, plugin metadata and factory
@@ -34,15 +66,22 @@ All notable user-visible changes to LinuxGitShell will be documented here. The f
 
 ### Changed
 
-- LinuxGitShell's own window and Dolphin action labels use English by default, without changing
-  Dolphin's language.
-- The Dolphin selection helper was replaced by a context-menu policy covering single and multiple
-  selections.
-- Project documentation now reflects the public `v0.1.0` release, the Phase 2 plugin, the
-  seventeen-test suite, current dependencies, and the implemented non-blocking repository-context
-  cache and experimental service. The timing diagnostic validation, passing implementation CI,
-  and manual-test handoff are recorded separately from native Dolphin verification, which remains
-  pending.
+- The overlay poll interval adapts to repository cost: at least 50 times the last refresh's wall
+  time, up to 60 s, never below the 15 s default, so very large repositories cannot keep the
+  daemon and Git busy more than about 2% of the time.
+- Overlay polling no longer rebuilds the repository index when Git reports exactly what it reported
+  before: identical status and inventory output only renew freshness. On a 100k-file fixture the
+  daemon's idle CPU dropped from 3.2 s to 0.17 s per minute (Git's own cost is not included).
+  `GitInventoryRequest::unchangedOutputDigest` lets the reader skip parsing an identical inventory,
+  and `RepositoryStatusIndex::renew()` extends a Ready snapshot without rebuilding it.
+
+- LinuxGitShell window and action labels default to English while preserving Dolphin's locale.
+- The Dolphin selection helper is now a policy for single and multiple repository selections.
+- Project documentation distinguishes the published release, integrated Phase 2 context service
+  and client, the 18-test suite (now 28 with the overlay provider and plugin work), and repository-aware
+  menus integrated through #16.
+  Deferred menu actions have explicit target phases; the proposed overlay contract specifies
+  snapshot coverage, initial replies, invalidation, and bounded background refresh.
 
 ## [0.1.0] - 2026-09-13
 
