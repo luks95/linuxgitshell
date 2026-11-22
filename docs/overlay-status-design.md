@@ -276,7 +276,10 @@ Provider and transport acceptance:
 - A real-module test building overlays for 10,000 items performs no Git or D-Bus call before
   returning to the event loop, and disablement stops all recurring work.
 
-Native gates before closing Phase 3:
+Native gates before closing Phase 3 (partly met on 2026-11-21 with Dolphin on Qt's `vnc` platform;
+see [dolphin-overlays.md](dolphin-overlays.md#native-verification). The states, the three views,
+live update, expiry, daemon restart, and both settings are confirmed there; two windows, folder
+scaling, external and network mounts, the 100k-file fixture, and all latency/RSS numbers are not):
 
 - Five MVP states and clearing repaint correctly in icons, details, and compact views, including
   folder scaling, idle views, daemon restart, settings changes, and two Dolphin windows.

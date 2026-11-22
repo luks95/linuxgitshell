@@ -2,9 +2,11 @@
 
 Implementation status: the overlay plugin, its client cache, the D-Bus transport, the daemon
 provider, and the first icon set are implemented and covered by automated tests. **They have not
-been verified inside a running Dolphin**: native repaint in every view, polling latency on real
-trees, and network-mount behavior remain open Phase 3 gates (see
-[overlay-status-design.md](overlay-status-design.md#verification-and-remaining-empirical-gates)).
+been verified in the Plasma Wayland session**, and measurements on large trees are still open. A
+real Dolphin 6 was driven on Qt's `vnc` platform (isolated bus, config, and data) with the built
+plugin and daemon; see [Native verification](#native-verification). Remaining Phase 3 gates are
+listed in
+[overlay-status-design.md](overlay-status-design.md#verification-and-remaining-empirical-gates).
 
 ## How it works
 
@@ -83,6 +85,32 @@ Debug logging for the plugin and daemon: `QT_LOGGING_RULES="linuxgitshell.*.debu
 durations, and error categories, never paths. Remove the plugin with `cmake --build build --target
 uninstall` if your build generates it, or delete the installed `linuxgitshell_overlayicon.so`, the
 `emblem-linuxgitshell-*.svg` files, and the two `org.linuxgitshell.Experimental.*.service` files.
+
+## Native verification
+
+Checked on 2026-11-21 against a disposable fixture repository, with an unmodified Dolphin loading
+the installed plugin and a daemon activated on a private session bus. Screenshots come from a custom
+RFB client attached to Dolphin's `vnc` platform plugin, so Breeze icons render but the Plasma shell
+is absent.
+
+- All five states (clean, modified, added, conflict, untracked) and the clearing of a state repaint
+  correctly in the icons, details, and compact views, with folders showing the highest-ranking
+  state below them.
+- Scripted changes to the fixture repository (several mutation rounds) update the open window without
+  restarting Dolphin.
+  Lease expiry clears emblems when the daemon stops being reachable, and a restarted daemon is
+  picked up again by the client's backoff.
+- `[Overlays] Enabled=false` shows no emblems and never starts the daemon.
+  `RecursiveFolders=false` removes folder emblems and keeps file emblems.
+
+![Overlays in the icons view](images/overlays-views.png)
+![Live update before and after an edit](images/overlays-live-update.png)
+![Enabled=false (left) and RecursiveFolders=false (right)](images/overlays-toggles.png)
+
+Not verified yet: two Dolphin windows, folder scaling, a local external mount, network-mount
+exclusion on a real mount, p50/p95 callback and refresh latency, large (100k-file) trees, and
+anything on the real Plasma Wayland session. The `RefreshRepository` hook is not wired to the
+application.
 
 ## Automated coverage
 

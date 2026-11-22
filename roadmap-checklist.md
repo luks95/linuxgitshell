@@ -295,16 +295,16 @@ antes de cerrar la fase; los valores de polling y límites son provisionales.
 
 ## Pruebas y rendimiento
 
-- [ ] Verificar actualización tras editar, crear, borrar, stagear y resolver un archivo.
+- [ ] Verificar actualización tras editar, crear, borrar, stagear y resolver un archivo (parcial: rondas de cambios sobre el repositorio de prueba en Dolphin real, plataforma `vnc`, 2026-11-21; faltan la sesión Plasma Wayland y verificar cada operación por separado).
 - [ ] Medir latencia de paint/request sin cache y con cache caliente.
 - [ ] Probar árbol profundo y repositorio con gran cantidad de archivos.
 - [ ] Probar montaje externo y documentar limitaciones de montaje de red.
-- [ ] Confirmar que desactivar overlays elimina su coste adicional.
+- [x] Confirmar que desactivar overlays elimina su coste adicional (con `Enabled=false` no hay emblemas y el daemon no se activa; comprobado en Dolphin real, plataforma `vnc`).
 
 ## Criterio de salida de la Fase 3
 
-- [ ] Los cinco estados MVP se muestran correctamente.
-- [ ] Los overlays se actualizan sin reiniciar Dolphin.
+- [ ] Los cinco estados MVP se muestran correctamente (iconos, detalles y compacta en Dolphin real sobre `vnc`; falta la sesión Plasma Wayland).
+- [ ] Los overlays se actualizan sin reiniciar Dolphin (comprobado sobre `vnc`; falta la sesión Plasma Wayland).
 - [ ] No existe una ejecución Git descontrolada por paint/request.
 - [ ] Se publica `v0.2.0` con procedimiento de instalación y desinstalación probado.
 

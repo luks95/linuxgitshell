@@ -7,6 +7,9 @@ All notable user-visible changes to LinuxGitShell will be documented here. The f
 
 ### Added
 
+- Native verification record for the Dolphin overlays (isolated Dolphin on Qt's `vnc` platform): five
+  states in three views, live updates, expiry, daemon restart recovery, and the `Enabled` and
+  `RecursiveFolders` settings, with screenshots under `docs/images/`.
 - Pure `RepositoryStatusIndex` for the upcoming overlays: separate index/work-tree details,
   tracked membership, directory propagation, ignored-prefix exceptions, submodule flags, bounded
   atomic snapshot replacement, explicit freshness and revision-based invalidation. The daemon

@@ -20,11 +20,16 @@ Last updated 2026-11-21.
   against the real daemon; the Dolphin overlay plugin with its client cache, D-Bus transport, and
   `Enabled` KConfig toggle; and the first five emblems. The full suite has 28 CTest tests, with
   formatting, secret, and clang-tidy checks passing locally.
+- Native check (2026-11-21): a real Dolphin on Qt's `vnc` platform with the built plugin and daemon
+  showed the five states in icons, details, and compact views, live updates without restart, lease
+  expiry, daemon restart recovery, and both settings (`Enabled`, `RecursiveFolders`); evidence in
+  [`docs/dolphin-overlays.md`](docs/dolphin-overlays.md#native-verification). It was not the Plasma
+  Wayland session.
 - Not implemented yet: the application's `RefreshRepository` hook (the contract only accepts
-  repositories the caller observes, so the GUI cannot use it as is), deleted
-  and ignored glyphs, and every native gate (nothing has run inside a real Dolphin). Native overlay repaint,
-  large-repository measurements, network-mount exclusion on a real mount, and the 15 s polling
-  and 250 ms debounce defaults remain unverified release gates for Phase 3.
+  repositories the caller observes, so the GUI cannot use it as is) and deleted and ignored glyphs.
+  Still unverified Phase 3 gates: two Dolphin windows, folder scaling, local external and network
+  mounts, latency and RSS measurements on large trees, the Plasma Wayland session, and the 15 s
+  polling and 250 ms debounce defaults.
 
 ## Historical Phase 2 verification
 
